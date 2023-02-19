@@ -1,7 +1,8 @@
-#Lua Neural Network Library
+Lua Neural Network Library
 
-#Lua: https://lua.org
+Lua: https://lua.org
 
+Description:
 A simple neural network library for Lua with functions for activation functions and their derivatives,
 forward and backward propagation as well as calculating cost functions like MSE or cross entropy.
 Using an ID system for each neural network you can have multiple neural networks in 1 file, manage

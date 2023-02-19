@@ -1,6 +1,12 @@
-Lua: https://lua.org
+#Lua Neural Network Library
 
-(oh boy here we go)
+#Lua: https://lua.org
+
+A simple neural network library for Lua with functions for activation functions and their derivatives,
+forward and backward propagation as well as calculating cost functions like MSE or cross entropy.
+Using an ID system for each neural network you can have multiple neural networks in 1 file, manage
+train and visualize them easily and with no spaghetti code. (except this was made with spaghetti code,
+use the spaghetti code to get rid of the spaghetti code.
 
     ::::DOCUMENTATION::::
 

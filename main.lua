@@ -110,11 +110,11 @@ function lnn.leakyrelu(x,derivative)
     end
 end
 
-function lnn.initialize(id,activation,intable,layercount,outcount)
+function lnn.initialize(id,activation,insize,layercount,outcount)
     --check for errors
     lnn.asserttype(id,"id","string")
     lnn.asserttype(activation,"activation","string")
-    lnn.asserttype(intable,"intable","table")
+    lnn.asserttype(insize,"insize","number")
     lnn.asserttype(layercount,"layercount","number")
     lnn.asserttype(outcount,"outcount","number")
 
@@ -138,7 +138,7 @@ function lnn.initialize(id,activation,intable,layercount,outcount)
     _G[id]["activation"] = activation
     _G[id]["layercount"] = layercount
     _G[id]["outcount"] = outcount
-    _G[id]["insize"] = #intable
+    _G[id]["insize"] = insize
     _G[id]["gradient"] = {}
     _G[id]["gradient"]["gradw"] = {}
     _G[id]["gradient"]["gradb"] = {}
@@ -152,7 +152,7 @@ function lnn.initialize(id,activation,intable,layercount,outcount)
     if layercount == 0 then
         --create the tables for the output weights
         _G[id.."ow"] = {}
-        for i = 1,#intable*outcount do
+        for i = 1,insize*outcount do
             _G[id.."ow"][i] = math.random(0,100)/100
         end
 
@@ -174,7 +174,7 @@ function lnn.initialize(id,activation,intable,layercount,outcount)
         _G[ctablename] = {}
         _G[btablename] = {}
         
-        amounttofill = math.ceil(((outcount - #intable) * i / (layercount - 0)) + #intable)
+        amounttofill = math.ceil(((outcount - insize) * i / (layercount - 0)) + insize)
 
         for a = 1,amounttofill do
             _G[ctablename][a] = 0.0
@@ -188,9 +188,9 @@ function lnn.initialize(id,activation,intable,layercount,outcount)
         _G[wtablename] = {}
         
         if i > 1 then --get the amount to fill
-            amounttofill = math.ceil(((outcount - #intable) * (i - 1) / (layercount - 0)) + #intable)*math.ceil(((outcount - #intable) * i / (layercount - 0)) + #intable)
+            amounttofill = math.ceil(((outcount - insize) * (i - 1) / (layercount - 0)) + insize)*math.ceil(((outcount - insize) * i / (layercount - 0)) + insize)
         else
-            amounttofill = #intable*math.ceil(((outcount - #intable) * i / (layercount - 0)) + #intable)
+            amounttofill = insize*math.ceil(((outcount - insize) * i / (layercount - 0)) + insize)
         end
 
         for a = 1,amounttofill do
@@ -208,7 +208,7 @@ function lnn.initialize(id,activation,intable,layercount,outcount)
 
     --create the tables for the output connection (weight)
     _G[id.."ow"] = {}
-    for i = 1,outcount*math.ceil(((outcount - #intable) * layercount / (layercount - 0)) + #intable) do
+    for i = 1,outcount*math.ceil(((outcount - insize) * layercount / (layercount - 0)) + insize) do
         _G[id.."ow"][i] = math.random(0,100)/100
     end
 end

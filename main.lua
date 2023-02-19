@@ -379,7 +379,7 @@ function lnn.getmse(output,expectedoutput)
     lnn.asserttype(output,"output","table")
     lnn.asserttype(expectedoutput,"expectedutput","table")
 
-    lnn.assertsize(#output,#expectedoutput,"output","expectedoutput")
+    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
 
     --declare the variables
     local mse = 0
@@ -413,7 +413,7 @@ function lnn.getrmse(output,expectedoutput)
     lnn.asserttype(output,"output","table")
     lnn.asserttype(expectedoutput,"expectedutput","table")
 
-    lnn.assertsize(#output,#expectedoutput,"output","expectedoutput")
+    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
 
     --declare the variables
     local rmse = 0

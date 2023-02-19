@@ -104,9 +104,8 @@ amount of hidden layers starting at 2 (loop variable is i) calls getlayer() for 
 getlayer() again for the lastlayer in the hidden layers and the output nodes. it then returns the output (_G[id.."o"]).
 
 the adjust function starts by checking if out and expected out are the same size to prevent an error, it then gets the weighted sum of the weights and puts it into the derivative of
-the activation function. before it does anything else it checks if the averaged mse for the output is below a certain value to avoid overfitting and if it is then return true. it then
-calculates the gradient descent table for the weights and then the gradient descent table for the biases, it adjusts the output layer weights based on gradw and then the rest of the
-weights, also based on gradw. after that it adjusts the output biases based on gradb, and then adjusts the rest of the biases, also based on gradb.
+the activation function. it then calculates the gradient descent table for the weights and then the gradient descent table for the biases, it adjusts the output layer weights based on
+gradw and then the rest of the weights, also based on gradw. after that it adjusts the output biases based on gradb, and then adjusts the rest of the biases, also based on gradb.
 
     ::::POTENTIAL OPTIMIZATIONS::::
 

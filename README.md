@@ -73,6 +73,23 @@ be used for visualizing or debugging. (or you can just use _G[id][gradient][grad
 the 'lnn.debug.returndata()' function has 1 parameter: id (the id for the neural network). the function returns the table with the data for the neural network (info like layercount,
 outcount, ect). (or you can just use _G[id])
 
+    ::::STRENGTHS AND LIMITATIONS::::
+    
+S: because this neural network uses Lua it can be faster than some neural networks made in Python, might not be as fast as some but because Lua is faster than Python it could be faster
+and more readable and easy to understand.
+
+S: because this uses no external libraries that means that all this requires is bare Lua 5.4 to run (might not work on older versions of Lua) and no package manager which reduces
+the chance that something breaks due to a package update to 0 and a just leaves a Lua update to break stuff.
+
+S: because it uses an id system and integrates them into the functions it's easy to manage the neural networks with clean and readable code.
+
+S: because there are multiple activation functions and cost functions it can fit a lot of use cases. (more updates coming in the future :) )
+
+L: because it uses _G[] it could clutter variables and be slower but it needs to be accessed throughout the entire file and through the training process without creating a monsterous
+table with everything in that 1 table.
+
+L: this is version 1.0 so it may break or be incorrect
+
     ::::HOW THE NEURAL NETWORK WORKS::::
 
 the neural networks starts by creating the functions, the first and only function created is getlayer(). getlayer() takes the last layer, the next layer, the weight layer inbetween

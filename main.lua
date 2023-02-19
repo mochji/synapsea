@@ -438,6 +438,7 @@ function lnn.getcrossentropy(output,expectedoutput)
 
     --do the stuff
     for i = 1,#output do
+        if expectedoutput[i] or output[i] < 0 then print("WARNING: All values put into cross entropy function must be positive otherwise it will return 'nan'.") end
         sum = sum + (expectedoutput[i]*math.log(output[i])) + (1-expectedoutput[i]) * math.log(1-output[i])
     end
     return -sum

@@ -1,6 +1,6 @@
-Lua Neural Network Library
+# Lua Neural Network Library
 
-Lua: https://lua.org
+# Lua: https://lua.org
 
 Description:
 A simple neural network library for Lua with functions for activation functions and their derivatives,

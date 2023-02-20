@@ -27,7 +27,7 @@ function lnn.assertsize(a,b,aname,bname)
         error("aname and bname must be a string.")
     end
 
-    --give an error theyr'e not the same size.
+    --give an error they're not the same size.
     if #a ~= #b then
         error(aname.." ("..#a..") is not the same size as "..bname.." ("..#b..").")
     end

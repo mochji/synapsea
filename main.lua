@@ -159,9 +159,9 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
         --create the values for the output node values (bias and current)
         _G[id.."ob"] = {}
         _G[id.."o"] = {}
-        for i = 1,#outcount do
-            _G[id.."ob"] = math.random(0,100)/100
-            _G[id.."o"] = 0
+        for i = 1,outcount do
+            _G[id.."ob"][i] = math.random(0,100)/100
+            _G[id.."o"][i] = 0
         end
         
         return

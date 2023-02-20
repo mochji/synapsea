@@ -557,9 +557,9 @@ function lnn.debug.returnweights(id)
 
     --do the stuff
     for i = 1,_G[id]["layercount"] do
-        returntable[i] = table.pack(_G[id.."w"..i])
+        returntable[i] = table.pack(_G[id]["current"]["w"..i])
     end
-    returntable[#returntable+1] = table.pack(id.."ow")
+    returntable[#returntable+1] = table.pack(_G[id]["weight"]["ow"])
 
     return returntable
 end
@@ -577,7 +577,7 @@ function lnn.debug.returnbiases(id)
 
     --do the stuff
     for i = 1,_G[id]["layercount"] do
-        returntable[i] = table.pack(_G[id.."b"..i])
+        returntable[i] = table.pack(_G[id]["bias"]["b"..i])
     end
     returntable[#returntable+1] = table.pack(id.."ob")
 
@@ -597,9 +597,9 @@ function lnn.debug.returncurrent(id)
 
     --do the stuff
     for i = 1,_G[id]["layercount"] do
-        returntable[i] = table.pack(_G[id.."c"..i])
+        returntable[i] = table.pack(_G[id]["current"]["c"..i])
     end
-    returntable[#returntable+1] = table.pack(id.."o")
+    returntable[#returntable+1] = table.pack(_G[id]["current"]["o"])
 
     return returntable
 end

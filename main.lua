@@ -627,3 +627,15 @@ function lnn.debug.returndata(id)
     --do the stuff
     return _G[id]
 end
+
+function lnn.debug.clearid(id)
+    --check for errors.
+    lnn.asserttype(id,"id","string")
+
+    if _G[id] == nil then
+        error("id ("..id..") doesn't exist.")
+    end
+
+    --do the stuff
+    _G[id] = nil
+end

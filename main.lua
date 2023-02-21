@@ -327,7 +327,7 @@ function lnn.forwardpass(id,intable)
     --check if layercount is 0
     if _G[id]["layercount"] == 0 then
         getlayer(intable,_G[id]["current"]["o"],_G[id]["weight"]["ow"],_G[id]["bias"]["ob"])
-        return _G[id.."o"]
+        return _G[id]["current"]["o"]
     end
     
     --if there's hidden layers
@@ -363,9 +363,9 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     local da_wsum = 0
 
     --get the sum of the weighted inputs
-    for a = 1,#_G[id.."c1"] do
+    for a = 1,#_G[id]["current"]["c1"] do
         for i = 1,#intable do
-            weightedsum = weightedsum + _G[id.."w1"][i+((a-1)*#intable)]*intable[i]
+            weightedsum = weightedsum + _G[id]["weight"]["w1"][i+((a-1)*#intable)]*intable[i]
         end
     end
 
@@ -405,15 +405,15 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     --adjust the output layer weights
     for a = 1,#output do
         for i = 1,#_G[id.."c".._G[id]["layercount"]] do
-            _G[id.."ow"][i+((a-1)*#_G[id.."c".._G[id]["layercount"]])] = _G[id.."ow"][i+((a-1)*#_G[id.."c".._G[id]["layercount"]])] - gradw[i]
+            _G[id]["weight"]["ow"][i+((a-1)*#_G[id.."c".._G[id]["layercount"]])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id.."c".._G[id]["layercount"]])] - gradw[i]
         end
     end
 
     --adjust the rest of the weights
     for a = 1,#output do
         for b = _G[id]["layercount"],1,-1 do
-            for i = 1,#_G[id.."w"..b] do
-                _G[id.."w"..b][i] = _G[id.."w"..b][i] - gradw[a]
+            for i = 1,#_G[id]["weight"]["w"..b] do
+                _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradw[a]
             end
         end
     end
@@ -422,14 +422,14 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
 
     --adjust the output layer biases
     for i = 1,#output do
-        _G[id.."ob"][i] = _G[id.."ob"][i] - gradb[i]
+        _G[id]["current"]["ob"][i] = _G[id]["current"]["ob"][i] - gradb[i]
     end
 
     --adjust the rest of the biases
     for a = 1,#output do
         for b = _G[id]["layercount"],1,-1 do
-            for i = 1,#_G[id.."b"..b] do
-                _G[id.."b"..b][i] = _G[id.."b"..b][i] - gradb[a]
+            for i = 1,#_G[id]["bias"]["b"..b] do
+                _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradb[a]
             end
         end
     end
@@ -557,9 +557,9 @@ function lnn.debug.returnweights(id)
 
     --do the stuff
     for i = 1,_G[id]["layercount"] do
-        returntable[i] = table.pack(_G[id]["current"]["w"..i])
+        returntable[i] = table.pack(_G[id]["bias"]["w"..i])
     end
-    returntable[#returntable+1] = table.pack(_G[id]["weight"]["ow"])
+    returntable[#returntable+1] = table.pack(_G[id]["bias"]["ow"])
 
     return returntable
 end
@@ -579,7 +579,7 @@ function lnn.debug.returnbiases(id)
     for i = 1,_G[id]["layercount"] do
         returntable[i] = table.pack(_G[id]["bias"]["b"..i])
     end
-    returntable[#returntable+1] = table.pack(id.."ob")
+    returntable[#returntable+1] = table.pack(_G[id]["bias"]["ob"])
 
     return returntable
 end

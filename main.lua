@@ -221,7 +221,7 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
 
     --create the tables for the connection values (weight)
     for i = 1,layercount + 1 do
-        local wtablename = id.."w"..i
+        local wtablename = "w"..i
         _G[id]["weight"][wtablename] = {}
         
         if i > 1 then --get the amount to fill
@@ -404,8 +404,8 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
 
     --adjust the output layer weights
     for a = 1,#output do
-        for i = 1,#_G[id.."c".._G[id]["layercount"]] do
-            _G[id]["weight"]["ow"][i+((a-1)*#_G[id.."c".._G[id]["layercount"]])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id.."c".._G[id]["layercount"]])] - gradw[i]
+        for i = 1,#_G[id]["current"]["c".._G[id]["layercount"]] do
+            _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] - gradw[i]
         end
     end
 

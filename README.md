@@ -11,7 +11,7 @@ use the spaghetti code to get rid of the spaghetti code.
 
 ## CONTACT INFO
 
-youtube: https://youtube.com/@xxoa_
+youtube: https://youtube.com/@xxoa\_
 
 github: https://github.com/x-xxoa
 

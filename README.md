@@ -17,6 +17,12 @@ github: https://github.com/x-xxoa
 
 email: xxoa.yt@gmail.com
 
+## VERSION FORMATTING
+
+x.y.zz-abc
+
+where x is the major version, y is the minor version, zz is the patch version and abc declares if it's unstable or not
+
 ## FUNCTIONS
 
 ### ERROR CATCHING FUNCTIONS

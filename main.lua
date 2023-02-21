@@ -422,7 +422,7 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
 
     --adjust the output layer biases
     for i = 1,#output do
-        _G[id]["current"]["ob"][i] = _G[id]["current"]["ob"][i] - gradb[i]
+        _G[id]["bias"]["ob"][i] = _G[id]["bias"]["ob"][i] - gradb[i]
     end
 
     --adjust the rest of the biases

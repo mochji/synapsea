@@ -1,10 +1,8 @@
 --READ THE README.md FILE FOR DOCUMENTATION AND OTHER STUFF!!!!
 
---health update: i've been working on this for 5 hours straight, everything looks like it's slightly slanted.
---health update 2: 8th hour, feeling better than ever.
-
 _G["lnn"] = {}
 _G["lnn"]["debug"] = {}
+_G["lnn"]["data"] = {}
 
 function lnn.asserttype(variable,variablename,thetype)
     --check for errors in the function that checks for errors.
@@ -182,7 +180,7 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
     _G[id]["current"] = {}
 
     --initialize the neural network layers
-    
+
     local amounttofill = 0
     
     --check if layercount is 0
@@ -359,6 +357,8 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     --declare the variables
     local gradw = {}
     local gradb = {}
+    local gradwsum = 0
+    local gradbsum = 0
     local weightedsum = 0
     local da_wsum = 0
 
@@ -377,6 +377,16 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     --get gradb
     for i = 1,#output do
         gradb[i] = ((expectedoutput[i]-output[i])*da_wsum)*learningrate+((expectedoutput[i]-output[i])*learningrate)
+    end
+
+    --get gradwsum
+    for i = 1,#output do
+        gradwsum = gradwsum + gradw[i]
+    end
+
+    --get gradbsum
+    for i = 1,#output do
+        gradbsum = gradbsum + gradb[i]
     end
 
     --update the data on _G[id]
@@ -410,11 +420,9 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     end
 
     --adjust the rest of the weights
-    for a = 1,#output do
-        for b = _G[id]["layercount"],1,-1 do
-            for i = 1,#_G[id]["weight"]["w"..b] do
-                _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradw[a]
-            end
+    for b = _G[id]["layercount"],1,-1 do
+        for i = 1,#_G[id]["weight"]["w"..b] do
+            _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradwsum
         end
     end
 
@@ -426,11 +434,9 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     end
 
     --adjust the rest of the biases
-    for a = 1,#output do
-        for b = _G[id]["layercount"],1,-1 do
-            for i = 1,#_G[id]["bias"]["b"..b] do
-                _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradb[a]
-            end
+    for b = _G[id]["layercount"],1,-1 do
+        for i = 1,#_G[id]["bias"]["b"..b] do
+            _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradbsum
         end
     end
 end
@@ -499,8 +505,8 @@ function lnn.getcrossentropy(output,expectedoutput)
 
     --do the stuff
     for i = 1,#output do
-        if expectedoutput[i] or output[i] < 0 then print("WARNING: All values put into cross entropy function must be positive otherwise it will return 'nan'.") end
-        sum = sum + (expectedoutput[i]*math.log(output[i])) + (1-expectedoutput[i]) * math.log(1-output[i])
+        if expectedoutput[i]+0.01 or output[i]+0.01 <= 0 then print("WARNING: All values put into binary cross entropy function must be bigger than 0 otherwise it will return 'nan'.") end
+        sum = sum + (expectedoutput[i]+0.01*math.log(output[i]+0.01)) + (1-expectedoutput[i]+0.01) * math.log(1-output[i]+0.01)
     end
     return -sum
 end
@@ -517,11 +523,30 @@ function lnn.getbinarycrossentropy(output,expectedoutput)
 
     --do the stuff
     for i = 1,#output do
-        if output[i] or expectedoutput[i] < 0 then print("WARNING: All values put into binary cross entropy function must be positive otherwise it will return 'nan'.") end
-        sum = sum + (output[i]*math.log(expectedoutput[i])) + ((1-output[i])*math.log(1-expectedoutput[i]))
+        if output[i]+0.01 or expectedoutput[i]+0.01 <= 0 then print("WARNING: All values put into binary cross entropy function must be bigger than 0 or otherwise it will return 'nan'.") end
+        sum = sum + (output[i]*math.log(expectedoutput[i]+0.01)) + ((1-output[i]+0.01)*math.log(1-expectedoutput[i]+0.01))
     end
     
     return sum/-#output
+end
+
+function lnn.getcategoricalcrossentropy(output,expectedoutput)
+    --check for errors.
+    lnn.asserttype(output,"output","table")
+    lnn.asserttype(expectedoutput,"expectedoutput","table")
+
+    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
+
+    --declare the variables
+    local sum = 0
+
+    --do the stuff
+    for i = 1,#output do
+        if output[i]+0.01 or expectedoutput[i]+0.01 <= 0 then print("WARNING: All values put into binary cross entropy function must be bigger than 0 or otherwise it will return 'nan'.") end
+        sum = sum + output[i]+0.01 * math.log(expectedoutput[i]+0.01)
+    end
+
+    return -sum
 end
 
 function lnn.gethingeloss(output,expectedoutput)

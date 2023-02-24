@@ -188,14 +188,14 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
         --create the tables for the output weights
         _G[id]["weight"]["ow"] = {}
         for i = 1,insize*outcount do
-            _G[id]["weight"]["ow"][i] = math.random(0,100)/100
+            _G[id]["weight"]["ow"][i] = math.random(-100,100)/100
         end
 
         --create the values for the output node values (bias and current)
         _G[id]["bias"]["ob"] = {}
         _G[id]["current"]["o"] = {}
         for i = 1,outcount do
-            _G[id]["bias"]["ob"][i] = math.random(0,100)/100
+            _G[id]["bias"]["ob"][i] = math.random(-100,100)/100
             _G[id]["current"]["o"][i] = 0
         end
         
@@ -213,7 +213,7 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
 
         for a = 1,amounttofill do
             _G[id]["current"][a] = 0.0
-            _G[id]["bias"][a] = math.random(0,100)/100
+            _G[id]["bias"][a] = math.random(-100,100)/100
         end
     end
 
@@ -229,7 +229,7 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
         end
 
         for a = 1,amounttofill do
-            _G[id]["weight"][wtablename][a] = math.random(0,100)/100
+            _G[id]["weight"][wtablename][a] = math.random(-100,100)/100
         end
     end
     
@@ -237,14 +237,14 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
     _G[id]["bias"]["ob"] = {}
     _G[id]["current"]["o"] = {}
     for i = 1,outcount do
-        _G[id]["bias"]["ob"][i] = math.random(0,100)/100
+        _G[id]["bias"]["ob"][i] = math.random(-100,100)/100
         _G[id]["current"]["o"][i] = 0.0
     end
 
     --create the tables for the output connection (weight)
     _G[id]["weight"]["ow"] = {}
     for i = 1,outcount*math.ceil(((outcount - insize) * layercount / (layercount - 0)) + insize) do
-        _G[id]["weight"]["ow"][i] = math.random(0,100)/100
+        _G[id]["weight"]["ow"][i] = math.random(-100,100)/100
     end
 end
 
@@ -357,6 +357,8 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     --declare the variables
     local gradw = {}
     local gradb = {}
+    local gradwsum = 0
+    local gradbsum = 0
     local weightedsum = 0
     local da_wsum = 0
 
@@ -375,6 +377,16 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     --get gradb
     for i = 1,#output do
         gradb[i] = ((output[i]-expectedoutput[i])*da_wsum)*learningrate+((output[i]-expectedoutput[i])*learningrate)
+    end
+
+    --get gradwsum
+    for i = 1,#output do
+        gradwsum = gradwsum - gradw[i]
+    end
+
+    --get gradbsum
+    for i = 1,#output do
+        gradbsum = gradbsum - gradb[i]
     end
 
     --update the data on _G[id]
@@ -409,11 +421,9 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     end
 
     --adjust the rest of the weights
-    for a = 1,_G[id]["outcount"] do
-        for b = _G[id]["layercount"],1,-1 do
-            for i = 1,#_G[id]["weight"]["w"..b] do
-                _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradw[a]
-            end
+    for b = _G[id]["layercount"],1,-1 do
+        for i = 1,#_G[id]["weight"]["w"..b] do
+            _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradwsum
         end
     end
 
@@ -425,11 +435,9 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     end
 
     --adjust the rest of the biases
-    for a = 1,_G[id]["outcount"] do
-        for b = _G[id]["layercount"],1,-1 do
-            for i = 1,#_G[id]["bias"]["b"..b] do
-                _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradb[a]
-            end
+    for b = _G[id]["layercount"],1,-1 do
+        for i = 1,#_G[id]["bias"]["b"..b] do
+            _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradbsum
         end
     end
 end
@@ -449,6 +457,23 @@ function lnn.getmse(output,expectedoutput)
          mse = mse + (expectedoutput[i] - output[i])^2
     end
     return mse/#output
+end
+
+function lnn.getmae(output,expectedoutput)
+    --check for errors
+    lnn.asserttype(output,"output","table")
+    lnn.asserttype(expectedoutput,"expectedutput","table")
+
+    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
+
+    --declare the variables
+    local mae = 0
+
+    --do the stuff
+    for i = 1,#output do
+        mae = mae + math.abs(output[i] - expectedoutput[i])
+    end
+    return mae/#output
 end
 
 function lnn.getsse(output,expectedoutput)
@@ -498,7 +523,9 @@ function lnn.getcrossentropy(output,expectedoutput)
 
     --do the stuff
     for i = 1,#output do
-        if expectedoutput[i]+0.01 or output[i]+0.01 <= 0 then print("WARNING: All values put into binary cross entropy function must be bigger than 0 otherwise it will return 'nan'.") end
+        if output[i]+0.01 < 0 or expectedoutput[i]+0.01 < 0 then
+            print("WARNING: All values put into the binary cross entropy function must be greater than -0.09 otherwise it will return 'nan'!")
+        end
         sum = sum + (expectedoutput[i]+0.01*math.log(output[i]+0.01)) + (1-expectedoutput[i]+0.01) * math.log(1-output[i]+0.01)
     end
     return -sum
@@ -516,48 +543,13 @@ function lnn.getbinarycrossentropy(output,expectedoutput)
 
     --do the stuff
     for i = 1,#output do
-        if output[i]+0.01 or expectedoutput[i]+0.01 <= 0 then print("WARNING: All values put into binary cross entropy function must be bigger than 0 or otherwise it will return 'nan'.") end
+        if output[i]+0.01 < 0 or expectedoutput[i]+0.01 < 0 then
+            print("WARNING: All values put into the binary cross entropy function must be greater than -0.009 otherwise it will return 'nan'!")
+        end
         sum = sum + (output[i]*math.log(expectedoutput[i]+0.01)) + ((1-output[i]+0.01)*math.log(1-expectedoutput[i]+0.01))
     end
     
     return sum/-#output
-end
-
-function lnn.getcategoricalcrossentropy(output,expectedoutput)
-    --check for errors.
-    lnn.asserttype(output,"output","table")
-    lnn.asserttype(expectedoutput,"expectedoutput","table")
-
-    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
-
-    --declare the variables
-    local sum = 0
-
-    --do the stuff
-    for i = 1,#output do
-        if output[i]+0.01 or expectedoutput[i]+0.01 <= 0 then print("WARNING: All values put into binary cross entropy function must be bigger than 0 or otherwise it will return 'nan'.") end
-        sum = sum + output[i]+0.01 * math.log(expectedoutput[i]+0.01)
-    end
-
-    return -sum
-end
-
-function lnn.gethingeloss(output,expectedoutput)
-    --check for errors.
-    lnn.asserttype(output,"output","table")
-    lnn.asserttype(expectedoutput,"expectedoutput","table")
-    
-    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
-
-    --declare the variables
-    local sum = 0
-
-    --do the stuff
-    for i = 1,#output do
-        sum = sum + math.max(0,1-output[i]*expectedoutput[i])
-    end
-
-    return sum/#output
 end
 
 --either debugging or visualizing, could be used for both.

@@ -87,11 +87,11 @@ returns the root of mean squared error calculated from the output and expected o
 
 the '**lnn.getcrossentropy()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network). the
 function returns the cross entropy value calculated from the output and expected output. if any number put into the function is negative it will output a warning stating "WARNING: All
-values put into binary cross entropy function must be positive otherwise it will return 'nan'.".
+values put into binary cross entropy function must be greater than -0.009 otherwise it will return 'nan'!".
 
 the '**lnn.getbinarycrossentropy()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network). the
 function returns the binary cross entropy value calculated from the output and expected output. if any number put into the function is negative it will output a warning stating "WARNING: All
-values put into binary cross entropy function must be positive otherwise it will return 'nan'.".
+values put into binary cross entropy function must be greater than -0.009 otherwise it will return 'nan'!".
 
 ### DEBUGGING/VISUALIZING FUNCTIONS
 
@@ -109,6 +109,9 @@ be used for visualizing or debugging. (or you can just use _G[id][gradient][grad
 
 the '**lnn.debug.returndata()**' function has 1 parameter: id (the id for the neural network). the function returns the table with the data for the neural network (info like layercount,
 outcount, ect). (or you can just use _G[id])
+
+the '**lnn.debug.clearid()**' function has 1 parameter: id (the id for the neural network). the function sets _G[id] (the table where the neural network data is stored to nil. (or you can
+just use _G[id] = nil)
 
 ## STRENGTHS AND LIMITATIONS
     

@@ -82,6 +82,9 @@ returns the mean squared error calculated from the output and expected output.
 the '**lnn.getsse()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network). the functiom
 returns the sum of squared error calculated from the output and expected output.
 
+the '**lnn.getmae()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network). the functiom
+returns the mean absolute error calculated from the output and expected output.
+
 the '**lnn.getrmse)**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network). the functiom
 returns the root of mean squared error calculated from the output and expected output.
 
@@ -124,7 +127,7 @@ the chance that something breaks due to a package update to 0 and a just leaves 
 
  - because it uses an id system and integrates them into the functions it's easy to manage the neural networks with clean and readable code.
 
- - because there are multiple activation functions and cost functions it can fit a lot of use cases.
+ - because there are multiple activation functions and cost functions it can fit a lot of use cases. (not all but a lot :) )
 
 ### LIMITATIONS
 
@@ -158,7 +161,6 @@ the biases.
 
 another potential optimization is having a dataset parameter for the lnn.adjust() function. the dataset parameter could be a table with a list of inputs, outputs and expected outputs.
 
-thats it i'm done with this it's 8:57 pm saturday febuary 18th 2023 and i've worked on this code and documentation for 10 hours straight. i plan to make it a LuaRocks package soon
-but LuaRocks is a PAIN to get working.
+## FUTURE PLANS
 
-i just updated the documentation, it's 3:59 oh nvm 4:00 pm febuary 20th 2023.****
+i plan to make this a luarocks package but it is a PAIN to get working.

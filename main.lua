@@ -272,7 +272,7 @@ function lnn.forwardpass(id,intable)
                 for i = 1,#lastlayer do
                     sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
                 end
-                nextlayer[a] = lnn.sigmoid(-sum+biases[a],false)
+                nextlayer[a] = lnn.sigmoid(sum+biases[a],false)
                 sum = 0
             end
         elseif _G[id]["activation"] == "tanh" then
@@ -280,7 +280,7 @@ function lnn.forwardpass(id,intable)
                 for i = 1,#lastlayer do
                     sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
                 end
-                nextlayer[a] = lnn.tanh(-sum+biases[a],false)
+                nextlayer[a] = lnn.tanh(sum+biases[a],false)
                 sum = 0
             end
         elseif _G[id]["activation"] == "relu" then
@@ -288,7 +288,7 @@ function lnn.forwardpass(id,intable)
                 for i = 1,#lastlayer do
                     sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
                 end
-                nextlayer[a] = lnn.relu(-sum+biases[a],false)
+                nextlayer[a] = lnn.relu(sum+biases[a],false)
                 sum = 0
             end
         elseif _G[id]["activation"] == "lrelu" then
@@ -296,7 +296,7 @@ function lnn.forwardpass(id,intable)
                 for i = 1,#lastlayer do
                     sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
                 end
-                nextlayer[a] = lnn.leakyrelu(-sum+biases[a],false)
+                nextlayer[a] = lnn.leakyrelu(sum+biases[a],false)
                 sum = 0
             end
         elseif _G[id]["activation"] == "elu" then
@@ -304,7 +304,7 @@ function lnn.forwardpass(id,intable)
                 for i = 1,#lastlayer do
                     sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
                 end
-                nextlayer[a] = lnn.elu(-sum+biases[a],false,1)
+                nextlayer[a] = lnn.elu(sum+biases[a],false,1)
                 sum = 0
             end
         elseif _G[id]["activation"] == "swish" then
@@ -312,7 +312,7 @@ function lnn.forwardpass(id,intable)
                 for i = 1,#lastlayer do
                     sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
                 end
-                nextlayer[a] = lnn.swish(-sum+biases[a],false,0.8)
+                nextlayer[a] = lnn.swish(sum+biases[a],false,0.8)
                 sum = 0
             end
         else
@@ -357,8 +357,6 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     --declare the variables
     local gradw = {}
     local gradb = {}
-    local gradwsum = 0
-    local gradbsum = 0
     local weightedsum = 0
     local da_wsum = 0
 
@@ -376,17 +374,7 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
 
     --get gradb
     for i = 1,#output do
-        gradb[i] = ((expectedoutput[i]-output[i])*da_wsum)*learningrate+((expectedoutput[i]-output[i])*learningrate)
-    end
-
-    --get gradwsum
-    for i = 1,#output do
-        gradwsum = gradwsum + gradw[i]
-    end
-
-    --get gradbsum
-    for i = 1,#output do
-        gradbsum = gradbsum + gradb[i]
+        gradb[i] = ((output[i]-expectedoutput[i])*da_wsum)*learningrate+((output[i]-expectedoutput[i])*learningrate)
     end
 
     --update the data on _G[id]
@@ -416,13 +404,16 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     for a = 1,#output do
         for i = 1,#_G[id]["current"]["c".._G[id]["layercount"]] do
             _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] - gradw[i]
+            print(i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]]))
         end
     end
 
     --adjust the rest of the weights
-    for b = _G[id]["layercount"],1,-1 do
-        for i = 1,#_G[id]["weight"]["w"..b] do
-            _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradwsum
+    for a = 1,_G[id]["outcount"] do
+        for b = _G[id]["layercount"],1,-1 do
+            for i = 1,#_G[id]["weight"]["w"..b] do
+                _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradw[a]
+            end
         end
     end
 
@@ -434,9 +425,11 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     end
 
     --adjust the rest of the biases
-    for b = _G[id]["layercount"],1,-1 do
-        for i = 1,#_G[id]["bias"]["b"..b] do
-            _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradbsum
+    for a = 1,_G[id]["outcount"] do
+        for b = _G[id]["layercount"],1,-1 do
+            for i = 1,#_G[id]["bias"]["b"..b] do
+                _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradb[a]
+            end
         end
     end
 end
@@ -582,9 +575,9 @@ function lnn.debug.returnweights(id)
 
     --do the stuff
     for i = 1,_G[id]["layercount"] do
-        returntable[i] = table.pack(_G[id]["bias"]["w"..i])
+        returntable[i] = table.pack(_G[id]["weight"]["w"..i])
     end
-    returntable[#returntable+1] = table.pack(_G[id]["bias"]["ow"])
+    returntable[#returntable+1] = table.pack(_G[id]["weight"]["ow"])
 
     return returntable
 end

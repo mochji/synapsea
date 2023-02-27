@@ -60,6 +60,11 @@ the '**lnn.swish()**' function has 3 parameters: x (the number you want to put i
 to be multiplied by x in e^-beta*x). if the derivative parameter is true it returns x put into the derivative of the swish function and if it's false it returns x put
 into the swish function.
 
+the '**lnn.binarystep**' function has 2 parameters: x (the number you want to put into the binary step function) and derivative (if you want the derivative of the binary step function). if the derivative parameter is true it returns x put into the derivative of the binary step function and if it's false it returns x put into the binary step function.
+
+### NOTE:
+there is a linear activation function 'linear' but you don't need a function for that.
+
 ### NEURAL NETWORK FUNCTIONS
 
 the '**lnn.initialize()**' function has 5 parameters: id (the id for the neural network), activation (the activation function for the neual network), insize (the size of the inputs for

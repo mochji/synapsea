@@ -112,6 +112,7 @@ function lnn.elu(x,derivative,alpha)
     --check for errors
     lnn.asserttype(x,"x","number")
     lnn.asserttype(derivative,"derivative","boolean")
+    lnn.asserttype(alpha,"alpha","number")
 
     --do the stuff
     if derivative then
@@ -133,12 +134,30 @@ function lnn.swish(x,derivative,beta)
     --check for errors
     lnn.asserttype(x,"x","number")
     lnn.asserttype(derivative,"derivative","boolean")
+    lnn.asserttype(beta,"beta","number")
 
     --do the stuff
     if derivative then
         return x/(1+math.exp(-beta*x))+lnn.sigmoid(x,false)*(1-x/(1+math.exp(-beta*x)))
     else
         return x/(1+math.exp(-beta*x))
+    end
+end
+
+function lnn.binarystep(x,derivative)
+    --check for errors
+    lnn.asserttype(x,"x","number")
+    lnn.asserttype(derivative,"derivative","boolean")
+
+    --do the stuff
+    if derivative then
+        return 0
+    else
+        if x > 0 then
+            return 1
+        else
+            return 0
+        end
     end
 end
 
@@ -156,11 +175,11 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
     end
 
     --available activation functions
-    local activationtable = {"sig","tanh","relu","lrelu","elu","swish"}
+    local activationtable = {"sig","tanh","relu","lrelu","elu","swish","bstep","linear"}
     
     --check if the activation is a valid activation function
     if not lnn.findintable(activation,activationtable) then
-        error(activation.." is not a valid activation function, available activation functions are: 'sig', 'tanh', 'relu', 'lrelu', 'elu' and 'swish'.")
+        error(activation.." is not a valid activation function, available activation functions are: 'sig', 'tanh', 'relu', 'lrelu', 'elu', 'swish', 'bstep' and 'linear'.")
     end
 
     --initialize the neural network
@@ -315,6 +334,22 @@ function lnn.forwardpass(id,intable)
                 nextlayer[a] = lnn.swish(sum+biases[a],false,0.8)
                 sum = 0
             end
+        elseif _G[id]["activation"] == "bstep" then
+            for a = 1,#nextlayer do
+                for i = 1,#lastlayer do
+                    sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
+                end
+                nextlayer[a] = lnn.binarystep(sum+biases[a],false)
+                sum = 0
+            end
+        elseif _G[id]["activation"] == "linear" then
+            for a = 1,#nextlayer do
+                for i = 1,#lastlayer do
+                    sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
+                end
+                nextlayer[a] = sum+biases[a]
+                sum = 0
+            end
         else
             error(string.format("id %s has an invalid activation function? (%s)",id,_G[id]["activation"]))
         end
@@ -369,6 +404,27 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
         end
     end
 
+    --get da_wsum
+     if _G[id]["activation"] == "sig" then
+        da_wsum = lnn.sigmoid(weightedsum,true)
+    elseif _G[id]["activation"] == "tanh" then
+        da_wsum = lnn.tanh(weightedsum,true)
+    elseif _G[id]["activation"] == "relu" then
+        da_wsum = lnn.relu(weightedsum,true)
+    elseif _G[id]["activation"] == "lrelu" then
+        da_wsum = lnn.leakyrelu(weightedsum,true)
+    elseif _G[id]["activation"] == "elu" then
+        da_wsum = lnn.elu(weightedsum,true,1)
+    elseif _G[id]["activation"] == "swish" then
+        da_wsum = lnn.swish(weightedsum,true,0.8)
+    elseif _G[id]["activation"] == "bstep" then
+        da_wsum = lnn.binarystep(weightedsum,true)
+    elseif _G[id]["activation"] == "linear" then
+        da_wsum = 1
+    else
+        error(string.format("id %s has an invalid activation function? (%s)",id,_G[id]["activation"]))
+    end
+
     --get gradw
     for i = 1,#output do
         gradw[i] = ((output[i]-expectedoutput[i])^2*da_wsum)*learningrate+((output[i]-expectedoutput[i])*learningrate)
@@ -392,23 +448,6 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     --update the data on _G[id]
     _G[id]["gradient"]["gradw"] = gradw
     _G[id]["gradient"]["gradb"] = gradb
-
-    --get da_wsum
-    if _G[id]["activation"] == "sig" then
-        da_wsum = lnn.sigmoid(weightedsum,true)
-    elseif _G[id]["activation"] == "tanh" then
-        da_wsum = lnn.tanh(weightedsum,true)
-    elseif _G[id]["activation"] == "relu" then
-        da_wsum = lnn.relu(weightedsum,true)
-    elseif _G[id]["activation"] == "lrelu" then
-        da_wsum = lnn.leakyrelu(weightedsum,true)
-    elseif _G[id]["activation"] == "elu" then
-        da_wsum = lnn.elu(weightedsum,true,1)
-    elseif _G[id]["activation"] == "swish" then
-        da_wsum = lnn.swish(weightedsum,true,0.8)
-    else
-        error(string.format("id %s has an invalid activation function? (%s)",id,_G[id]["activation"]))
-    end
     
     --adjust weights
 
@@ -567,9 +606,9 @@ function lnn.debug.returnweights(id)
 
     --do the stuff
     for i = 1,_G[id]["layercount"] do
-        returntable[i] = table.pack(_G[id]["weight"]["w"..i])
+        returntable[i] = _G[id]["weight"]["w"..i]
     end
-    returntable[#returntable+1] = table.pack(_G[id]["weight"]["ow"])
+    returntable[#returntable+1] = _G[id]["weight"]["ow"]
 
     return returntable
 end
@@ -587,9 +626,9 @@ function lnn.debug.returnbiases(id)
 
     --do the stuff
     for i = 1,_G[id]["layercount"] do
-        returntable[i] = table.pack(_G[id]["bias"]["b"..i])
+        returntable[i] = _G[id]["bias"]["b"..i]
     end
-    returntable[#returntable+1] = table.pack(_G[id]["bias"]["ob"])
+    returntable[#returntable+1] = _G[id]["bias"]["ob"]
 
     return returntable
 end
@@ -607,9 +646,9 @@ function lnn.debug.returncurrent(id)
 
     --do the stuff
     for i = 1,_G[id]["layercount"] do
-        returntable[i] = table.pack(_G[id]["current"]["c"..i])
+        returntable[i] = _G[id]["current"]["c"..i]
     end
-    returntable[#returntable+1] = table.pack(_G[id]["current"]["o"])
+    returntable[#returntable+1] = _G[id]["current"]["o"]
 
     return returntable
 end

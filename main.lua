@@ -25,9 +25,13 @@ function lnn.assertsize(a,b,aname,bname)
         error("aname and bname must be a string.")
     end
 
-    --give an error they're not the same size.
+    --give an error they're not the same size or 0.
     if #a ~= #b then
-        error(aname.." ("..#a..") is not the same size as "..bname.." ("..#b..").")
+        error(string.format("%s (%s) is not the same size as %s (%s).",aname,#a,bname,#b))
+    end
+
+    if #a ~= #b then
+        error(string.format("the size of %s or %s is equal to zero.",aname,bname))
     end
 end
 
@@ -38,7 +42,7 @@ function lnn.findintable(item,table)
     --do the stuff
     for i = 1,#table do
         if table[i] == item then
-            return true
+            return i
         end
     end
     return false
@@ -161,6 +165,32 @@ function lnn.binarystep(x,derivative)
     end
 end
 
+function lnn.softmax(x,derivative)
+    --check for errors
+    lnn.asserttype(x,"x","table")
+    lnn.asserttype(derivative,"derivative","boolean")
+
+    --declare the variables
+    local expsum = 0
+    local returntable = {}
+
+    --do the stuff
+    for i = 1,#x do
+        expsum = expsum + math.exp(x[i])
+    end
+
+    if derivative then
+        for i = 1,#x do
+            returntable[i] = (math.exp(x[i])/expsum)*(1-(math.exp(x[i])/expsum))
+        end
+    else
+        for i = 1,#x do
+            returntable[i] = math.exp(x[i])/expsum
+        end
+    end
+    return returntable
+end
+
 function lnn.initialize(id,activation,insize,layercount,outcount)
     --check for errors
     lnn.asserttype(id,"id","string")
@@ -171,7 +201,7 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
 
     --check if the id already exists
     if _G[id] ~= nil then
-        error("id ("..id..") already exists.")
+        error("id ("..id..") already exists, use the 'lnn.debug.clearid()' to clear the id.")
     end
 
     --available activation functions
@@ -237,7 +267,7 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
     end
 
     --create the tables for the connection values (weight)
-    for i = 1,layercount + 1 do
+    for i = 1,layercount do
         local wtablename = "w"..i
         _G[id]["weight"][wtablename] = {}
         
@@ -362,7 +392,7 @@ function lnn.forwardpass(id,intable)
         getlayer(intable,_G[id]["current"]["o"],_G[id]["weight"]["ow"],_G[id]["bias"]["ob"])
         return _G[id]["current"]["o"]
     end
-    
+
     --if there's hidden layers
     getlayer(intable,_G[id]["current"]["c1"],_G[id]["weight"]["w1"],_G[id]["bias"]["b1"]) --input layer to first hidden
     for i = 2,_G[id]["layercount"] do --rest of the hidden layers
@@ -493,7 +523,7 @@ function lnn.getmse(output,expectedoutput)
 
     --do the stuff
     for i = 1,#output do
-         mse = mse + (expectedoutput[i] - output[i])^2
+        mse = mse + (expectedoutput[i] - output[i])^2
     end
     return mse/#output
 end
@@ -589,6 +619,27 @@ function lnn.getbinarycrossentropy(output,expectedoutput)
     end
     
     return sum/-#output
+end
+
+function lnn.getcategoricalcrossentropy(output,expectedoutput)
+    --check for errors.
+    lnn.asserttype(output,"output","table")
+    lnn.asserttype(expectedoutput,"expectedoutput","table")
+
+    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
+
+    --declare the variables
+    local sum = 0
+
+    --do the stuff
+    for i = 1,#output do
+        if output[i]+0.01 < 0 or expectedoutput[i]+0.01 < 0 then
+            print("WARNING: All values put into the categorical cross entropy function must be greater than -0.009 otherwise it will return 'nan'!")
+        end
+        sum = sum + expectedoutput[i]+0.01*math.log(output[i]+0.01)
+    end
+
+    return -sum
 end
 
 --either debugging or visualizing, could be used for both.

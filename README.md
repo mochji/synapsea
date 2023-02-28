@@ -11,17 +11,39 @@ use the spaghetti code to get rid of the spaghetti code.
 
 ## CONTACT INFO
 
-youtube: https://youtube.com/@xxoa_/
+Youtube: <a href="https://youtube.com/@xxoa_/">@xxoa_</a>
 
-github: https://github.com/x-xxoa
+Github: <a href="https://github.com/x-xxoa">x-xxoa</a>
 
-email: xxoa.yt@gmail.com
+Email: xxoa.yt@gmail.com
 
 ## VERSION FORMATTING
 
 x.y.zz-abc
 
 where x is the major version, y is the minor version, zz is the patch version and abc declares if it's unstable or not
+
+## SUPPORTED ACTIVATION & ERROR FUNCTIONS
+
+### AVAILABLE ACTIVATION FUNCTIONS
+ - Sigmoid ("sig")
+ - Hyperbolic Tangent ("tanh")
+ - ReLU ("relu")
+ - LReLU ("lrelu")
+ - ELU ("elu")
+ - Swish ("swish")
+ - Binary Step ("bstep")
+ - Linear ("linear")
+ - ~~Softmax ("softm")~~ (the softmax function is done but i need to fix the bugs with it with the forward pass, but i'm releasing this to patch bugs but also roll out the softmax function and other stuff.)
+
+### AVAILABLE COST/ERROR FUNCTIONS
+ - MSE (Mean Squared Error)
+ - MAE (Mean Absolute Error)
+ - SSE (Sum of Squared Error)
+ - RMSE (Root of Mean Squared Error)
+ - Cross Entropy
+ - Binary Cross Entropy
+ - Categorical Cross Entropy
 
 ## FUNCTIONS
 
@@ -62,6 +84,8 @@ into the swish function.
 
 the '**lnn.binarystep**' function has 2 parameters: x (the number you want to put into the binary step function) and derivative (if you want the derivative of the binary step function). if the derivative parameter is true it returns x put into the derivative of the binary step function and if it's false it returns x put into the binary step function.
 
+the '**lnn.softmax**' function has 2 parameters: x (the number you want to put into the softmax function) and derivative (if you want the derivative of the softmax function). if the derivative parameter is true it returns x put into the derivative of the softmax function and if it's false it returns x put into the softmax function.
+
 ### NOTE:
 there is a linear activation function 'linear' but you don't need a function for that.
 
@@ -101,6 +125,10 @@ the '**lnn.getbinarycrossentropy()**' function has 2 parameters: output (the rea
 function returns the binary cross entropy value calculated from the output and expected output. if any number put into the function is negative it will output a warning stating "WARNING: All
 values put into binary cross entropy function must be greater than -0.009 otherwise it will return 'nan'!".
 
+the '**lnn.getcategoricalcrossentropy()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network). the
+function returns the categorical cross entropy value calculated from the output and expected output. if any number put into the function is negative it will output a warning stating "WARNING: All
+values put into categorical cross entropy function must be greater than -0.009 otherwise it will return 'nan'!".
+
 ### DEBUGGING/VISUALIZING FUNCTIONS
 
 the '**lnn.debug.returnweights()**' function has 1 parameter: id (the id for the neural network). the function returns a table with the weight values for the neural network. this can
@@ -112,7 +140,7 @@ used for visualizing or debugging.
 the '**lnn.debug.returncurrent()**' function has 1 parameter: id (the id for the neural network). the function returns a table with the current values (the node value of each layer) for
 the neural network. this can be used for visualizing or debugging.
 
-the '**lnn.debug.returnwgradient()**' function has 1 parameter: id (the id for the neural network). the function returns a table with the gradient values for the neural network. this can
+the '**lnn.debug.returngradient()**' function has 1 parameter: id (the id for the neural network). the function returns a table with the gradient values for the neural network. this can
 be used for visualizing or debugging. (or you can just use _G[id][gradient][gradw or gradb])
 
 the '**lnn.debug.returndata()**' function has 1 parameter: id (the id for the neural network). the function returns the table with the data for the neural network (info like layercount,
@@ -122,7 +150,7 @@ the '**lnn.debug.clearid()**' function has 1 parameter: id (the id for the neura
 just use _G[id] = nil)
 
 ## STRENGTHS AND LIMITATIONS
-    
+
 ### STRENGTHS
 
  - because this neural network uses Lua it has the ability to be run in LuaJIT which is really fast, almost 141 times faster than normal Lua!
@@ -153,18 +181,12 @@ the input is fed into the neural network in the form of a table, this is because
 write code to convert it to a table (or use https://github.com/Didericis/png-lua#pnglua :D) getlayer() handles the calculations of each node in the next layer based on the
 bias, weight and current values of the last layer. it repeats this until we get to the output layer.
 
-the adjust function starts by checking if out and expected out are the same size to prevent an error, it then gets the weighted sum of the weights and puts it into the derivative of
-the activation function. it then calculates the gradient descent table for the weights and then the gradient descent table for the biases, it adjusts the output layer weights based on
-gradw and then the rest of the weights, also based on gradw. after that it adjusts the output biases based on gradb, and then adjusts the rest of the biases, also based on gradb.
+the adjust gets the weighted sum of the weights and puts it into the derivative of the activation function. it then calculates the gradient descent table for the weights and then the gradient descent
+table for the biases, it adjusts the output layer weights based on gradw and then the rest of the weights, also based on gradw. after that it adjusts the output biases based on  gradb, and then adjusts the rest of the biases, also based on gradb.
 
-## POTENTIAL OPTIMIZATIONS
+## OTHER STUFF
 
-some potential optimizations i copied from myself when i was at school during lunch at 11:05 am on thursday, febuary 16th, 2023 are are all for the back-propagation algorithm. there
-are optimizations that are possible for the forward-pass algorithm but i'm not able to come up with any right now. after the output weights are adjusted it then adjusts the rest of
-the weights, then again on the next gradw item, then again and so on. this can be optimized by subtracting all of them together and then subtracting the weights from that, same with
-the biases.
-
-another potential optimization is having a dataset parameter for the lnn.adjust() function. the dataset parameter could be a table with a list of inputs, outputs and expected outputs.
+have questions? email me or add a question on the issues page with the tag question. find a bug? describe it and tag it with bug, minor bug, major bug or edge case on the issues page. anything else? if applicable, add it on the issues page with the correct tag, ill get to it hopefully.
 
 ## FUTURE PLANS
 

@@ -34,7 +34,7 @@ where x is the major version, y is the minor version, zz is the patch version an
  - Swish ("swish")
  - Binary Step ("bstep")
  - Linear ("linear")
- - ~~Softmax ("softm")~~ (the softmax function is done but i need to fix the bugs with it with the forward pass, but i'm releasing this to patch bugs but also roll out the softmax function and other stuff.)
+ - Softmax **NOTE:** To use the softmax activation function you'll have to do something like this: `local out = lnn.softmax(lnn.forwardpass("test",inp),false)` since all layers would have to be an equal size and i've looked at images of softmax neural networks and they only had 1 softmax layer on the output and i want to give the user control over the activation function they use and not lock them into one.
 
 ### AVAILABLE COST/ERROR FUNCTIONS
  - MSE (Mean Squared Error)
@@ -84,7 +84,7 @@ into the swish function.
 
 the '**lnn.binarystep**' function has 2 parameters: x (the number you want to put into the binary step function) and derivative (if you want the derivative of the binary step function). if the derivative parameter is true it returns x put into the derivative of the binary step function and if it's false it returns x put into the binary step function.
 
-the '**lnn.softmax**' function has 2 parameters: x (the number you want to put into the softmax function) and derivative (if you want the derivative of the softmax function). if the derivative parameter is true it returns x put into the derivative of the softmax function and if it's false it returns x put into the softmax function.
+the '**lnn.softmax**' function has 2 parameters: x (the table you want to put into the softmax function) and derivative (if you want the derivative of the softmax function). if the derivative parameter is true it returns x put into the derivative of the softmax function and if it's false it returns x put into the softmax function.
 
 ### NOTE:
 there is a linear activation function 'linear' but you don't need a function for that.

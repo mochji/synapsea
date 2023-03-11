@@ -2,6 +2,11 @@
 
 ## Lua: https://lua.org
 
+## NOTE:
+### this is the fast version of the stable branch with no error checking, this is around 20% to 35% faster than the stable branch. because there is no error checking this is for users who know what they're doing and how to use the library.
+
+***
+
 Description:
 A simple neural network library for Lua with functions for activation functions and their derivatives,
 forward and backward propagation as well as calculating cost functions like MSE or cross entropy.

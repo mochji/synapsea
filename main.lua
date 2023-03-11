@@ -5,11 +5,6 @@ _G["lnn"]["debug"] = {}
 _G["lnn"]["data"] = {}
 
 function lnn.asserttype(variable,variablename,thetype)
-    --check for errors in the function that checks for errors.
-    if type(thetype)  ~= "string" or type(variablename) ~= "string" then
-        error("variablename and thetype must be a string.")
-    end
-
     --give an error if false or nil
     if type(variable) ~= thetype or variable == nil then
         error(string.format("%s (%s) is not a %s or is nil. Type: %s", variablename, tostring(variable), thetype, type(variable)))
@@ -17,14 +12,6 @@ function lnn.asserttype(variable,variablename,thetype)
 end
 
 function lnn.assertsize(a,b,aname,bname)
-    --check for errors in the function that checks for errors but different.
-    if type(a) ~= "table" or type(b) ~= "table" then
-        error("a and b must be a table.")
-    end
-    if type(aname) ~= "string" or type(bname) ~= "string" then
-        error("aname and bname must be a string.")
-    end
-
     --give an error they're not the same size or 0.
     if #a ~= #b then
         error(string.format("%s (%s) is not the same size of %s (%s).",aname,#a,bname,#b))
@@ -36,9 +23,6 @@ function lnn.assertsize(a,b,aname,bname)
 end
 
 function lnn.findintable(item,table)
-    --check for errors
-    lnn.asserttype(table,"table","table")
-
     --do the stuff
     for i = 1,#table do
         if table[i] == item then
@@ -49,11 +33,6 @@ function lnn.findintable(item,table)
 end
 
 function lnn.sigmoid(x,derivative)
-    --check for errors
-    lnn.asserttype(x,"x","number")
-    lnn.asserttype(derivative,"derivative","boolean")
-
-    --do the stuff
     if derivative then
         return (1 / (1 + math.exp(-x))) * (1-(1 / (1 + math.exp(-x))))
     else
@@ -62,11 +41,6 @@ function lnn.sigmoid(x,derivative)
 end
 
 function lnn.tanh(x,derivative)
-    --check for errors
-    lnn.asserttype(x,"x","number")
-    lnn.asserttype(derivative,"derivative","boolean")
-
-    --do the stuff
     if derivative then
         return 1 - (((math.exp(2*x) - 1)/(math.exp(2*x) + 1))^2)
     else
@@ -75,11 +49,6 @@ function lnn.tanh(x,derivative)
 end
 
 function lnn.relu(x,derivative)
-    --check for errors
-    lnn.asserttype(x,"x","number")
-    lnn.asserttype(derivative,"derivative","boolean")
-
-    --do the stuff
     if derivative then
         if x < 0 then
             return 0
@@ -92,11 +61,6 @@ function lnn.relu(x,derivative)
 end
 
 function lnn.leakyrelu(x,derivative)
-    --check for errors
-    lnn.asserttype(x,"x","number")
-    lnn.asserttype(derivative,"derivative","boolean")
-
-    --do the stuff
     if derivative then
         if x > 0 then
             return 1
@@ -113,12 +77,6 @@ function lnn.leakyrelu(x,derivative)
 end
 
 function lnn.elu(x,derivative,alpha)
-    --check for errors
-    lnn.asserttype(x,"x","number")
-    lnn.asserttype(derivative,"derivative","boolean")
-    lnn.asserttype(alpha,"alpha","number")
-
-    --do the stuff
     if derivative then
         if x < 0 then
             return alpha*math.exp(x)
@@ -135,12 +93,6 @@ function lnn.elu(x,derivative,alpha)
 end
 
 function lnn.swish(x,derivative,alpha)
-    --check for errors
-    lnn.asserttype(x,"x","number")
-    lnn.asserttype(derivative,"derivative","boolean")
-    lnn.asserttype(alpha,"alpha","number")
-
-    --do the stuff
     if derivative then
         return x/(1+math.exp(-alpha*x))+lnn.sigmoid(x,false)*(1-x/(1+math.exp(-alpha*x)))
     else
@@ -149,11 +101,6 @@ function lnn.swish(x,derivative,alpha)
 end
 
 function lnn.binarystep(x,derivative)
-    --check for errors
-    lnn.asserttype(x,"x","number")
-    lnn.asserttype(derivative,"derivative","boolean")
-
-    --do the stuff
     if derivative then
         return 0
     else
@@ -166,10 +113,6 @@ function lnn.binarystep(x,derivative)
 end
 
 function lnn.softmax(x,derivative)
-    --check for errors
-    lnn.asserttype(x,"x","table")
-    lnn.asserttype(derivative,"derivative","boolean")
-
     --declare the variables
     local expsum = 0
     local returntable = {}
@@ -192,19 +135,7 @@ function lnn.softmax(x,derivative)
 end
 
 function lnn.initialize(id,activation,insize,layercount,outcount)
-    --check for errors
-    lnn.asserttype(id,"id","string")
-    lnn.asserttype(activation,"activation","string")
-    lnn.asserttype(insize,"insize","number")
-    lnn.asserttype(layercount,"layercount","number")
-    lnn.asserttype(outcount,"outcount","number")
-
-    --check if the id already exists
-    if _G[id] ~= nil then
-        error(string.format("id (%s) already exists, use the 'lnn.debug.clearid()' to clear the id.",id))
-    end
-
-    --available activation functions
+    --declare the variables
     local activationtable = {"sig","tanh","relu","lrelu","elu","swish","bstep","linear"}
     
     --check if the activation is a valid activation function
@@ -299,19 +230,6 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
 end
 
 function lnn.forwardpass(id,intable)
-    --check for errors
-    lnn.asserttype(id,"id","string")
-    lnn.asserttype(intable,"intable","table")
-
-    if #intable ~= _G[id]["insize"] then
-        error(string.format("intable (%s) is not the same size as the intable when id (%s) was initialized (%s).",#intable,id,_G[id]["insize"]))
-    end
-
-    --check if the id doesn't exist
-    if _G[id] == nil then
-        error(string.format("id (%s) doesnt exist.",id))
-    end
-    
     --declare the functions
     local function getlayer(lastlayer,nextlayer,weights,biases)
         --declare the variables
@@ -406,21 +324,6 @@ function lnn.forwardpass(id,intable)
 end
 
 function lnn.adjust(id,intable,output,expectedoutput,learningrate)
-    --check for errors
-    lnn.asserttype(id,"id","string")
-    lnn.asserttype(intable,"intable","table")
-    lnn.asserttype(output,"output","table")
-    lnn.asserttype(expectedoutput,"expectedoutput","table")
-    lnn.asserttype(learningrate,"learningrate","number")
-    
-    lnn.assertsize(output,expectedoutput,"out","expectedout")
-    if _G[id] == nil then
-        error(string.format("id (%s) doesn't exist.",id))
-    end
-    if _G[id]["insize"] ~= #intable then
-        error(string.format("insize (%s) is not the same size as intable (%s).",_G[id]["insize"],#intable))
-    end
-
     --declare the variables
     local gradw = {}
     local gradb = {}
@@ -538,12 +441,6 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
 end
 
 function lnn.getmse(output,expectedoutput)
-    --check for errors
-    lnn.asserttype(output,"output","table")
-    lnn.asserttype(expectedoutput,"expectedutput","table")
-
-    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
-
     --declare the variables
     local mse = 0
 
@@ -555,12 +452,6 @@ function lnn.getmse(output,expectedoutput)
 end
 
 function lnn.getmae(output,expectedoutput)
-    --check for errors
-    lnn.asserttype(output,"output","table")
-    lnn.asserttype(expectedoutput,"expectedutput","table")
-
-    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
-
     --declare the variables
     local mae = 0
 
@@ -572,12 +463,6 @@ function lnn.getmae(output,expectedoutput)
 end
 
 function lnn.getsse(output,expectedoutput)
-    --check for errors
-    lnn.asserttype(output,"output","table")
-    lnn.asserttype(expectedoutput,"expectedutput","table")
-
-    lnn.assertsize(#output,#expectedoutput,"output","expectedoutput")
-
     --declare the variables
     local sse = 0
 
@@ -589,12 +474,6 @@ function lnn.getsse(output,expectedoutput)
 end
 
 function lnn.getrmse(output,expectedoutput)
-    --check for errors
-    lnn.asserttype(output,"output","table")
-    lnn.asserttype(expectedoutput,"expectedutput","table")
-
-    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
-
     --declare the variables
     local rmse = 0
 
@@ -607,12 +486,6 @@ function lnn.getrmse(output,expectedoutput)
 end
 
 function lnn.getcrossentropy(output,expectedoutput)
-    --check for errors.
-    lnn.asserttype(output,"output","table")
-    lnn.asserttype(expectedoutput,"expectedoutput","table")
-
-    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
-
     --declare the variables
     local sum = 0
 
@@ -627,12 +500,6 @@ function lnn.getcrossentropy(output,expectedoutput)
 end
 
 function lnn.getbinarycrossentropy(output,expectedoutput)
-    --check for errors.
-    lnn.asserttype(output,"output","table")
-    lnn.asserttype(expectedoutput,"expectedoutput","table")
-
-    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
-
     --declare the variables
     local sum = 0
 
@@ -648,12 +515,6 @@ function lnn.getbinarycrossentropy(output,expectedoutput)
 end
 
 function lnn.getcategoricalcrossentropy(output,expectedoutput)
-    --check for errors.
-    lnn.asserttype(output,"output","table")
-    lnn.asserttype(expectedoutput,"expectedoutput","table")
-
-    lnn.assertsize(output,expectedoutput,"output","expectedoutput")
-
     --declare the variables
     local sum = 0
 
@@ -671,13 +532,6 @@ end
 --either debugging or visualizing, could be used for both.
 
 function lnn.debug.returnweights(id)
-    --check for errors.
-    lnn.asserttype(id,"id","string")
-
-    if _G[id] == nil then
-        error(string.format("id (%s) doesn't exist.",id))
-    end
-
     --declare the variables
     local returntable = {}
 
@@ -691,13 +545,6 @@ function lnn.debug.returnweights(id)
 end
 
 function lnn.debug.returnbiases(id)
-    --check for errors.
-    lnn.asserttype(id,"id","string")
-
-    if _G[id] == nil then
-        error(string.format("id (%s) doesn't exist.",id))
-    end
-
     --declare the variables
     local returntable = {}
 
@@ -711,13 +558,6 @@ function lnn.debug.returnbiases(id)
 end
 
 function lnn.debug.returncurrent(id)
-    --check for errors.
-    lnn.asserttype(id,"id","string")
-
-    if _G[id] == nil then
-        error(string.format("id (%s) doesn't exist.",id))
-    end
-
     --declare the variables
     local returntable = {}
 
@@ -731,37 +571,13 @@ function lnn.debug.returncurrent(id)
 end
 
 function lnn.debug.returngradient(id)
-    --check for errors.
-    lnn.asserttype(id,"id","string")
-
-    if _G[id] == nil then
-        error(string.format("id (%s) doesn't exist.",id))
-    end
-
-    --do the stuff
     return _G[id]["gradient"]
 end
 
 function lnn.debug.returndata(id)
-    --check for errors.
-    lnn.asserttype(id,"id","string")
-
-    if _G[id] == nil then
-        error(string.format("id (%s) doesn't exist.",id))
-    end
-
-    --do the stuff
     return _G[id]
 end
 
 function lnn.debug.clearid(id)
-    --check for errors.
-    lnn.asserttype(id,"id","string")
-
-    if _G[id] == nil then
-        error(string.format("id (%s) doesn't exist.",id))
-    end
-
-    --do the stuff
     _G[id] = nil
 end

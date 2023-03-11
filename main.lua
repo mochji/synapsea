@@ -27,11 +27,11 @@ function lnn.assertsize(a,b,aname,bname)
 
     --give an error they're not the same size or 0.
     if #a ~= #b then
-        error(string.format("%s (%s) is not the same size as %s (%s).",aname,#a,bname,#b))
+        error(string.format("%s (%s) is not the same size of %s (%s).",aname,#a,bname,#b))
     end
 
-    if #a ~= #b then
-        error(string.format("the size of %s or %s is equal to zero.",aname,bname))
+    if #a == 0 or #b == 0 then
+        error(string.format("%s (%s) or %s (%s) is equal to zero.",aname,#a,bname,#b))
     end
 end
 
@@ -134,17 +134,17 @@ function lnn.elu(x,derivative,alpha)
     end
 end
 
-function lnn.swish(x,derivative,beta)
+function lnn.swish(x,derivative,alpha)
     --check for errors
     lnn.asserttype(x,"x","number")
     lnn.asserttype(derivative,"derivative","boolean")
-    lnn.asserttype(beta,"beta","number")
+    lnn.asserttype(alpha,"alpha","number")
 
     --do the stuff
     if derivative then
-        return x/(1+math.exp(-beta*x))+lnn.sigmoid(x,false)*(1-x/(1+math.exp(-beta*x)))
+        return x/(1+math.exp(-alpha*x))+lnn.sigmoid(x,false)*(1-x/(1+math.exp(-alpha*x)))
     else
-        return x/(1+math.exp(-beta*x))
+        return x/(1+math.exp(-alpha*x))
     end
 end
 
@@ -201,7 +201,7 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
 
     --check if the id already exists
     if _G[id] ~= nil then
-        error("id ("..id..") already exists, use the 'lnn.debug.clearid()' to clear the id.")
+        error(string.format("id (%s) already exists, use the 'lnn.debug.clearid()' to clear the id.",id))
     end
 
     --available activation functions
@@ -209,7 +209,7 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
     
     --check if the activation is a valid activation function
     if not lnn.findintable(activation,activationtable) then
-        error(activation.." is not a valid activation function, available activation functions are: 'sig', 'tanh', 'relu', 'lrelu', 'elu', 'swish', 'bstep' and 'linear'.")
+        error(string.format("%s is not a valid activation function, available activation functions are: 'sig', 'tanh', 'relu', 'lrelu', 'elu', 'swish', 'bstep' and 'linear'.",activation))
     end
 
     --initialize the neural network
@@ -220,6 +220,7 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
     _G[id]["layercount"] = layercount
     _G[id]["outcount"] = outcount
     _G[id]["insize"] = insize
+    _G[id]["alpha"] = 1
     _G[id]["gradient"] = {}
     _G[id]["gradient"]["gradw"] = {}
     _G[id]["gradient"]["gradb"] = {}
@@ -298,17 +299,18 @@ function lnn.initialize(id,activation,insize,layercount,outcount)
 end
 
 function lnn.forwardpass(id,intable)
-    --check if the id doesn't exist
-    if _G[id] == nil then
-        error("id ("..id..") doesnt exist.")
-    end
-    
     --check for errors
-    if #intable ~= _G[id]["insize"] then
-        error("intable ("..#intable..") is not the same size as the intable when id ("..id..") was initialized (".._G[id]["insize"]").")
-    end
     lnn.asserttype(id,"id","string")
     lnn.asserttype(intable,"intable","table")
+
+    if #intable ~= _G[id]["insize"] then
+        error(string.format("intable (%s) is not the same size as the intable when id (%s) was initialized (%s).",#intable,id,_G[id]["insize"]))
+    end
+
+    --check if the id doesn't exist
+    if _G[id] == nil then
+        error(string.format("id (%s) doesnt exist.",id))
+    end
     
     --declare the functions
     local function getlayer(lastlayer,nextlayer,weights,biases)
@@ -353,7 +355,7 @@ function lnn.forwardpass(id,intable)
                 for i = 1,#lastlayer do
                     sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
                 end
-                nextlayer[a] = lnn.elu(sum+biases[a],false,1)
+                nextlayer[a] = lnn.elu(sum+biases[a],false,_G[id]["alpha"])
                 sum = 0
             end
         elseif _G[id]["activation"] == "swish" then
@@ -361,7 +363,7 @@ function lnn.forwardpass(id,intable)
                 for i = 1,#lastlayer do
                     sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
                 end
-                nextlayer[a] = lnn.swish(sum+biases[a],false,0.8)
+                nextlayer[a] = lnn.swish(sum+biases[a],false,_G[id]["alpha"])
                 sum = 0
             end
         elseif _G[id]["activation"] == "bstep" then
@@ -413,10 +415,10 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     
     lnn.assertsize(output,expectedoutput,"out","expectedout")
     if _G[id] == nil then
-        error("id ("..id..") doesn't exist.")
+        error(string.format("id (%s) doesn't exist.",id))
     end
     if _G[id]["insize"] ~= #intable then
-        error("insize (".._G[id]["insize"]..") is not the same size as intable ("..#intable..").")
+        error(string.format("insize (%s) is not the same size as intable (%s).",_G[id]["insize"],#intable))
     end
 
     --declare the variables
@@ -428,14 +430,22 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     local da_wsum = 0
 
     --get the sum of the weighted inputs
-    for a = 1,#_G[id]["current"]["c1"] do
-        for i = 1,#intable do
-            weightedsum = weightedsum + _G[id]["weight"]["w1"][i+((a-1)*#intable)]*intable[i]
+    if _G[id]["layercount"] > 0 then
+        for a = 1,#_G[id]["current"]["c1"] do
+            for i = 1,#intable do
+                weightedsum = weightedsum + _G[id]["weight"]["w1"][i+((a-1)*#intable)]*intable[i]
+            end
+        end
+    else
+        for a = 1,#_G[id]["current"]["o"] do
+            for i = 1,#intable do
+                weightedsum = weightedsum + _G[id]["weight"]["ow"][i+((a-1)*#intable)]*intable[i]
+            end
         end
     end
 
     --get da_wsum
-     if _G[id]["activation"] == "sig" then
+    if _G[id]["activation"] == "sig" then --elseif hell
         da_wsum = lnn.sigmoid(weightedsum,true)
     elseif _G[id]["activation"] == "tanh" then
         da_wsum = lnn.tanh(weightedsum,true)
@@ -479,34 +489,50 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     _G[id]["gradient"]["gradw"] = gradw
     _G[id]["gradient"]["gradb"] = gradb
     
-    --adjust weights
+    --dirty code, good-ish performance. we all love clean code but i have to make it dirty here for performance, sorry :(
+    if _G[id]["layercount"] > 0 then
+        --adjust output layer weights and biases
 
-    --adjust the output layer weights
-    for a = 1,#output do
-        for i = 1,#_G[id]["current"]["c".._G[id]["layercount"]] do
-            _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] - gradw[i]
-            print(i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]]))
+        --adjust the output layer weights
+        for a = 1,#output do
+            for i = 1,#_G[id]["current"]["c".._G[id]["layercount"]] do
+                _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] - gradw[i]
+            end
         end
-    end
 
-    --adjust the rest of the weights
-    for b = _G[id]["layercount"],1,-1 do
-        for i = 1,#_G[id]["weight"]["w"..b] do
-            _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradwsum
+        --adjust the output layer biases
+        for i = 1,#output do
+            _G[id]["bias"]["ob"][i] = _G[id]["bias"]["ob"][i] - gradb[i]
         end
-    end
 
-    --adjust biases
+        --adjust the the rest of the weights and biases
 
-    --adjust the output layer biases
-    for i = 1,#output do
-        _G[id]["bias"]["ob"][i] = _G[id]["bias"]["ob"][i] - gradb[i]
-    end
+        --adjust the rest of the biases
+        for b = _G[id]["layercount"],1,-1 do
+            for i = 1,#_G[id]["bias"]["b"..b] do
+                _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradbsum+((_G[id]["bias"]["b"..b][i]*-gradbsum)*learningrate)
+            end
+        end
 
-    --adjust the rest of the biases
-    for b = _G[id]["layercount"],1,-1 do
-        for i = 1,#_G[id]["bias"]["b"..b] do
-            _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradbsum
+        --adjust the rest of the weights
+        for b = _G[id]["layercount"],1,-1 do
+            for i = 1,#_G[id]["weight"]["w"..b] do
+                _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradwsum+((_G[id]["weight"]["w"..b][i]*-gradwsum)*learningrate)
+            end
+        end
+    else
+        --adjust output layer weights and biases
+
+        --adjust the output layer weights
+        for a = 1,#output do
+            for i = 1,#_G[id]["current"]["o"] do
+                _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["o"])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["o"])] - gradw[i]
+            end
+        end
+
+        --adjust the output layer biases
+        for i = 1,#output do
+            _G[id]["bias"]["ob"][i] = _G[id]["bias"]["ob"][i] - gradb[i]
         end
     end
 end
@@ -649,7 +675,7 @@ function lnn.debug.returnweights(id)
     lnn.asserttype(id,"id","string")
 
     if _G[id] == nil then
-        error("id ("..id..") doesn't exist.")
+        error(string.format("id (%s) doesn't exist.",id))
     end
 
     --declare the variables
@@ -669,7 +695,7 @@ function lnn.debug.returnbiases(id)
     lnn.asserttype(id,"id","string")
 
     if _G[id] == nil then
-        error("id ("..id..") doesn't exist.")
+        error(string.format("id (%s) doesn't exist.",id))
     end
 
     --declare the variables
@@ -689,7 +715,7 @@ function lnn.debug.returncurrent(id)
     lnn.asserttype(id,"id","string")
 
     if _G[id] == nil then
-        error("id ("..id..") doesn't exist.")
+        error(string.format("id (%s) doesn't exist.",id))
     end
 
     --declare the variables
@@ -709,7 +735,7 @@ function lnn.debug.returngradient(id)
     lnn.asserttype(id,"id","string")
 
     if _G[id] == nil then
-        error("id ("..id..") doesn't exist.")
+        error(string.format("id (%s) doesn't exist.",id))
     end
 
     --do the stuff
@@ -721,7 +747,7 @@ function lnn.debug.returndata(id)
     lnn.asserttype(id,"id","string")
 
     if _G[id] == nil then
-        error("id ("..id..") doesn't exist.")
+        error(string.format("id (%s) doesn't exist.",id))
     end
 
     --do the stuff
@@ -733,7 +759,7 @@ function lnn.debug.clearid(id)
     lnn.asserttype(id,"id","string")
 
     if _G[id] == nil then
-        error("id ("..id..") doesn't exist.")
+        error(string.format("id (%s) doesn't exist.",id))
     end
 
     --do the stuff

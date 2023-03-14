@@ -159,6 +159,17 @@ from the neural network), expectedout (the expected or ideal output from the neu
 it adjusts the weights and
 the biases by calculating gradw and gradb then subtracting gradw from the weights and subtracting gradb from the biases.
 
+the '**lnn.calculategradient**' function has 5 parameters: id (the id for the neural network), intable (the input table to adjust the weights and biases with respect to), out (the real output
+from the neural network), expectedout (the expected or ideal output from the neural network) and learningrate (usually a low value like 0.01 or 0.001).
+
+it calculates the gradient and returns all of the data you might need from it.
+
+***
+
+the '**lnn.adjustfromgradient**' function has 2 parameters: id (the id for the neural network) and gradient (assumes you're using `lnn.calculategradient` or using the same formatting)
+
+it adjusts the weights and biases like the normal `lnn.adjust()` function would but uses the gradient from the gradient parameter.
+
 ### ERROR/COST FUNCTIONS
 
 the '**lnn.getmse()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network).

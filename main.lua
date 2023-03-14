@@ -472,7 +472,7 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
 
     --get gradb
     for i = 1,#output do
-        gradb[i] = ((output[i]-expectedoutput[i])*da_wsum)*learningrate+((output[i]-expectedoutput[i])*learningrate)
+        gradb[i] = (output[i]-expectedoutput[i])*learningrate+((output[i]-expectedoutput[i])*learningrate)
     end
 
     --get gradwsum
@@ -489,7 +489,7 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
     _G[id]["gradient"]["gradw"] = gradw
     _G[id]["gradient"]["gradb"] = gradb
     
-    --dirty code, good-ish performance. we all love clean code but i have to make it dirty here for performance, sorry :(
+    --i'm not rewriting this.
     if _G[id]["layercount"] > 0 then
         --adjust output layer weights and biases
 
@@ -533,6 +533,136 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
         --adjust the output layer biases
         for i = 1,#output do
             _G[id]["bias"]["ob"][i] = _G[id]["bias"]["ob"][i] - gradb[i]
+        end
+    end
+end
+
+function lnn.calculategradient(id,intable,output,expectedoutput,learningrate)
+    --check for errors
+    lnn.asserttype(intable,"intable","table")
+    lnn.asserttype(output,"output","table")
+    lnn.asserttype(expectedoutput,"expectedoutput","table")
+    lnn.asserttype(learningrate,"learningrate","number")
+
+    lnn.assertsize(output,expectedoutput,"out","expectedout")
+
+    --do the stuff
+    local gradw = {}
+    local gradb = {}
+    local gradwsum = 0
+    local gradbsum = 0
+    local weightedsum = 0
+    local da_wsum = 0
+
+    --get the sum of the weighted inputs
+    if _G[id]["layercount"] > 0 then
+        for a = 1,#_G[id]["current"]["c1"] do
+            for i = 1,#intable do
+                weightedsum = weightedsum + _G[id]["weight"]["w1"][i+((a-1)*#intable)]*intable[i]
+            end
+        end
+    else
+        for a = 1,#_G[id]["current"]["o"] do
+            for i = 1,#intable do
+                weightedsum = weightedsum + _G[id]["weight"]["ow"][i+((a-1)*#intable)]*intable[i]
+            end
+        end
+    end
+
+    --get da_wsum
+    if _G[id]["activation"] == "sig" then --elseif hell
+        da_wsum = lnn.sigmoid(weightedsum,true)
+    elseif _G[id]["activation"] == "tanh" then
+        da_wsum = lnn.tanh(weightedsum,true)
+    elseif _G[id]["activation"] == "relu" then
+        da_wsum = lnn.relu(weightedsum,true)
+    elseif _G[id]["activation"] == "lrelu" then
+        da_wsum = lnn.leakyrelu(weightedsum,true)
+    elseif _G[id]["activation"] == "elu" then
+        da_wsum = lnn.elu(weightedsum,true,1)
+    elseif _G[id]["activation"] == "swish" then
+        da_wsum = lnn.swish(weightedsum,true,0.8)
+    elseif _G[id]["activation"] == "bstep" then
+        da_wsum = lnn.binarystep(weightedsum,true)
+    elseif _G[id]["activation"] == "linear" then
+        da_wsum = 1
+    else
+        error(string.format("id %s has an invalid activation function? (%s)",id,_G[id]["activation"]))
+    end
+
+    --get gradw
+    for i = 1,#output do
+        gradw[i] = ((output[i]-expectedoutput[i])^2*da_wsum)*learningrate+((output[i]-expectedoutput[i])*learningrate)
+    end
+
+    --get gradb
+    for i = 1,#output do
+        gradb[i] = (output[i]-expectedoutput[i])*learningrate+((output[i]-expectedoutput[i])*learningrate)
+    end
+
+    --get gradwsum
+    for i = 1,#output do
+        gradwsum = gradwsum - gradw[i]
+    end
+
+    --get gradbsum
+    for i = 1,#output do
+        gradbsum = gradbsum - gradb[i]
+    end
+
+    --i trust this will all make sense within the course of... well, im not really at liberty to say. as for now, this is where i get off.
+    return {["gradw"] = gradw, ["gradb"] = gradb, ["learningrate"] = learningrate, ["gradwsum"] = gradwsum, ["gradbsum"] = gradbsum}
+end
+
+function lnn.adjustfromgradient(id,gradient)
+    --check for errors
+    lnn.asserttype(id,"id","string")
+    lnn.asserttype(gradient,"gradient","table")
+
+    --do the stuff
+    if _G[id]["layercount"] > 0 then
+        --adjust output layer weights and biases
+
+        --adjust the output layer weights
+        for a = 1,_G[id]["outcount"] do
+            for i = 1,#_G[id]["current"]["c".._G[id]["layercount"]] do
+                _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] - gradient["gradw"][i]
+            end
+        end
+
+        --adjust the output layer biases
+        for i = 1,_G[id]["outcount"] do
+            _G[id]["bias"]["ob"][i] = _G[id]["bias"]["ob"][i] - gradient["gradw"][i]
+        end
+
+        --adjust the the rest of the weights and biases
+
+        --adjust the rest of the biases
+        for b = _G[id]["layercount"],1,-1 do
+            for i = 1,#_G[id]["bias"]["b"..b] do
+                _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradient["gradbsum"]+((_G[id]["bias"]["b"..b][i]*-gradient["gradbsum"])*gradient["learningrate"])
+            end
+        end
+
+        --adjust the rest of the weights
+        for b = _G[id]["layercount"],1,-1 do
+            for i = 1,#_G[id]["weight"]["w"..b] do
+                _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradient["gradwsum"]+((_G[id]["weight"]["w"..b][i]*-gradient["gradwsum"])*gradient["learningrate"])
+            end
+        end
+    else
+        --adjust output layer weights and biases
+
+        --adjust the output layer weights
+        for a = 1,_G[id]["outcount"] do
+            for i = 1,#_G[id]["current"]["o"] do
+                _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["o"])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["o"])] - gradient["gradw"][i]
+            end
+        end
+
+        --adjust the output layer biases
+        for i = 1,_G[id]["outcount"] do
+            _G[id]["bias"]["ob"][i] = _G[id]["bias"]["ob"][i] - gradient["gradb"][i]
         end
     end
 end

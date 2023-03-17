@@ -11,8 +11,6 @@ use the spaghetti code to get rid of the spaghetti code.)
 
 ## CONTACT INFO
 
-Youtube: <a href="https://youtube.com/@xxoa_/">@xxoa_</a>
-
 Github: <a href="https://github.com/x-xxoa">x-xxoa</a>
 
 Email: xxoa.yt@gmail.com

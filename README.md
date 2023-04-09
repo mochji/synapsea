@@ -27,7 +27,7 @@ A patch is usually a small change to a function or 2, a minor version is usually
 
 Example:
 
-`v1.2.00-unstable` would mean the unstable version of the 3rd patch of the 2nd minor version of the 1st major version.
+`v1.2.00-unstable` would mean the unstable version of the 2nd minor version of the 1st major version.
 
 `v1.1.02` would mean the stable version of the 2nd patch of the 1st minor version of the 1st major version.
 

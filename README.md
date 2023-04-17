@@ -23,7 +23,7 @@ x.y.zz-abc
 
 x is the major version, y is the minor version, zz is the patch version and abc declares if it's unstable or not.
 
-A patch is usually a small change to a function or 2, a minor version is usually a large change to a lot of functions or a system overhaul aswell as changes to documentation and the major version goes up when the minor version reaches a number bigger than 9.
+A patch is usually a small change to a function or 2, a minor version is usually a large change to a lot of functions or a system overhaul aswell as changes to documentation and the major version goes up on the first release of the year that makes the minor version number go up.
 
 Example:
 

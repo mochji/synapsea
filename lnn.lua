@@ -46,20 +46,28 @@ function lnn.assertsize(a,b,aname,bname,zerocheck)
 	end
 end
 
-function lnn.findintable(item,table,recursive)
+function lnn.findintable(item,table,recursive,findname)
 	--check for errors
 	lnn.asserttype(table,"table","table")
 	lnn.asserttype(recursive,"recursive","boolean")
+	lnn.asserttype(findname,"findname","boolean")
 
 	--do the stuff
-	for i = 1,#table do
-		if table[i] == item then
+	for i,v in pairs(table) do
+		if table[i] == item or findname and table[v] == item then
 			return i
 		end
-		if type(table[i]) == "table" then
-			local returnval = lnn.findintable(item,table[i],true)
+		if type(table[i]) == "table" and recursive then
+			local returnval = lnn.findintable(item,table[i],true,findname)
 			if returnval then
-				return returnval
+				if type(returnval) == "table" then --this small detail took forever to get working
+					for a = #returnval,1,-1 do
+						returnval[a+1] = returnval[a]
+					end
+					returnval[1] = i
+					return returnval
+				end
+				return {i,returnval}
 			end
 		end
 	end
@@ -235,10 +243,24 @@ function lnn.activation.softplus(x,derivative)
 
 	--do the stuff
 	if derivative then
-		return math.exp(x)/(1+math.exp(x)) --this function is the exact same as the sigmoid activation function
+		return math.exp(x)/(1+math.exp(x)) --this function's derivative is the exact same as the sigmoid activation function
 	end
 
 	return math.log(1+math.exp(x))
+end
+
+function lnn.activation.softsign(x,derivative)
+	--check for errors
+	lnn.asserttype(x,"x","number")
+	lnn.asserttype(derivative,"derivative","boolean")
+
+	--do the stuff
+	if derivative then
+		if x == 0 then return 1 end --hell yeah that only took me 2 minutes to come up with that solution!
+		return x/(x*(1+math.abs(x)^2))
+	end
+
+	return x/1+math.abs(x)
 end
 
 function lnn.activation.linear(x,derivative,alpha)
@@ -282,7 +304,7 @@ function lnn.initialize(id,activation,layersizes)
 
 	--initialize the neural network data
 	_G[id] = {
-		["activation"] = activation,
+		["activations"] = {},
 		["alpha"] = 1,
 		["gradient"] = {
 			["error"] = {},
@@ -312,6 +334,9 @@ function lnn.initialize(id,activation,layersizes)
 
 	--create the tables
 	for a = 1,#layersizes-1 do
+		--add into activations
+		_G[id]["activations"][a] = activation
+
 		_G[id]["current"][a] = {}
 		_G[id]["weight"][a] = {}
 
@@ -352,7 +377,7 @@ function lnn.forwardpass(id,intable)
 	end
 
 	--declare the functions
-	local function getlayer(lastlayer,nextlayer,weights,bias) --i am super proud of this function :D
+	local function getlayer(lastlayer,nextlayer,weights,bias,layernum) --i am super proud of this function :D
 		--declare the variables
 		local sum = 0
 
@@ -361,15 +386,15 @@ function lnn.forwardpass(id,intable)
 			for i = 1,#lastlayer do
 				sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
 			end
-			nextlayer[a] = lnn.activation[_G[id]["activation"]](sum+bias,false,_G[id]["alpha"]) --even if it only has 2 parameters this still works but it pains me to do that
+			nextlayer[a] = lnn.activation[_G[id]["activations"][layernum]](sum+bias,false,_G[id]["alpha"]) --even if it only has 2 parameters this still works but it pains me to do that
 			sum = 0
 		end
 	end
 
 	--do the stuff
-	getlayer(intable,_G[id]["current"][1],_G[id]["weight"][1],0) --input layer to first hidden or output
+	getlayer(intable,_G[id]["current"][1],_G[id]["weight"][1],0,1) --input layer to first hidden or output
 	for i = 2,#_G[id]["layersizes"]-1 do --rest of the hidden layers and output
-		getlayer(_G[id]["current"][i-1],_G[id]["current"][i],_G[id]["weight"][i],_G[id]["bias"][i-1])
+		getlayer(_G[id]["current"][i-1],_G[id]["current"][i],_G[id]["weight"][i],_G[id]["bias"][i-1],i)
 	end
 
 	return _G[id]["current"][#_G[id]["current"]] --last table in current is output layer
@@ -397,16 +422,16 @@ function lnn.returnerror(id,intable,output,expectedoutput,learningrate)
 
 	--calculate the error for each output node
 	for i = 1,#output do
-		err[1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+		err[1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
 	end
 
 	--backpropagate the error
 	for a = #_G[id]["layersizes"]-2,1,-1 do
 		err[#err+1] = {}
-		for b = 1,_G[id]["layersizes"][a+1] do
+		for b = 1,_G[id]["layersizes"][a] do
 			err[#err][b] = 0
-			for i = 1,_G[id]["layersizes"][a] do
-				err[#err][b] = err[#err][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*err[#err-1][math.ceil(b/(_G[id]["layersizes"][a]/#err[#err-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+			for i = 1,_G[id]["layersizes"][a+1] do
+				err[#err][b] = err[#err][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*err[#err-1][math.ceil(b/(_G[id]["layersizes"][a]/#err[#err-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
 			end
 		end
 	end
@@ -447,7 +472,7 @@ function lnn.adjust.basic.adjust(id,intable,output,expectedoutput,learningrate)
 
 	--calculate the error for each output node
 	for i = 1,#output do
-		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
 	end
 
 	--backpropagate the error
@@ -456,7 +481,7 @@ function lnn.adjust.basic.adjust(id,intable,output,expectedoutput,learningrate)
 		for b = 1,_G[id]["layersizes"][a+1] do
 			grad["error"][#grad["error"]][b] = 0
 			for i = 1,_G[id]["layersizes"][a] do
-				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
 			end
 		end
 	end
@@ -464,20 +489,20 @@ function lnn.adjust.basic.adjust(id,intable,output,expectedoutput,learningrate)
 	--update the weights
 	for a = #_G[id]["layersizes"]-1,1,-1 do
 		for b = 1,_G[id]["layersizes"][a+1] do
-			grad["grad"]["weight"][a-#_G[id]["layersizes"]] = {}
+			grad["grad"]["weight"][#_G[id]["layersizes"]-a] = {}
 			for i = 1,_G[id]["layersizes"][a] do
 				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
 				_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] = _G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] - curgrad
-				grad["grad"]["weight"][a-#_G[id]["layersizes"]][i+((b-1)*_G[id]["layersizes"][a])] = curgrad
+				grad["grad"]["weight"][#_G[id]["layersizes"]-a][i+((b-1)*_G[id]["layersizes"][a])] = curgrad
 			end
 		end
 	end
 
 	--update the biases
-	for a = #_G[id]["layersizes"]-1,1-1 do
-		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-1))*lnn.sumtable(grad["error"][#_G[id]["layersizes"]-a]),-learningrate),learningrate)
-		_G[id]["bias"][a] = _G[id]["bias"][a] - curgrad
-		grad["grad"]["bias"][a] = curgrad
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-2))*lnn.sumtable(grad["error"][(#_G[id]["layersizes"]-1)-i]),-learningrate),learningrate)
+		_G[id]["bias"][i] = _G[id]["bias"][i] - curgrad
+		grad["grad"]["bias"][i] = curgrad
 	end
 
 	--update the data on _G[id]
@@ -515,7 +540,7 @@ function lnn.adjust.basic.returngradient(id,intable,output,expectedoutput,learni
 
 	--calculate the error for each output node
 	for i = 1,#output do
-		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
 	end
 
 	--backpropagate the error
@@ -524,24 +549,24 @@ function lnn.adjust.basic.returngradient(id,intable,output,expectedoutput,learni
 		for b = 1,_G[id]["layersizes"][a+1] do
 			grad["error"][#grad["error"]][b] = 0
 			for i = 1,_G[id]["layersizes"][a] do
-				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
 			end
 		end
 	end
 
-	--calculate the weigth gradient
+	--calculate the weight gradient
 	for a = #_G[id]["layersizes"]-1,1,-1 do
 		for b = 1,_G[id]["layersizes"][a+1] do
-			grad["grad"]["weight"][a-#_G[id]["layersizes"]] = {}
+			grad["grad"]["weight"][#_G[id]["layersizes"]-a] = {}
 			for i = 1,_G[id]["layersizes"][a] do
-				grad["grad"]["weight"][a-#_G[id]["layersizes"]][i+((b-1)*_G[id]["layersizes"][a])] = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate)
+				grad["grad"]["weight"][#_G[id]["layersizes"]-a][i+((b-1)*_G[id]["layersizes"][a])] = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate)
 			end
 		end
 	end
 
 	--calculate the bias gradient
-	for a = #_G[id]["layersizes"]-1,1-1 do
-		grad["grad"]["bias"][a] = math.min(math.max((learningrate/(#_G[id]["layersizes"]-1))*lnn.sumtable(grad["error"][#_G[id]["layersizes"]-a]),-learningrate),learningrate)
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		grad["grad"]["bias"][i] = math.min(math.max((learningrate/(#_G[id]["layersizes"]-2))*lnn.sumtable(grad["error"][(#_G[id]["layersizes"]-1)-i]),-learningrate),learningrate)
 	end
 
 	return grad
@@ -569,8 +594,8 @@ function lnn.adjust.basic.adjustfromgradient(id,gradient)
 	end
 
 	--update the biases
-	for a = #_G[id]["layersizes"]-1,1-1 do
-		_G[id]["bias"][a] = _G[id]["bias"][a] - gradient["learningrate"]*lnn.sumtable(gradient["grad"][#_G[id]["layersizes"]-a])
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		_G[id]["bias"][i] = _G[id]["bias"][i] - gradient["learningrate"]*lnn.sumtable(gradient["grad"][(#_G[id]["layersizes"]-1)-i])
 	end
 end
 
@@ -609,7 +634,7 @@ function lnn.adjust.momentum.adjust(id,intable,output,expectedoutput,learningrat
 
 	--calculate the error for each output node
 	for i = 1,#output do
-		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
 	end
 
 	--backpropagate the error
@@ -618,7 +643,7 @@ function lnn.adjust.momentum.adjust(id,intable,output,expectedoutput,learningrat
 		for b = 1,_G[id]["layersizes"][a+1] do
 			grad["error"][#grad["error"]][b] = 0
 			for i = 1,_G[id]["layersizes"][a] do
-				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
 			end
 		end
 	end
@@ -626,7 +651,7 @@ function lnn.adjust.momentum.adjust(id,intable,output,expectedoutput,learningrat
 	--update the weights
 	for a = #_G[id]["layersizes"]-1,1,-1 do
 		for b = 1,_G[id]["layersizes"][a+1] do
-			grad["grad"]["weight"][a-#_G[id]["layersizes"]] = {}
+			grad["grad"]["weight"][#_G[id]["layersizes"]-a] = {}
 			for i = 1,_G[id]["layersizes"][a] do
 				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
 
@@ -636,7 +661,7 @@ function lnn.adjust.momentum.adjust(id,intable,output,expectedoutput,learningrat
 
 				--update the weight
 				_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] = _G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] - dweight
-				grad["grad"]["weight"][a-#_G[id]["layersizes"]][i+((b-1)*_G[id]["layersizes"][a])] = dweight
+				grad["grad"]["weight"][#_G[id]["layersizes"]-a][i+((b-1)*_G[id]["layersizes"][a+1])] = dweight
 
 				--store weight update
 				pweightdelta = dweight
@@ -645,11 +670,11 @@ function lnn.adjust.momentum.adjust(id,intable,output,expectedoutput,learningrat
 	end
 
 	--update the biases
-	for i = #_G[id]["layersizes"]-1,1-1 do
-		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-1))*lnn.sumtable(grad["error"][#_G[id]["layersizes"]-i]),-learningrate),learningrate)
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-2))*lnn.sumtable(grad["error"][(#_G[id]["layersizes"]-1)-i]),-learningrate),learningrate)
 
 		--calculate the momentum
-		local dbias = curgrad+(grad["momentum"]*learningrate)*pbiasdelta
+		local dbias = curgrad+(grad["momentum"]*learningrate)*pbiasdelta --programming is possibly the most fufilling thing ive ever done
 		grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
 
 		--update the bias
@@ -697,7 +722,7 @@ function lnn.adjust.momentum.returngradient(id,intable,output,expectedoutput,lea
 
 	--calculate the error for each output node
 	for i = 1,#output do
-		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
 	end
 
 	--backpropagate the error
@@ -706,7 +731,7 @@ function lnn.adjust.momentum.returngradient(id,intable,output,expectedoutput,lea
 		for b = 1,_G[id]["layersizes"][a+1] do
 			grad["error"][#grad["error"]][b] = 0
 			for i = 1,_G[id]["layersizes"][a] do
-				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
 			end
 		end
 	end
@@ -714,14 +739,14 @@ function lnn.adjust.momentum.returngradient(id,intable,output,expectedoutput,lea
 	--calculate the weight gradient
 	for a = #_G[id]["layersizes"]-1,1,-1 do
 		for b = 1,_G[id]["layersizes"][a+1] do
-			grad["grad"]["weight"][a-#_G[id]["layersizes"]] = {}
+			grad["grad"]["weight"][#_G[id]["layersizes"]-a] = {}
 			for i = 1,_G[id]["layersizes"][a] do
 				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
 
 				--calculate the momentum
 				grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
 
-				grad["grad"]["weight"][a-#_G[id]["layersizes"]][i+((b-1)*_G[id]["layersizes"][a])] = curgrad+(grad["momentum"]*learningrate)*pweightdelta
+				grad["grad"]["weight"][#_G[id]["layersizes"]-a][i+((b-1)*_G[id]["layersizes"][a])] = curgrad+(grad["momentum"]*learningrate)*pweightdelta
 
 				--store weight update
 				pweightdelta = curgrad+(grad["momentum"]*learningrate)*pweightdelta
@@ -730,8 +755,8 @@ function lnn.adjust.momentum.returngradient(id,intable,output,expectedoutput,lea
 	end
 
 	--calculate the bias gradient
-	for i = #_G[id]["layersizes"]-1,1-1 do
-		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-1))*lnn.sumtable(grad["error"][#_G[id]["layersizes"]-i]),-learningrate),learningrate)
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-2))*lnn.sumtable(grad["error"][(#_G[id]["layersizes"]-1)-i]),-learningrate),learningrate)
 
 		--calculate the momentum
 		grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
@@ -761,12 +786,12 @@ function lnn.adjust.momentum.adjustfromgradient(id,gradient)
 	--update the weights
 	for a = #_G[id]["layersizes"]-1,1,-1 do
 		for i = 1,#_G[id]["weight"][a] do
-			_G[id]["weight"][a][i] = _G[id]["weight"][a][i] - gradient["grad"]["weight"][a-#_G[id]["layersizes"]][i]
+			_G[id]["weight"][a][i] = _G[id]["weight"][a][i] - gradient["grad"]["weight"][#_G[id]["layersizes"]-a][i]
 		end
 	end
 
 	--update the biases
-	for i = #_G[id]["layersizes"]-1,1-1 do
+	for i = #_G[id]["layersizes"]-2,1,-1 do
 		_G[id]["bias"][i] = _G[id]["bias"][i] - gradient["grad"]["bias"][i]
 	end
 

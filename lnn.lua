@@ -2,10 +2,13 @@
 
 _G["lnn"] = {
 	["activation"] = {},
+	["adjust"] = {
+		["basic"] = {},
+		["momentum"] = {}
+	},
 	["loss"] = {},
 	["debug"] = {},
-	["data"] = {},
-	["experimental"] = {}
+	["data"] = {}
 }
 
 --error catching/useful functions
@@ -372,7 +375,7 @@ function lnn.forwardpass(id,intable)
 	return _G[id]["current"][#_G[id]["current"]] --last table in current is output layer
 end
 
-function lnn.adjust(id,intable,output,expectedoutput,learningrate)
+function lnn.returnerror(id,intable,output,expectedoutput,learningrate)
 	--check for errors
 	lnn.asserttype(id,"id","string")
 	lnn.asserttype(intable,"intable","table")
@@ -390,20 +393,70 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
 	end
 
 	--declare the variables
-	local grad = {{}}
+	local err = {{}}
 
 	--calculate the error for each output node
 	for i = 1,#output do
-		grad[1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])
+		err[1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
 	end
 
 	--backpropagate the error
 	for a = #_G[id]["layersizes"]-2,1,-1 do
-		grad[#grad+1] = {}
+		err[#err+1] = {}
 		for b = 1,_G[id]["layersizes"][a+1] do
-			grad[#grad][b] = 0
+			err[#err][b] = 0
 			for i = 1,_G[id]["layersizes"][a] do
-				grad[#grad][b] = grad[#grad][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad[#grad-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad[#grad-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+				err[#err][b] = err[#err][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*err[#err-1][math.ceil(b/(_G[id]["layersizes"][a]/#err[#err-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+			end
+		end
+	end
+
+	return err
+end
+
+--basic adjust functions
+
+function lnn.adjust.basic.adjust(id,intable,output,expectedoutput,learningrate)
+	--check for errors
+	lnn.asserttype(id,"id","string")
+	lnn.asserttype(intable,"intable","table")
+	lnn.asserttype(output,"output","table")
+	lnn.asserttype(expectedoutput,"expectedoutput","table")
+	lnn.asserttype(learningrate,"learningrate","number")
+	lnn.assertsize(output,expectedoutput,"output","expectedoutput",true)
+
+	if _G[id] == nil then
+		error(string.format("id (%s) doesn't exist.",id))
+	end
+
+	if #intable ~= _G[id]["layersizes"][1] then
+		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#intable,id,_G[id]["layercount"][1]))
+	end
+
+	--declare the variables
+	local grad = {
+		["error"] = {{}},
+		["grad"] = {
+			["bias"] = {},
+			["weight"] = {{}}
+		},
+		["intable"] = intable,
+		["learningrate"] = learningrate,
+		["momentum"] = _G[id]["gradient"]["momentum"]
+	}
+
+	--calculate the error for each output node
+	for i = 1,#output do
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+	end
+
+	--backpropagate the error
+	for a = #_G[id]["layersizes"]-2,1,-1 do
+		grad["error"][#grad["error"]+1] = {}
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["error"][#grad["error"]][b] = 0
+			for i = 1,_G[id]["layersizes"][a] do
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
 			end
 		end
 	end
@@ -411,26 +464,27 @@ function lnn.adjust(id,intable,output,expectedoutput,learningrate)
 	--update the weights
 	for a = #_G[id]["layersizes"]-1,1,-1 do
 		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["grad"]["weight"][a-#_G[id]["layersizes"]] = {}
 			for i = 1,_G[id]["layersizes"][a] do
-				_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] = _G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] - learningrate*(grad[#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable))
+				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
+				_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] = _G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] - curgrad
+				grad["grad"]["weight"][a-#_G[id]["layersizes"]][i+((b-1)*_G[id]["layersizes"][a])] = curgrad
 			end
 		end
 	end
 
 	--update the biases
 	for a = #_G[id]["layersizes"]-1,1-1 do
-		_G[id]["bias"][a] = _G[id]["bias"][a] - learningrate*lnn.sumtable(grad[#_G[id]["layersizes"]-a])
+		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-1))*lnn.sumtable(grad["error"][#_G[id]["layersizes"]-a]),-learningrate),learningrate)
+		_G[id]["bias"][a] = _G[id]["bias"][a] - curgrad
+		grad["grad"]["bias"][a] = curgrad
 	end
 
 	--update the data on _G[id]
-	_G[id]["gradient"] = {
-		["grad"] = grad,
-		["intable"] = intable,
-		["learningrate"] = learningrate
-	}
+	_G[id]["gradient"] = grad
 end
 
-function lnn.returngradient(id,intable,output,expectedoutput,learningrate)
+function lnn.adjust.basic.returngradient(id,intable,output,expectedoutput,learningrate)
 	--check for errors
 	lnn.asserttype(id,"id","string")
 	lnn.asserttype(intable,"intable","table")
@@ -448,35 +502,52 @@ function lnn.returngradient(id,intable,output,expectedoutput,learningrate)
 	end
 
 	--declare the variables
-	local grad = {{}}
+	local grad = {
+		["error"] = {{}},
+		["grad"] = {
+			["bias"] = {},
+			["weight"] = {{}}
+		},
+		["intable"] = intable,
+		["learningrate"] = learningrate,
+		["momentum"] = _G[id]["gradient"]["momentum"]
+	}
 
 	--calculate the error for each output node
 	for i = 1,#output do
-		grad[1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
 	end
 
 	--backpropagate the error
 	for a = #_G[id]["layersizes"]-2,1,-1 do
-		grad[#grad+1] = {}
+		grad["error"][#grad["error"]+1] = {}
 		for b = 1,_G[id]["layersizes"][a+1] do
-			grad[#grad][b] = 0
+			grad["error"][#grad["error"]][b] = 0
 			for i = 1,_G[id]["layersizes"][a] do
-				grad[#grad][b] = grad[#grad][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad[#grad-1][math.ceil(b/(_G[id]["layersizes"][a+1]/#grad[#grad-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
 			end
 		end
 	end
 
-	--update the data on _G[id]
-	_G[id]["gradient"] = {
-		["grad"] = grad,
-		["intable"] = intable,
-		["learningrate"] = learningrate
-	}
+	--calculate the weigth gradient
+	for a = #_G[id]["layersizes"]-1,1,-1 do
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["grad"]["weight"][a-#_G[id]["layersizes"]] = {}
+			for i = 1,_G[id]["layersizes"][a] do
+				grad["grad"]["weight"][a-#_G[id]["layersizes"]][i+((b-1)*_G[id]["layersizes"][a])] = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate)
+			end
+		end
+	end
 
-	return {["grad"] = grad,["intable"] = intable,["learningrate"] = learningrate}
+	--calculate the bias gradient
+	for a = #_G[id]["layersizes"]-1,1-1 do
+		grad["grad"]["bias"][a] = math.min(math.max((learningrate/(#_G[id]["layersizes"]-1))*lnn.sumtable(grad["error"][#_G[id]["layersizes"]-a]),-learningrate),learningrate)
+	end
+
+	return grad
 end
 
-function lnn.adjustfromgradient(id,gradient)
+function lnn.adjust.basic.adjustfromgradient(id,gradient)
 	--check for errors
 	lnn.asserttype(id,"id","string")
 	lnn.asserttype(gradient,"gradient","table")
@@ -501,6 +572,206 @@ function lnn.adjustfromgradient(id,gradient)
 	for a = #_G[id]["layersizes"]-1,1-1 do
 		_G[id]["bias"][a] = _G[id]["bias"][a] - gradient["learningrate"]*lnn.sumtable(gradient["grad"][#_G[id]["layersizes"]-a])
 	end
+end
+
+--momentum adjust functions
+
+function lnn.adjust.momentum.adjust(id,intable,output,expectedoutput,learningrate)
+	--check for errors
+	lnn.asserttype(id,"id","string")
+	lnn.asserttype(intable,"intable","table")
+	lnn.asserttype(output,"output","table")
+	lnn.asserttype(expectedoutput,"expectedoutput","table")
+	lnn.asserttype(learningrate,"learningrate","number")
+	lnn.assertsize(output,expectedoutput,"output","expectedoutput",true)
+
+	if _G[id] == nil then
+		error(string.format("id (%s) doesn't exist.",id))
+	end
+
+	if #intable ~= _G[id]["layersizes"][1] then
+		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#intable,id,_G[id]["layercount"][1]))
+	end
+
+	--declare the variables
+	local grad = {
+		["error"] = {{}},
+		["grad"] = {
+			["bias"] = {},
+			["weight"] = {{}}
+		},
+		["intable"] = intable,
+		["learningrate"] = learningrate,
+		["momentum"] = _G[id]["gradient"]["momentum"]
+	}
+	local pweightdelta = 0
+	local pbiasdelta = 0
+
+	--calculate the error for each output node
+	for i = 1,#output do
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+	end
+
+	--backpropagate the error
+	for a = #_G[id]["layersizes"]-2,1,-1 do
+		grad["error"][#grad["error"]+1] = {}
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["error"][#grad["error"]][b] = 0
+			for i = 1,_G[id]["layersizes"][a] do
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+			end
+		end
+	end
+
+	--update the weights
+	for a = #_G[id]["layersizes"]-1,1,-1 do
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["grad"]["weight"][a-#_G[id]["layersizes"]] = {}
+			for i = 1,_G[id]["layersizes"][a] do
+				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
+
+				--calculate the momentum
+				local dweight = curgrad+(grad["momentum"]*learningrate)*pweightdelta
+				grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
+
+				--update the weight
+				_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] = _G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] - dweight
+				grad["grad"]["weight"][a-#_G[id]["layersizes"]][i+((b-1)*_G[id]["layersizes"][a])] = dweight
+
+				--store weight update
+				pweightdelta = dweight
+			end
+		end
+	end
+
+	--update the biases
+	for i = #_G[id]["layersizes"]-1,1-1 do
+		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-1))*lnn.sumtable(grad["error"][#_G[id]["layersizes"]-i]),-learningrate),learningrate)
+
+		--calculate the momentum
+		local dbias = curgrad+(grad["momentum"]*learningrate)*pbiasdelta
+		grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
+
+		--update the bias
+		_G[id]["bias"][i] = _G[id]["bias"][i] - curgrad
+		grad["grad"]["bias"][i] = curgrad
+
+		--store bias update
+		pweightdelta = dbias
+	end
+
+	--update the data on _G[id]
+	_G[id]["gradient"] = grad
+end
+
+function lnn.adjust.momentum.returngradient(id,intable,output,expectedoutput,learningrate)
+	--check for errors
+	lnn.asserttype(id,"id","string")
+	lnn.asserttype(intable,"intable","table")
+	lnn.asserttype(output,"output","table")
+	lnn.asserttype(expectedoutput,"expectedoutput","table")
+	lnn.asserttype(learningrate,"learningrate","number")
+	lnn.assertsize(output,expectedoutput,"output","expectedoutput",true)
+
+	if _G[id] == nil then
+		error(string.format("id (%s) doesn't exist.",id))
+	end
+
+	if #intable ~= _G[id]["layersizes"][1] then
+		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#intable,id,_G[id]["layercount"][1]))
+	end
+
+	--declare the variables
+	local grad = {
+		["error"] = {{}},
+		["grad"] = {
+			["bias"] = {},
+			["weight"] = {{}}
+		},
+		["intable"] = intable,
+		["learningrate"] = learningrate,
+		["momentum"] = _G[id]["gradient"]["momentum"]
+	}
+	local pweightdelta = 0
+	local pbiasdelta = 0
+
+	--calculate the error for each output node
+	for i = 1,#output do
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+	end
+
+	--backpropagate the error
+	for a = #_G[id]["layersizes"]-2,1,-1 do
+		grad["error"][#grad["error"]+1] = {}
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["error"][#grad["error"]][b] = 0
+			for i = 1,_G[id]["layersizes"][a] do
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+			end
+		end
+	end
+
+	--calculate the weight gradient
+	for a = #_G[id]["layersizes"]-1,1,-1 do
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["grad"]["weight"][a-#_G[id]["layersizes"]] = {}
+			for i = 1,_G[id]["layersizes"][a] do
+				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
+
+				--calculate the momentum
+				grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
+
+				grad["grad"]["weight"][a-#_G[id]["layersizes"]][i+((b-1)*_G[id]["layersizes"][a])] = curgrad+(grad["momentum"]*learningrate)*pweightdelta
+
+				--store weight update
+				pweightdelta = curgrad+(grad["momentum"]*learningrate)*pweightdelta
+			end
+		end
+	end
+
+	--calculate the bias gradient
+	for i = #_G[id]["layersizes"]-1,1-1 do
+		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-1))*lnn.sumtable(grad["error"][#_G[id]["layersizes"]-i]),-learningrate),learningrate)
+
+		--calculate the momentum
+		grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
+
+		grad["grad"]["bias"][i] = curgrad+(grad["momentum"]*learningrate)*pbiasdelta
+
+		--store bias update
+		pweightdelta = curgrad+(grad["momentum"]*learningrate)*pbiasdelta
+	end
+
+	return grad
+end
+
+function lnn.adjust.momentum.adjustfromgradient(id,gradient)
+	--check for errors
+	lnn.asserttype(id,"id","string")
+	lnn.asserttype(gradient,"gradient","table")
+
+	if _G[id] == nil then
+		error(string.format("id (%s) doesn't exist.",id))
+	end
+
+	if #gradient["intable"] ~= _G[id]["layersizes"][1] then
+		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#gradient["intable"],id,_G[id]["layercount"][1]))
+	end
+
+	--update the weights
+	for a = #_G[id]["layersizes"]-1,1,-1 do
+		for i = 1,#_G[id]["weight"][a] do
+			_G[id]["weight"][a][i] = _G[id]["weight"][a][i] - gradient["grad"]["weight"][a-#_G[id]["layersizes"]][i]
+		end
+	end
+
+	--update the biases
+	for i = #_G[id]["layersizes"]-1,1-1 do
+		_G[id]["bias"][i] = _G[id]["bias"][i] - gradient["grad"]["bias"][i]
+	end
+
+	--update the data on _G[id]
+	_G[id]["gradient"] = gradient
 end
 
 --default loss functions
@@ -698,7 +969,7 @@ function lnn.debug.addrandom(id,lowerlimit,upperlimit)
 	end
 end
 
---data, used for importing and exporting commonly used data. is this possibly insecure? yes !
+--data, why is there only exportdata? because you can just use require() if its .lua or dofile() to import the data.
 
 function lnn.data.exportdata(id,filename)
 	--check for errors.
@@ -739,191 +1010,61 @@ function lnn.data.exportdata(id,filename)
 			f:write("},\n")
 		end
 
-		f:write("},\n['bias'] = {\n")
+		f:write("},\n['bias'] = {")
 
 		--write the bias data
-		for i = 1,#_G[id]["layersizes"]-1 do
+		for i = 1,#_G[id]["layersizes"]-2 do
 			f:write(_G[id]["bias"][i]..",")
 		end
 
-		f:write("\n},\n['layersizes'] = {")
+		f:write("},\n['layersizes'] = {")
 
 		--write layersizes
 		for i = 1,#_G[id]["layersizes"] do
 			f:write(_G[id]["layersizes"][i]..",")
 		end
 
-		f:write(string.format("}\n}\nreturn %s",id))
-	end
-end
+		--write weightcount
+		f:write(string.format("},\n['weightcount'] = %s,\n",_G[id]["weightcount"]))
 
-function lnn.data.importdata(id,filename)
-	--check for errors
-	lnn.asserttype(id,"id","string")
-	lnn.asserttype(filename,"filename","string")
+		--write the gradient data
+		f:write("['gradient'] = {\n")
 
-	if _G[id] ~= nil then
-		error(string.format("id %s already exists, use lnn.debug.clearid(%s) to clear the id.",id,id))
-	end
-
-	--do the stuff
-	local f = io.open(filename,"r")
-	if f ~= nil then
-		_G[id] = dofile(filename)
-	else
-		error(string.format("filename (%s) doesn't exist.",filename))
-	end
-end
-
---experimental functions, they might not work
-
-function lnn.experimental.dyanmicadjust(id,intable,output,expectedoutput,learningrate) --i had to come up with a name for this function but newadjust() didnt sound cool but this actually does change how much it adjusts based off of the settings of the neural network
-	--check for errors
-	lnn.asserttype(id,"id","string")
-	lnn.asserttype(intable,"intable","table")
-	lnn.asserttype(output,"output","table")
-	lnn.asserttype(expectedoutput,"expectedoutput","table")
-	lnn.asserttype(learningrate,"learningrate","number")
-	lnn.assertsize(output,expectedoutput,"output","expectedoutput",true)
-
-	if _G[id] == nil then
-		error(string.format("id (%s) doesn't exist.",id))
-	end
-
-	if #intable ~= _G[id]["layersizes"][1] then
-		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#intable,id,_G[id]["layercount"][1]))
-	end
-
-	--declare the variables
-	local grad = {
-		["error"] = {{}},
-		["grad"] = {
-			["bias"] = {},
-			["weight"] = {{}}
-		}
-	}
-
-	--calculate the error for each output node
-	for i = 1,#output do
-		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
-	end
-
-	--backpropagate the error
-	for a = #_G[id]["layersizes"]-2,1,-1 do
-		grad["error"][#grad["error"]+1] = {}
-		for b = 1,_G[id]["layersizes"][a+1] do
-			grad["error"][#grad["error"]][b] = 0
-			for i = 1,_G[id]["layersizes"][a] do
-				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+		f:write("['error'] = {")
+		for a = 1,#_G[id]["gradient"]["error"] do
+			f:write("\n{")
+			for i = 1,#_G[id]["gradient"]["error"][a] do
+				f:write(_G[id]["gradient"]["error"][a][i]..",")
 			end
+			f:write("},\n")
 		end
-	end
+		f:write("},\n")
 
+		f:write("['grad'] = {\n['bias'] = {")
+		for i = 1,#_G[id]["gradient"]["grad"]["bias"] do
+			f:write(_G[id]["gradient"]["grad"]["bias"][i]..",")
+		end
+		f:write("},\n")
 
-	--update the weights
-	for a = #_G[id]["layersizes"]-1,1,-1 do
-		for b = 1,_G[id]["layersizes"][a+1] do
-			grad["grad"]["weight"][a-#_G[id]["layersizes"]] = {}
-			for i = 1,_G[id]["layersizes"][a] do
-				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
-				_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] = _G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] - curgrad
-				grad["grad"]["weight"][a-#_G[id]["layersizes"]][i+((b-1)*_G[id]["layersizes"][a])] = curgrad
+		f:write("['weight'] = {")
+		for a = 1,#_G[id]["gradient"]["grad"]["weight"] do
+			f:write("\n{")
+			for i = 1,#_G[id]["gradient"]["grad"]["weight"][a] do
+				f:write(_G[id]["gradient"]["grad"]["weight"][a][i]..",")
 			end
+			f:write("},\n")
 		end
-	end
 
-	--update the biases
-	for a = #_G[id]["layersizes"]-1,1-1 do
-		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-1))*lnn.sumtable(grad["error"][#_G[id]["layersizes"]-a]),-learningrate),learningrate)
-		_G[id]["bias"][a] = _G[id]["bias"][a] - curgrad
-		grad["grad"]["bias"][a] = curgrad
-	end
+		f:write("}\n},\n['intable'] = {")
 
-	--update the data on _G[id]
-	_G[id]["gradient"] = {
-		["error"] = grad["error"],
-		["grad"] = grad["grad"],
-		["intable"] = intable,
-		["learningrate"] = learningrate
-	}
-end
-
-function lnn.experimental.momentumadjust(id,intable,output,expectedoutput,learningrate)
-	--check for errors
-	lnn.asserttype(id,"id","string")
-	lnn.asserttype(intable,"intable","table")
-	lnn.asserttype(output,"output","table")
-	lnn.asserttype(expectedoutput,"expectedoutput","table")
-	lnn.asserttype(learningrate,"learningrate","number")
-	lnn.assertsize(output,expectedoutput,"output","expectedoutput",true)
-
-	if _G[id] == nil then
-		error(string.format("id (%s) doesn't exist.",id))
-	end
-
-	if #intable ~= _G[id]["layersizes"][1] then
-		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#intable,id,_G[id]["layercount"][1]))
-	end
-
-	--declare the variables
-	local grad = {
-		["error"] = {{}},
-		["grad"] = {
-			["bias"] = {},
-			["weight"] = {{}}
-		},
-		["intable"] = intable,
-		["learningrate"] = learningrate,
-		["momentum"] = _G[id]["gradient"]["momentum"]
-	}
-	local pweightdelta = {0}
-
-	--calculate the error for each output node
-	for i = 1,#output do
-		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activation"]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
-	end
-
-	--backpropagate the error
-	for a = #_G[id]["layersizes"]-2,1,-1 do
-		grad["error"][#grad["error"]+1] = {}
-		for b = 1,_G[id]["layersizes"][a+1] do
-			grad["error"][#grad["error"]][b] = 0
-			for i = 1,_G[id]["layersizes"][a] do
-				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activation"]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
-			end
+		for i = 1,#_G[id]["gradient"]["intable"] do
+			f:write(_G[id]["gradient"]["intable"][i]..",")
 		end
+
+		f:write(string.format("},\n['learningrate'] = %s,\n['momentum'] = %s\n}",_G[id]["gradient"]["learningrate"],_G[id]["gradient"]["momentum"]))
+
+		f:write(string.format("\n}\nreturn %s",id))
 	end
-
-	--update the weights
-	for a = #_G[id]["layersizes"]-1,1,-1 do
-		for b = 1,_G[id]["layersizes"][a+1] do
-			grad["grad"]["weight"][a-#_G[id]["layersizes"]] = {}
-			for i = 1,_G[id]["layersizes"][a] do
-				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
-
-				--calculate the momentum
-				local dweight = curgrad+(grad["momentum"]*learningrate)*pweightdelta[i+((b-1)*_G[id]["layersizes"][a])]
-				grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
-
-				--update the weight
-				_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] = _G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] - dweight
-				grad["grad"]["weight"][a-#_G[id]["layersizes"]][i+((b-1)*_G[id]["layersizes"][a])] = dweight
-
-				--store weight update
-				pweightdelta[(i+((b-1)*_G[id]["layersizes"][a]))+1] = dweight
-			end
-		end
-	end
-
-	--update the biases
-	for a = #_G[id]["layersizes"]-1,1-1 do
-		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-1))*lnn.sumtable(grad["error"][#_G[id]["layersizes"]-a]),-learningrate),learningrate)
-		_G[id]["bias"][a] = _G[id]["bias"][a] - curgrad
-		grad["grad"]["bias"][a] = curgrad
-	end
-
-	--update the data on _G[id]
-	_G[id]["gradient"] = grad
 end
 
 return lnn --its require() time

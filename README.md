@@ -2,7 +2,14 @@
 
 ## Lua: https://lua.org
 
-Description:
+## NOTE
+
+Due to huge bugs affecting the neural networks, new features introduced, improvements, and bad code, it is not recommended to use anything behind v1.2.00.
+
+Also I'm a programmer, not a writer so the documentation is probably not of the highest quality but at least there is documentation. Please research yourself about neural networks, there are a lot of people out there who know a lot more than I do and know how to write. 
+
+## DESCRIPTION
+
 A simple neural network library for Lua with functions for activation functions and their derivatives,
 forward and backward propagation as well as calculating cost functions like MSE or cross entropy.
 Using an ID system for each neural network you can have multiple neural networks in 1 file, manage
@@ -15,21 +22,25 @@ Youtube: <a href="https://youtube.com/@xxoa_/">@xxoa_</a>
 
 Github: <a href="https://github.com/x-xxoa">x-xxoa</a>
 
+tumblr: <a href="https://x-xxoa.tumblr.com">@x-xxoa</a>
+
 Email: xxoa.yt@gmail.com
 
-## VERSION FORMATTING
+## VERSION NUMBERING SCHEME
 
 x.y.zz-abc
 
-x is the major version, y is the minor version, zz is the patch version and abc declares if it's unstable or not.
+x is the major version, y is the minor version, zz is the patch version and abc is the branch like `fast` or `unstable`.
 
-A patch is usually a small change to a function or 2, a minor version is usually a large change to a lot of functions or a system overhaul aswell as changes to documentation and the major version goes up on the first release of the year that makes the minor version number go up.
+A patch is usually a small change to a function or 2, a minor version is usually a large change to a lot of functions or a system overhaul aswell as changes to documentation and the major version goes up on the first release of the year that makes the minor version number go up. If the minor version reaches a number above 9 in 1 year somehow it will just go to 10 and so on.
 
 Example:
 
 `v1.2.00-unstable` would mean the unstable version of the 2nd minor version of the 1st major version.
 
 `v1.1.02` would mean the stable version of the 2nd patch of the 1st minor version of the 1st major version.
+
+`v2.3.08-fast` would mean the fast version of the 8th patch of the 3rd minor version of the 2nd major version.
 
 ## DEFAULT ACTIVATION & ERROR FUNCTIONS
 
@@ -41,8 +52,10 @@ Example:
  - ELU ("elu")
  - Swish ("swish")
  - Binary Step ("binarystep")
+ - Softmax **NOTE:** Cannot be used as the activation function in the default neural network functions. (well you can but it will error because x is a number.)
+ - Softplus ("softplus")
+ - Softsign ("softsign")
  - Linear ("linear")
- - Softmax **NOTE:** All layers when using `lnn.initialize()` must be equal when using this as `activation`.
 
 ### DEFAULT COST/ERROR FUNCTIONS
  - MSE (Mean Squared Error)
@@ -50,32 +63,31 @@ Example:
  - SSE (Sum of Squared Error)
  - RMSE (Root of Mean Squared Error)
  - Cross Entropy
- - Binary Cross Entropy
  - Categorical Cross Entropy
 
 ## STRENGTHS AND LIMITATIONS
 
 ### STRENGTHS
 
- - Because this library uses Lua it has the ability to be run in LuaJIT which is really fast.
+ - Ability to run in LuaJIT.
 
- - Because this uses no external libraries that means that all this requires is bare Lua 5.4 to run.
+ - No external libraries & can run off bare Lua (5.1.x and above).
 
- - Because it uses an id system and integrates them into the functions it's easy to manage the neural networks with clean and readable code.
+ - ID system for managing neural networks with clean code.
 
- - Because there are many default activation functions and support for custom activation functions it can fit a lot of use cases. ( not all but a lot :) )
+ - Support for different activations on different layers.
 
- - Because the structure of the neural networks is simple and made easy to understand, you could create your own functions involving the neural networks if the built-in default ones do not fit your needs.
+ - Simple and easy to understand structure.
 
 ### LIMITATIONS
 
- - Because it uses _G[] to store the neural network values it count be slow and clutter variables.
+ - _G[] can be slower and clutter variables
 
- - Because this is in Lua there might not be as many features of neural network libraries in other programming languages or even other ones in Lua. the main point of this is that it's easy and simple with no spaghetti code. (for you, there's metric tons of spaghetti code in the functions)
+ - There might not be as many features of neural network libraries in other programming languages or even other ones in Lua. the main point of this is that it's easy and simple with no spaghetti code.
 
- - Because of the error checking, this isn't as fast as it could be. check the 'fast' branch for no error checking. **NOTE:** the fast branch might not be updated at the same speed that the 'stable' branch is.
+ - Slightly slower due to error checking, check the 'fast' branch for no error checking. **NOTE:** the fast branch might not be updated at the same speed that the 'stable' branch is.
 
- - The `lnn.adjust()` function doesn't support custom loss functions at the moment.
+ - The `lnn.adjust()` function doesn't support custom loss functions at the moment. (but you could create your own back-propagation algorithm for the neural networks since they're easy to interface with !)
 
 ## ALL FUNCTIONS
 
@@ -96,14 +108,20 @@ Example:
  - [**lnn.activation.swish()**](#sw)
  - [**lnn.activation.binarystep()**](#bs)
  - [**lnn.activation.softmax()**](#sm)
+ - [**lnn.activation.softplus()**](#sp)
+ - [**lnn.activation.softsign()**](#ss)
+ - [**lnn.activation.linear()**](#li)
 
 ### NEURAL NETWORK FUNCTIONS
 
  - [**lnn.initialize()**](#in)
  - [**lnn.forwardpass()**](#fp)
- - [**lnn.adjust()**](#ad)
- - [**lnn.returngradient()**](#rg)
- - [**lnn.adjustfromgradient()**](#afg)
+ - [**lnn.returnerror()**](#rte)
+ - [**lnn.adjust.adjustfromgradient()**](#afg)
+ - [**lnn.adjust.basic.adjust()**](#ad)
+ - [**lnn.adjust.basic.returngradient()**](#rg)
+ - [**lnn.adjust.momentum.adjust()**](#mad)
+ - [**lnn.adjust.momentum.returngradient()**](#mrg)
 
 ### DEFAULT LOSS FUNCTIONS
 
@@ -112,93 +130,43 @@ Example:
  - [**lnn.loss.sse()**](#sse)
  - [**lnn.loss.rmse()**](#rmse)
  - [**lnn.loss.crossentropy()**](#ce)
- - [**lnn.loss.binarycrossentropy()**](#bce)
  - [**lnn.loss.categoricalcrossentropy()**](#cce)
-
-### DEBUG FUNCTIONS
-
- - [**lnn.debug.returnweights()**](#rw)
- - [**lnn.debug.returnbiases()**](#rb)
- - [**lnn.debug.returncurrent()**](#rc)
- - [**lnn.debug.clearid()**](#ci)
- - [**lnn.debug.randomize()**](#ra)
 
 ### DATA FUNCTIONS
 
+ - [**lnn.data.randomize()**](#ra)
+ - [**lnn.data.addrandom()**](#ar)
  - [**lnn.data.exportdata()**](#ed)
- - [**lnn.data.importdata()**](#id)
 
-# HOW THE NEURAL NETWORK WORKS
+# NEURAL NETWORK TABLE STRUCTURES
 
-## CREATING THE NEURAL NETWORK
-The `lnn.initialize()` function creates a table with this structure in _G: (check out the documentation on `lnn.initialize()` if you dont know the parameters for the function)
+## NEURAL NETWORK TABLE
+
+id = {                     --TYPES:        DESCRIPTION:
+	activations            --table         table containing activations for each layer
+	alpha                  --number        used as a multiplication constant in some activation functions, 1 by default, 0.01 if activation is leakyrelu
+	gradient               --table         (see the section below)
+	id                     --string        id for the neural network
+	weight                 --table         table containing tables containing the weights, numbered by the next layer so weight 1 is connected to node 1 in the 2nd layer and node 1 in the 1st layer and weight 2 is connected to node 1 in the 2nd layer and node 2 in the 1st layer for example
+	bias                   --table         table containing the bias for each layer, every hidden layer has a bias and is added to the layer after it.
+	current                --table         table containing tables containing the values of the node
+	layersizes             --table         table containing the sizes of the input, hidden and output layers
+	weightcount            --number        the total amount of weights in the neural network
+}
+
+## GRADIENT TABLE
+
 ```
-_G[id] = {                 --TYPES:        ASSIGNED: (on lnn.initialize())                          DESCRIPTION:
-	activation,            --string        activation                                               activation function for neural network, in lnn.activation
-	layercount,            --number        #layersizes-2                                            amount of hidden layers
-	outcount,              --number        #layersizes[#layersizes]                                 output size
-	insize,                --number        #layersizes[1]                                           input size
-	alpha,                 --number        1 by default, 0.01 if activation is "leakyrelu"          multiplication constant for some activation functions
-	gradient = {           --table                                                                  gradient (actually calculated in lnn.adjust() or lnn.returngradient())
-		gradw,             --table         empty                                                    weight gradient for output nodes
-		gradb,             --table         empty                                                    bias gradient for output nodes
-		gwsum,             --number        0                                                        sum of weight gradient for hidden layer nodes
-		gbsum,             --number        0                                                        sum of bias gradient for hidden layer nodes
-		dwinsum,           --number        0                                                        derivative of the activation function of the weighted sum of the input
-		learningrate       --number        0                                                        step size, usually a low number like 0.01 or 0.001
-	},                             
-	id,                    --string        id                                                       id for the neural network
-	weight,                --table         (covered later)                                          table containing tables containing weights
-	bias,                  --table         (covered later)                                          table containing tables containing biases
-	current,               --table         (covered later)                                          table containing tables containing node values
-	layersizes             --table         layersizes                                               sizes of every layer
+grad = {                   --TYPES:        DESCRIPTION:
+	error,                 --table         error of every node
+	grad = {               --table         table containing the gradients for the weights and biases
+		weight             --table         table containing the gradient for every weight
+		bias               --table         table containing the gradient for every bias
+	},
+	learningrate,          --number        step size for training, usually a low number like 0.01 or 0.001
+	momentum               --number        momentum, not used in this function.
 }
 ```
-
-Then for `#layersizes-1`, it creates these tables: (a is for loop variable)
-```
-_G[id]["current"][a] = {}
-_G[id]["bias"][a] = {}
-_G[id]["weight"][a] = {}
-```
-The reason it is `#layersizes-1` is because we need the last layer (a) and the next (a+1) in some cases like creating the weight tables.
-
-Then for `layersizes[a+1]` (i is for loop variable) it fills `_G[id]["current"][a][i]` with 0s and fills `_G[id]["bias"][a][i]` with a random number between -1 and 1. The reason it uses `layersizes[a+1]` is because `layersizes[1]` is the size for the input, we're creating the hidden layer (or output layer if `#layersizes` is 2, so no hidden layers) bias and current tables.
-
-Then the `amounttofill` variable is set to `layersizes[a+1]*layersizes[a]` and for `amounttofill` (i is again for loop variable) it sets `_G["weight"][a][i]` to a random number between -1 and 1.
-
-## GETTING THE OUTPUT
-
-Now that we've created our neural network, we need to get the output. To calculate a node we need to multiply each node in the last layer by it's weight that is connected to the current node in the layer we're currently on, sum it together, put that in the activation function and then repeat this for every node in the next layer to get the rest of the layer. So if we had 4 input nodes and 2 output nodes, this is what it would look like to get `o1` and `o2`:
-
-```
-o1 = act( (i1*w1) + (i2*w2) + (i3*w3) + (i4*w4) )
-o2 = act( (i1*w5) + (i2*w6) + (i3*w5) + (i4*w6) )
-```
-
-**NOTE:** `act()` is the activation function, there are many but the default ones are listed above and you can create your own in `lnn.activation`.
-
-Notice how on `o2` we continued from `w5`? That's because it's a different weight and in `lnn.forwardpass()`, it assumes that the weights is next layer based. (i just made that up, idk what else to call it)
-
-So if we had a more complex neural network, we would multiply each node in the last layer by it's weight that is connected to the current node in the layer we're currently on, sum it together, put that into the activation function, repeat that for every node in the next layer and then repeat that for every layer in the neural network.
-
-## TRAINING
-
-**NOTE:** I tried to actually create a back-propagation algorithm but it failed miserably but the default one included works well enough to use. If you're looking for a tutorial on proper back-propagation please research it yourself. This is just describing how to default one included works.
-
-It starts by getting the weighted sum of the input, once that is calculated it calculates `gradw` and `gradb`.
-
-Weight gradient: (`gradw`)
-For every output node it gets the difference between (`output[i]` and `expectedoutput[i]` squared times `dwinsum` (the thing we calculated earlier) times `learningrate`) plus (the difference between `output[i]` and `expectedoutput[i]` times `learningrate`)
-
-Bias gradient: (`gradb`)
-For every output node it gets the difference between (`output[i]` and `expectedoutput[i]` times `learningrate`) plus (the difference between `output[i]` and `expectedoutput[i]` times `learningrate`)
-
-The reason we get the difference between `output[i]` and `expectedoutput[i]` twice in both is to prevent the vanishing gradient problem in a very simple way.
-
-We then calculate `gwsum` by getting the sum of `gradw` and we calculate `gbsum` by getting the sum of `gradb`. The `gradient` table on `_G[id]` is then updated.
-
-The output node weights are adjusted with `gradw` and the output node biases are adjusted wtih `gradb`. The hidden layer weights are then adjusted with `gwsum` and the hidden layer biases are adjusted with `gbsum`.
 
 # OTHER STUFF
 
@@ -226,20 +194,6 @@ Have questions? Email me or add a question on the issues page with the tag `ques
 
    >"`variablename` (`variable`) is not a `expectedtype` or is nil. Type: `type(variable)`"
    
-   ### EXAMPLE
-```lua
-function examplefunction(x)
-	--check if x is a number
-	lnn.asserttype(x,"x","number")
-	--[[
-		if x is a table like this:
-		{1,2}
-		it will call error() with this message:
-		"x (table: 0xMemoryaddress) is not a number or is nil. Type: table"
-	]]--
-end
-```
-
 </div>
 
 <br>
@@ -268,18 +222,6 @@ end
 
    >"`aname` (`#a`) or `bname` (`#b`) is equal to zero."
 
-   ### EXAMPLE
-```lua
-function exampleloss(real,ideal)
-	--check if real and ideal are tables
-	lnn.asserttype(real,"real","table")
-	lnn.asserttype(idea,"ideal","table")
-	
-	--check sizes
-	lnn.assertsize(real,idea,"real","ideal",true)
-end
-```
-
 </div>
 
 <br>
@@ -297,27 +239,9 @@ end
    | **table**      | **table**   | The table you want to find `item` in.                                         |
    | **item**       | **any**     | The item you want to find in `table`.                                         |
    | **recursive**  | **boolean** | Should the function call itself when the current index of `table` is a table. |
-   
+
    This function performs a linear search on `table` to find `item`, if `recursive` is true and the current index of `table` is a table it will call the lnn.findintable() function on the current table index. If it finds `item` in `table` it will return the current table index number (the i in the for loop, i'm not good with words) and if it doesn't find `item` it will return false. 
 
-   ### EXAMPLE
-```lua
-local exampletable = {
-	"this",
-	"is",
-	"an",
-	"example",
-	"i'm",
-	"bad",
-	"with",
-	"examples"
-}
-if lnn.findintable(exampletable,user_input,false) then
-	print("found input in exampletable")
-else
-	print("could not find input in exampletable")
-end
-```
 
 </div>
 
@@ -336,18 +260,6 @@ end
    | **table**      | **table**  | The table you want to get the sum of. |
    
    This function allows you to get the sum of all numbers in a table.
-   
-   ### EXAMPLE
-```lua
-function get_layers_sum(id)
-	local t = lnn.debug.returncurrent(id)
-	local return_t = {}
-	for i = 1,#t do
-		return_t[i] = lnn.sumtable(t[i])
-	end
-	return return_t
-end
-```
 
 </div>
 
@@ -371,13 +283,6 @@ end
    ### MATHEMATICAL FUNCTION
    $$\frac{1}{1+e^{-x}}$$
 
-   ### EXAMPLE
-```lua
-for i = 1,#weighted_layer_sums do
-	nextlayer[i] = lnn.activation.sigmoid(weighted_layer_sums[i],false)
-end
-```
-
 </div>
 
 <br>
@@ -387,7 +292,7 @@ end
    <a id="ta"></a>
    # lnn.activation.tanh()
    ### DESCRIPTION
-   Returns `x` put into the hyperbolic tangent function if `derivative` is false and returns `x` put into the derivative of the hyperbolic tangent function if `derivative` is true.
+   Returns `x` put into the Tanh (Hyperbolic Tangent) function if `derivative` is false and returns `x` put into the derivative of the Tanh function if `derivative` is true.
    
    ### PARAMETERS
    | parameter name   | type        | description                                                                   |
@@ -395,17 +300,10 @@ end
    | **x**            | **number**  | The number you want to put into the tanh function.                            |
    | **derivative**   | **boolean** | Should the function return x put into the derivative of the tanh function.    |
    
-   If `derivative` is false this function returns `x` put into the tanh (hyperbolic tangent) activation function, otherwise if `derivative` is true it returns `x` put into the derivative of the tanh activation function.
+   If `derivative` is false this function returns `x` put into the Tanh activation function, otherwise if `derivative` is true it returns `x` put into the derivative of the Tanh activation function.
 
    ### MATHEMATICAL FUNCTION
    $$\frac{e^{2x}-1}{e^{2x}+1}$$
-
-   ### EXAMPLE
-```lua
-for i = 1,#weighted_layer_sums do
-	nextlayer[i] = lnn.activation.tanh(weighted_layer_sums[i],false)
-end
-```
 
 </div>
 
@@ -428,13 +326,6 @@ end
 
    ### MATHEMATICAL FUNCTION
    $$max(0,x)$$
-
-   ### EXAMPLE
-```lua
-for i = 1,#weighted_layer_sums do
-	nextlayer[i] = lnn.activation.relu(weighted_layer_sums[i],false)
-end
-```
 
 </div>
 
@@ -462,13 +353,6 @@ end
        x\cdot\alpha,&\text{otherwise}
    \end{cases}
    $$
- 
-   ### EXAMPLE
-```lua
-for i = 1,#weighted_layer_sums do
-	nextlayer[i] = lnn.activation.leakyrelu(weighted_layer_sums[i],false)
-end
-```
 
 </div>
 
@@ -497,13 +381,6 @@ end
 	   e^{x}-1,&\text{otherwise}
    \end{cases}
    $$
-   
-   ### EXAMPLE
-```lua
-for i = 1,#weighted_layer_sums do
-	nextlayer[i] = lnn.activation.elu(weighted_layer_sums[i],false)
-end
-```
 
 </div>
 
@@ -529,13 +406,6 @@ end
    $$
    \frac{x}{1+e^{(-\alpha)\cdot\text{x}}}
    $$
-
-   ### EXAMPLE
-```lua
-for i = 1,#weighted_layer_sums do
-	nextlayer[i] = lnn.activation.swish(weighted_layer_sums[i],false)
-end
-```
 
 </div>
 
@@ -564,13 +434,6 @@ end
    \end{cases}
    $$
 
-   ### EXAMPLE
-```lua
-for i = 1,#weighted_layer_sums do
-	nextlayer[i] = lnn.activation.binarystep(weighted_layer_sums[i],false)
-end
-```
-
 </div>
 
 <br>
@@ -598,12 +461,76 @@ end
    \sum_{i=1}^{|A|x}\frac{{e^{x_{i}}}}{\sum_{a=1}^{|A|x}e^{x_{a}}}
    $$
 
-   ### EXAMPLE
-```lua
-for i = 1,#weighted_layer_sums do
-	nextlayer[i] = lnn.activation.leakyrelu(weighted_layer_sums[i],false)
-end
-```
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="sp"></a>
+   # lnn.activation.softplus()
+   ### DESCRIPTION
+   Returns `x` put into the Softplus activation function if `derivative` is false and retuns `x` put into the derivative of the Softplus activation function if `derivative` is true.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                               |
+   |----------------|-------------|-------------------------------------------------------------------------------------------|
+   | **x**          | **number**  | The number you want to put into the Softplus activation function.                         |
+   | **derivative** | **boolean** | Should the function return x put into the derivative of the Softplus activation function. |
+
+   If `derivative` is false this function returns `x` put into the Softplus activation function, otherwise if `derivative` is true, it returns `x` put into the derivative of the Softplus activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   log(1+e^{x})
+   $$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="ss"></a>
+   # lnn.activation.softsign()
+   ### DESCRIPTION
+   Returns `x` put into the Softsign activation function if `derivative` is false and retuns `x` put into the derivative of the Softsign activation function if `derivative` is true.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                               |
+   |----------------|-------------|-------------------------------------------------------------------------------------------|
+   | **x**          | **number**  | The number you want to put into the Softsign activation function.                         |
+   | **derivative** | **boolean** | Should the function return x put into the derivative of the Softsign activation function. |
+
+   If `derivative` is false this function returns `x` put into the Softsign activation function, otherwise if `derivative` is true, it returns `x` put into the derivative of the Softsign activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   \frac{x}{1+|x|}
+   $$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="li"></a>
+   # lnn.activation.linear()
+   ### DESCRIPTION
+   Returns `x` if `derivative` is false and retuns 1 if `derivative` is true. This is mainly just for cleaner code so there's not a special statment for the `linear` activation function.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                    |
+   |----------------|-------------|--------------------------------|
+   | **x**          | **number**  | The number you want to return. |
+   | **derivative** | **boolean** | Should the function return 1.  |
+   | **alpha**      | **number**  | Number to be multiplied by x.  |
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   x
+   $$
 
 </div>
 
@@ -625,46 +552,10 @@ end
 
    This function creates a neural network with an id of `id` and creates all the data for it. the `activation` parameter should be the name of a function in `lnn.activation`, so "sigmoid" would be a valid activation function and if you made your own function in `lnn.activation` that would also be a valid activation function. The `layersizes` parameter should be a table containing the sizes for all layers. The first number in `layersizes` would be the input size, the last number in `layersizes` would be the output size and the numbers inbetween would be the hidden layer sizes. You can create a neural network with no hidden layers by just having 2 numbers, input and output size.
 
-   ### DATA CREATED IN _G[id]
-```
-_G[id] = {                 --TYPES:        DESCRIPTION:
-	activation,            --string        activation function for neural network, in lnn.activation
-	layercount,            --number        amount of hidden layers
-	outcount,              --number        output size
-	insize,                --number        input size
-	alpha,                 --number        multiplication constant for some activation functions
-	gradient = {           --table         gradient (actually calculated in lnn.adjust() or lnn.returngradient())
-		gradw,             --table         (see lnn.returngradient() documentation)
-		gradb,             --table         (see lnn.returngradient() documentation)
-		gwsum,             --number        (see lnn.returngradient() documentation)
-		gbsum,             --number        (see lnn.returngradient() documentation)
-		dwinsum,           --number        (see lnn.returngradient() documentation)
-		learningrate       --number        (see lnn.returngradient() documentation)
-	},
-	id,                    --string        id for the neural network
-	weight,                --table         table containing tables containing weights
-	bias,                  --table         table containing tables containing biases
-	current,               --table         table containing tables containing node values
-	layersizes             --table         sizes of every layer
-}
-```
-
    ### RETURN VALUE
    Nothing
 
    ### EXAMPLE
-```lua
-lnn.initialize("examplenn","leakyrelu",{16,20,15,10,5})
---[[
-this neural network would have an id of "examplenn", the activation function would be "lnn.activation.leakyrelu()" and these would be the layer sizes:
-
-input:            16
-1st hidden layer: 20
-2nd hidden layer: 15
-3rd hidden layer: 10
-output:           5
-]]--
-```
 
 </div>
 
@@ -683,21 +574,10 @@ output:           5
    | **id**         | **string** | The id of the neural network you want to get the output of. |
    | **intable**    | **table**  | Input for the neural network.                               |
 
-   Gets the output of `id` with input `intable`, go to SECTION THAT IDK NAME OF BUT FUTURE ME CHANGE THSI PSLS!!!!!! for information on how this function works.
+   Gets the output of `id` with input `intable`, go to the how the neural network works section for information on how this function works.
 
    ### RETURN VALUE
    Neural network output (`_G[id]["current"][_G[id]["layercount"]+1]`)
-
-   ### EXAMPLE
-```lua
-local inp = {
-	0,1,1,0,
-	1,1,1,1,
-	1,1,1,1,
-	0,1,1,0
-}
-local out = lnn.forwardpass("examplenn",inp)
-```
 
 </div>
 
@@ -705,10 +585,53 @@ local out = lnn.forwardpass("examplenn",inp)
 
 <div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
    
-   <a id="ad"></a>
-   # lnn.adjust()
+   <a id="rte"></a>
+   # lnn.returnerror()
    ### DESCRIPTION
-   Calculates the gradient of neural network `id` with input `intable`, output `output` and expected/ideal output `expectedoutput` and adjusts `id`'s weights and biases.
+   Calculates the error of neural network `id` with input `intable`, output `output` and expected/ideal output `expectedoutput`.
+
+   ### PARAMETERS
+   | parameter name     | type       | description                                                                                  |
+   |--------------------|------------|----------------------------------------------------------------------------------------------|
+   | **id**             | **string** | The id of the neural network you want to adjust.                                             |
+   | **intable**        | **table**  | Input for the neural network.                                                                |
+   | **output**         | **table**  | The real output for the neural network.                                                      |
+   | **expectedoutput** | **table**  | The expected/ideal output for the neural network with an input of `intable`.                 |
+   | **learningrate**   | **number** | THe step size for adjusting the weights and biases, usually a low number like 0.01 or 0.001. |
+
+   ### RETURN VALUE
+   Error of nodes with respect to the parameters.
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="afg"></a>
+   # lnn.adjust.adjustfromgradient()
+   ### DESCRIPTION
+   Adjusts `id`'s weights and biases from `gradient`.
+
+   ### PARAMETERS
+   | parameter name | type       | description                                                                                                          |
+   |----------------|------------|----------------------------------------------------------------------------------------------------------------------|
+   | **id**         | **string** | The id of the neural network you want to adjust.                                                                     |
+   | **gradient**   | **table**  | Table containing the  data, assumed to be returned from `lnn.adjust.**.returngradient()` or with the same structure. |
+
+   ### RETURN VALUE
+   Nothing
+
+</div>
+
+## BASIC ADJUST FUNCTIONS
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="ad"></a>
+   # lnn.adjust.basic.adjust()
+   ### DESCRIPTION
+   Calculates the gradient of neural network `id` with input `intable`, output `output` and expected/ideal output `expectedoutput` and adjusts `id`'s weights and biases for stochastic gradient descent without momentum.
 
    ### PARAMETERS
    | parameter name     | type       | description                                                                                  |
@@ -722,12 +645,6 @@ local out = lnn.forwardpass("examplenn",inp)
    ### RETURN VALUE
    Nothing
 
-   ### EXAMPLE
-```lua
-local eo = {0,0.25,0.5,0.75,1}
-lnn.adjust("examplenn",inp,o,eo,0.01)
-```
-
 </div>
 
 <br>
@@ -735,9 +652,9 @@ lnn.adjust("examplenn",inp,o,eo,0.01)
 <div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
    
    <a id="rg"></a>
-   # lnn.returngradient()
+   # lnn.adjust.basic.returngradient()
    ### DESCRIPTION
-   Calculates the gradient of neural network `id` with input `intable`, output `output` and expected/ideal output of `expectedoutput` and returns the gradient and any data that might be needed.
+   Calculates the gradient of neural network `id` with input `intable`, output `output` and expected/ideal ouitput of `expectedoutput and returns the gradient and error without momentum. Could be used for batch or mini-batch gradient descent.
 
    ### PARAMETERS
    | parameter name     | type       | description                                                                                  |
@@ -748,39 +665,54 @@ lnn.adjust("examplenn",inp,o,eo,0.01)
    | **expectedoutput** | **table**  | The expected/ideal output for the neural network with an input of `intable`.                 |
    | **learningrate**   | **number** | THe step size for adjusting the weights and biases, usually a low number like 0.01 or 0.001. |
 
-   ### GRADIENT TABLE
-```
-grad = {                   --TYPES:        DESCRIPTION:
-	gradw,                 --table         weight gradient for output nodes
-	gradb,                 --table         bias gradient for output nodes
-	gwsum,                 --number        sum of weight gradient for hidden layer nodes
-	gbsum,                 --number        sum of bias gradient for hidden layer nodes
-	dwinsum,               --number        derivative of the weighed sum of the input
-	learningrate           --number        step size
-}
-```
-
    ### RETURN VALUE
    Gradient
 
-   ### EXAMPLE
-```lua
-local eo = {0,0.25,0.5,0.75,1}
-local eo2 = {1,0.75}
-local g1 = lnn.returngradient("examplenn",inp,o,eo,0.01)
-local g2 = lnn.returngradient("examplenn",inp2,o2,eo2,0.01)
-local g = {
-	["gradw"] = {},
-	["gradb"] = {},
-	["gwsum"] = (g1["gwsum"]+g2["gwsum"])/2
-	["gbsum"] = (g1["gbsum"]+g2["gbsum"])/2
-	["dwinsum"] = (g1["dwinsum"]+g2["dwinsum"])/2
-}
-for i = 1,#g1["gradw"] do
-	g["gradw"][i] = (g1["gradw"][i]+g2["gradw"][i])/2
-	g["gradb"][i] = (g1["gradb"][i]+g2["gradb"][i])/2
-end
-```
+</div>
+
+## MOMENTUM ADJUST FUNCTIONS
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="mad"></a>
+   # lnn.adjust.momentum.adjust()
+   ### DESCRIPTION
+   Calculates the gradient of neural network `id` with input `intable`, output `output` and expected/ideal output `expectedoutput` and adjusts `id`'s weights and biases for stochastic gradient descent with momentum.
+
+   ### PARAMETERS
+   | parameter name     | type       | description                                                                                  |
+   |--------------------|------------|----------------------------------------------------------------------------------------------|
+   | **id**             | **string** | The id of the neural network you want to adjust.                                             |
+   | **intable**        | **table**  | Input for the neural network.                                                                |
+   | **output**         | **table**  | The real output for the neural network.                                                      |
+   | **expectedoutput** | **table**  | The expected/ideal output for the neural network with an input of `intable`.                 |
+   | **learningrate**   | **number** | THe step size for adjusting the weights and biases, usually a low number like 0.01 or 0.001. |
+
+   ### RETURN VALUE
+   Nothing
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="mrg"></a>
+   # lnn.adjust.momentum.returngradient()
+   ### DESCRIPTION
+   Calculates the gradient of neural network `id` with input `intable`, output `output` and expected/ideal ouitput of `expectedoutput and returns the gradient and error with momentum. Could be used for batch or mini-batch gradient descent.
+
+   ### PARAMETERS
+   | parameter name     | type       | description                                                                                  |
+   |--------------------|------------|----------------------------------------------------------------------------------------------|
+   | **id**             | **string** | The id of the neural network you want to calculate the gradient of.                          |
+   | **intable**        | **table**  | Input for the neural network.                                                                |
+   | **output**         | **table**  | The real output for the neural network.                                                      |
+   | **expectedoutput** | **table**  | The expected/ideal output for the neural network with an input of `intable`.                 |
+   | **learningrate**   | **number** | THe step size for adjusting the weights and biases, usually a low number like 0.01 or 0.001. |
+
+   ### RETURN VALUE
+   Gradient
 
 </div>
 
@@ -802,11 +734,6 @@ end
    ### MATHEMATICAL FUNCTION
    $$(\frac{\sum_{i=1}^{|A|o}o-eo}{|A|o})^{2}$$
 
-   ### EXAMPLE
-```lua
-print(string.format("MSE (Mean Squared Error) of o and eo: %s",lnn.loss.mse(o,eo)))
-```
-
 </div>
 
 <br>
@@ -826,11 +753,6 @@ print(string.format("MSE (Mean Squared Error) of o and eo: %s",lnn.loss.mse(o,eo
 
    ### MATHEMATICAL FUNCTION
    $$|\frac{\sum_{i=1}^{|A|o}o-eo}{|A|o}|$$
-
-   ### EXAMPLE
-```lua
-print(string.format("MAE (Mean Absolute Error) of o and eo: %s",lnn.loss.mae(o,eo)))
-```
 
 </div>
 
@@ -852,11 +774,6 @@ print(string.format("MAE (Mean Absolute Error) of o and eo: %s",lnn.loss.mae(o,e
    ### MATHEMATICAL FUNCTION
    $$\sum_{i=1}^{|A|o}o-eo^{2}$$
 
-   ### EXAMPLE
-```lua
-print(string.format("SSE (Sum of Squared Error) of o and eo: %s",lnn.loss.sse(o,eo)))
-```
-
 </div>
 
 <br>
@@ -876,11 +793,6 @@ print(string.format("SSE (Sum of Squared Error) of o and eo: %s",lnn.loss.sse(o,
 
    ### MATHEMATICAL FUNCTION
    $$\sqrt((\frac{\sum_{i=0}^{|A|o}o-eo}{|A|o})^{2})$$
-
-   ### EXAMPLE
-```lua
-print(string.format("RMSE (Root of Mean Squared Error) of o and eo: %s",lnn.loss.rmse(o,eo)))
-```
 
 </div>
 
@@ -902,111 +814,34 @@ print(string.format("RMSE (Root of Mean Squared Error) of o and eo: %s",lnn.loss
    ### MATHEMATICAL FUNCTION
    $$\sum_{i=1}^{|A|o}{eo_{i}\cdot\log(o_{i})}$$
 
-   ### EXAMPLE
-```lua
-print(string.format("Cross Entropy of o and eo: %s",lnn.loss.crossentropy(o,eo)))
-```
-
-</div>
-
-## DEBUG FUNCTIONS
-
-<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
-   
-   <a id="rw"></a>
-   # lnn.debug.returnweights()
-   ### DESCRIPTION
-   Returns `id`'s weights.
-
-   ### PARAMETERS
-   | parameter name | type       | description                          |
-   |----------------|------------|--------------------------------------|
-   | **id**         | **string** | The id that you want the weights of. |
-
-   Returns a table containing the weights for each layer.
-
-   ### EXAMPLE
-```lua
-local weights = lnn.returnweights("examplenn")
-```
-
 </div>
 
 <br>
 
 <div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
    
-   <a id="rb"></a>
-   # lnn.debug.returnbiases()
+   <a id="cce"></a>
+   # lnn.loss.categoricalcrossentropy()
    ### DESCRIPTION
-   Returns `id`'s biases.
+   Returns the Categorical Cross Entropy of `output` and `expectedoutput`.
 
    ### PARAMETERS
-   | parameter name | type       | description                         |
-   |----------------|------------|-------------------------------------|
-   | **id**         | **string** | The id that you want the biases of. |
+   | parameter name     | type      | description                |
+   |--------------------|-----------|----------------------------|
+   | **output**         | **table** | The real output.           |
+   | **expectedoutput** | **table** | The expected/ideal output. |
 
-   Returns a table of tables containing the biases for each layer.
-
-   ### EXAMPLE
-```lua
-local biases = lnn.returnbiases("examplenn")
-```
+   ### MATHEMATICAL FUNCTION
+   $$\sum_{i=1}^{|A|o}{eo_{i}\cdot log(o_{i})}$$
 
 </div>
 
-<br>
-
-<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
-   
-   <a id="rc"></a>
-   # lnn.debug.returncurrents()
-   ### DESCRIPTION
-   Returns `id`'s current/node values.
-
-   ### PARAMETERS
-   | parameter name | type       | description                             |
-   |----------------|------------|-----------------------------------------|
-   | **id**         | **string** | The id that you want the node value of. |
-
-   Returns a table of tables containing the current/node values.
-
-   ### EXAMPLE
-```lua
-local current = lnn.returncurrent("examplenn")
-```
-
-</div>
-
-<br>
-
-<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
-   
-   <a id="ci"></a>
-   # lnn.debug.clearid()
-   ### DESCRIPTION
-   Clears an id.
-
-   ### PARAMETERS
-   | parameter name | type       | description                    |
-   |----------------|------------|--------------------------------|
-   | **id**         | **string** | The id that you want to clear. |
-
-   Sets `_G[id]` to nil.
-
-   ### EXAMPLE
-```lua
-lnn.debug.clearid("examplenn")
-```
-
-</div>
-
-<br>
+## DATA FUNCTIONS
 
 <div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
    
    <a id="ra"></a>
-   # lnn.debug.randomize()
+   # lnn.data.randomize()
    ### DESCRIPTION
    Randomizes `id`'s weights and biases.
 
@@ -1017,11 +852,6 @@ lnn.debug.clearid("examplenn")
 
    This function sets `id`'s weights and biases to a random number between -1 and 1.
 
-   ### EXAMPLE
-```lua
-lnn.debug.randomize("examplenn")
-```
-
 </div>
 
 <br>
@@ -1029,7 +859,7 @@ lnn.debug.randomize("examplenn")
 <div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
    
    <a id="ar"></a>
-   # lnn.debug.addrandom()
+   # lnn.data.addrandom()
    ### DESCRIPTION
    Adds a random amount between `upperlimit` and `lowerlimit` to `id`'s weights and biases.
 
@@ -1037,17 +867,14 @@ lnn.debug.randomize("examplenn")
    | parameter name | type       | description                                                               |
    |----------------|------------|---------------------------------------------------------------------------|
    | **id**         | **string** | The id that you want to add a random amount to the weights and biases of. |
+   | **lowerlimit** | **number** | The lower limit.                                                          |
+   | **upperlimit** | **number** | The upper limit.                                                          |
 
    This function adds a random amount between `upperlimit` and `lowerlimit` to `id`'s weights and biases, could be useful when training a stickman to walk or something like that.
 
-   ### EXAMPLE
-```lua
-lnn.debug.addrandom("examplenn",-0.1,0.1)
-```
-
 </div>
 
-## DATA FUNCTIONS
+<br>
 
 <div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
    
@@ -1064,33 +891,6 @@ lnn.debug.addrandom("examplenn",-0.1,0.1)
 
    This function exports the data in `_G[id]` to `filename`.
 
-   ### EXAMPLE
-```lua
-lnn.data.exportdata("examplenn","examplenn_data.txt")
-```
-
 </div>
 
-<br>
-
-<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
-   
-   <a id="id"></a>
-   # lnn.data.importdata()
-   ### DESCRIPTION
-   Imports `filename` as `id`
-
-   ### PARAMETERS
-   | parameter name | type       | description                                   |
-   |----------------|------------|-----------------------------------------------|
-   | **id**         | **string** | The id that you want to export.               |
-   | **filename**   | **string** | The name of the file you want to import from. |
-
-   This function imports the data from `filename` to `_G[id]` if `id` is nil before importing.
-
-   ### EXAMPLE
-```lua
-lnn.data.importdata("examplenn","examplenn_data.txt")
-```
-
-</div>
+You reached the bottom, if you see this, hello?

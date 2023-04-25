@@ -7,7 +7,6 @@ _G["lnn"] = {
 		["momentum"] = {}
 	},
 	["loss"] = {},
-	["debug"] = {},
 	["data"] = {}
 }
 
@@ -46,19 +45,18 @@ function lnn.assertsize(a,b,aname,bname,zerocheck)
 	end
 end
 
-function lnn.findintable(item,table,recursive,findname)
+function lnn.findintable(item,table,recursive)
 	--check for errors
 	lnn.asserttype(table,"table","table")
 	lnn.asserttype(recursive,"recursive","boolean")
-	lnn.asserttype(findname,"findname","boolean")
 
 	--do the stuff
 	for i,v in pairs(table) do
-		if table[i] == item or findname and table[v] == item then
+		if table[i] == item then
 			return i
 		end
 		if type(table[i]) == "table" and recursive then
-			local returnval = lnn.findintable(item,table[i],true,findname)
+			local returnval = lnn.findintable(item,table[i],true)
 			if returnval then
 				if type(returnval) == "table" then --this small detail took forever to get working
 					for a = #returnval,1,-1 do
@@ -439,6 +437,35 @@ function lnn.returnerror(id,intable,output,expectedoutput,learningrate)
 	return err
 end
 
+function lnn.adjust.adjustfromgradient(id,gradient)
+	--check for errors
+	lnn.asserttype(id,"id","string")
+	lnn.asserttype(gradient,"gradient","table")
+
+	if _G[id] == nil then
+		error(string.format("id (%s) doesn't exist.",id))
+	end
+
+	if #gradient["intable"] ~= _G[id]["layersizes"][1] then
+		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#gradient["intable"],id,_G[id]["layercount"][1]))
+	end
+
+	--update the weights
+	for a = #_G[id]["layersizes"]-1,1,-1 do
+		for i = 1,#_G[id]["weight"][a] do
+			_G[id]["weight"][a][i] = _G[id]["weight"][a][i] - gradient["grad"]["weight"][#_G[id]["layersizes"]-a][i]
+		end
+	end
+
+	--update the biases
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		_G[id]["bias"][i] = _G[id]["bias"][i] - gradient["grad"]["bias"][i]
+	end
+
+	--update the data on _G[id]
+	_G[id]["gradient"] = gradient
+end
+
 --basic adjust functions
 
 function lnn.adjust.basic.adjust(id,intable,output,expectedoutput,learningrate)
@@ -572,32 +599,6 @@ function lnn.adjust.basic.returngradient(id,intable,output,expectedoutput,learni
 	return grad
 end
 
-function lnn.adjust.basic.adjustfromgradient(id,gradient)
-	--check for errors
-	lnn.asserttype(id,"id","string")
-	lnn.asserttype(gradient,"gradient","table")
-
-	if _G[id] == nil then
-		error(string.format("id (%s) doesn't exist.",id))
-	end
-
-	--update the data on _G[id]
-	_G[id]["gradient"] = gradient
-
-	--update the weights
-	for a = #_G[id]["layersizes"]-1,1,-1 do
-		for b = 1,_G[id]["layersizes"][a+1] do
-			for i = 1,_G[id]["layersizes"][a] do
-				_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] = _G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] - gradient["learningrate"]*(gradient["grad"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(gradient["intable"]))
-			end
-		end
-	end
-
-	--update the biases
-	for i = #_G[id]["layersizes"]-2,1,-1 do
-		_G[id]["bias"][i] = _G[id]["bias"][i] - gradient["learningrate"]*lnn.sumtable(gradient["grad"][(#_G[id]["layersizes"]-1)-i])
-	end
-end
 
 --momentum adjust functions
 
@@ -770,35 +771,6 @@ function lnn.adjust.momentum.returngradient(id,intable,output,expectedoutput,lea
 	return grad
 end
 
-function lnn.adjust.momentum.adjustfromgradient(id,gradient)
-	--check for errors
-	lnn.asserttype(id,"id","string")
-	lnn.asserttype(gradient,"gradient","table")
-
-	if _G[id] == nil then
-		error(string.format("id (%s) doesn't exist.",id))
-	end
-
-	if #gradient["intable"] ~= _G[id]["layersizes"][1] then
-		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#gradient["intable"],id,_G[id]["layercount"][1]))
-	end
-
-	--update the weights
-	for a = #_G[id]["layersizes"]-1,1,-1 do
-		for i = 1,#_G[id]["weight"][a] do
-			_G[id]["weight"][a][i] = _G[id]["weight"][a][i] - gradient["grad"]["weight"][#_G[id]["layersizes"]-a][i]
-		end
-	end
-
-	--update the biases
-	for i = #_G[id]["layersizes"]-2,1,-1 do
-		_G[id]["bias"][i] = _G[id]["bias"][i] - gradient["grad"]["bias"][i]
-	end
-
-	--update the data on _G[id]
-	_G[id]["gradient"] = gradient
-end
-
 --default loss functions
 
 function lnn.loss.mse(output,expectedoutput)
@@ -904,54 +876,9 @@ function lnn.loss.categoricalcrossentropy(output,expectedoutput)
 	return -sum
 end
 
---either debugging or visualizing, could be used for both.
+--data functions, yayaya
 
-function lnn.debug.returnweights(id)
-	--check for errors.
-	lnn.asserttype(id,"id","string")
-
-	if _G[id] == nil then
-		error(string.format("id (%s) doesn't exist.",id))
-	end
-
-	return _G[id]["weight"]
-end
-
-function lnn.debug.returnbiases(id)
-	--check for errors.
-	lnn.asserttype(id,"id","string")
-
-	if _G[id] == nil then
-		error(string.format("id (%s) doesn't exist.",id))
-	end
-
-	return _G[id]["bias"]
-end
-
-function lnn.debug.returncurrent(id)
-	--check for errors.
-	lnn.asserttype(id,"id","string")
-
-	if _G[id] == nil then
-		error(string.format("id (%s) doesn't exist.",id))
-	end
-
-	return _G[id]["current"]
-end
-
-function lnn.debug.clearid(id)
-	--check for errors.
-	lnn.asserttype(id,"id","string")
-
-	if _G[id] == nil then
-		error(string.format("id (%s) doesn't exist.",id))
-	end
-
-	--do the stuff
-	_G[id] = nil
-end
-
-function lnn.debug.randomize(id)
+function lnn.data.randomize(id)
 	--check for errors
 	lnn.asserttype(id,"id","string")
 
@@ -972,7 +899,7 @@ function lnn.debug.randomize(id)
 	end
 end
 
-function lnn.debug.addrandom(id,lowerlimit,upperlimit)
+function lnn.data.addrandom(id,lowerlimit,upperlimit)
 	--check for errors
 	lnn.asserttype(id,"id","string")
 	lnn.asserttype(lowerlimit,"lowerlimit","number")
@@ -994,7 +921,7 @@ function lnn.debug.addrandom(id,lowerlimit,upperlimit)
 	end
 end
 
---data, why is there only exportdata? because you can just use require() if its .lua or dofile() to import the data.
+--why is there only exportdata? because you can just use require() if its .lua or dofile() to import the data.
 
 function lnn.data.exportdata(id,filename)
 	--check for errors.

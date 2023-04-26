@@ -1,583 +1,763 @@
 --READ THE README.md FILE FOR DOCUMENTATION AND OTHER STUFF!!!!
 
-_G["lnn"] = {}
-_G["lnn"]["debug"] = {}
-_G["lnn"]["data"] = {}
+_G["lnn"] = {
+	["activation"] = {},
+	["adjust"] = {
+		["basic"] = {},
+		["momentum"] = {}
+	},
+	["loss"] = {},
+	["data"] = {}
+}
 
-function lnn.asserttype(variable,variablename,thetype)
-    --give an error if false or nil
-    if type(variable) ~= thetype or variable == nil then
-        error(string.format("%s (%s) is not a %s or is nil. Type: %s", variablename, tostring(variable), thetype, type(variable)))
-    end
+--error catching/useful functions
+
+function lnn.asserttype(variable,variablename,expectedtype)
+	--give an error if false or nil
+	if type(variable) ~= expectedtype then
+		error(string.format("%s (%s) is not a %s or is nil. Type: %s", variablename, tostring(variable), expectedtype, type(variable)))
+	end
 end
 
-function lnn.assertsize(a,b,aname,bname)
-    --give an error they're not the same size or 0.
-    if #a ~= #b then
-        error(string.format("%s (%s) is not the same size of %s (%s).",aname,#a,bname,#b))
-    end
+function lnn.assertsize(a,b,aname,bname,zerocheck)
+	--give an error they're not the same size or 0.
+	if #a ~= #b then
+		error(string.format("%s (%s) is not the same size as %s (%s).",aname,#a,bname,#b))
+	end
 
-    if #a == 0 or #b == 0 then
-        error(string.format("%s (%s) or %s (%s) is equal to zero.",aname,#a,bname,#b))
-    end
+	if zerocheck then
+		if #a == 0 or #b == 0 then
+			error(string.format("%s (%s) or %s (%s) is equal to zero.",aname,#a,bname,#b))
+		end
+	end
 end
 
-function lnn.findintable(item,table)
-    --do the stuff
-    for i = 1,#table do
-        if table[i] == item then
-            return i
-        end
-    end
-    return false
+function lnn.findintable(item,table,recursive)
+	for i,v in pairs(table) do
+		if table[i] == item then
+			return i
+		end
+		if type(table[i]) == "table" and recursive then
+			local returnval = lnn.findintable(item,table[i],true)
+			if returnval then
+				if type(returnval) == "table" then --this small detail took forever to get working
+					for a = #returnval,1,-1 do
+						returnval[a+1] = returnval[a]
+					end
+					returnval[1] = i
+					return returnval
+				end
+				return {i,returnval}
+			end
+		end
+	end
+	return false
 end
 
-function lnn.sigmoid(x,derivative)
-    if derivative then
-        return (1 / (1 + math.exp(-x))) * (1-(1 / (1 + math.exp(-x))))
-    else
-        return 1 / (1 + math.exp(-x))
-    end
+function lnn.sumtable(table)
+	--declare the variables
+	local sum = 0
+
+	--do the stuff
+	for i = 1,#table do
+		sum = sum + table[i]
+	end
+
+	return sum
 end
 
-function lnn.tanh(x,derivative)
-    if derivative then
-        return 1 - (((math.exp(2*x) - 1)/(math.exp(2*x) + 1))^2)
-    else
-        return (math.exp(2*x) - 1)/(math.exp(2*x) + 1)
-    end
+--default activation functions
+
+function lnn.activation.sigmoid(x,derivative)
+	if derivative then
+		return (1 / (1 + math.exp(-x))) * (1-(1 / (1 + math.exp(-x))))
+	else
+		return 1 / (1 + math.exp(-x))
+	end
 end
 
-function lnn.relu(x,derivative)
-    if derivative then
-        if x < 0 then
-            return 0
-        else
-            return 1
-        end
-    else
-        return math.max(0,x)
-    end
+function lnn.activation.tanh(x,derivative)
+	if derivative then
+		return 1 - (((math.exp(2*x) - 1)/(math.exp(2*x) + 1))^2)
+	end
+
+	return (math.exp(2*x) - 1)/(math.exp(2*x) + 1)
 end
 
-function lnn.leakyrelu(x,derivative)
-    if derivative then
-        if x > 0 then
-            return 1
-        else
-            return 0.01
-        end
-    else
-        if x > 0 then
-            return x
-        else
-            return x*0.01
-        end
-    end
+function lnn.activation.relu(x,derivative)
+	if derivative then
+		if x > 0 then
+			return 1
+		end
+
+		return 0
+	end
+
+	return math.max(0,x)
 end
 
-function lnn.elu(x,derivative,alpha)
-    if derivative then
-        if x < 0 then
-            return alpha*math.exp(x)
-        else
-            return 1
-        end
-    else
-        if x < 0 then
-            return math.exp(x)-1
-        else
-            return x
-        end
-    end
+function lnn.activation.leakyrelu(x,derivative,alpha)
+	if derivative then
+		if x > 0 then
+			return 1
+		end
+
+		return alpha
+	end
+
+	if x > 0 then
+		return x
+	end
+
+	return x*alpha
 end
 
-function lnn.swish(x,derivative,alpha)
-    if derivative then
-        return x/(1+math.exp(-alpha*x))+lnn.sigmoid(x,false)*(1-x/(1+math.exp(-alpha*x)))
-    else
-        return x/(1+math.exp(-alpha*x))
-    end
+function lnn.activation.elu(x,derivative,alpha)
+	if derivative then
+		if x < 0 then
+			return alpha*math.exp(x)
+		end
+
+		return 1
+	end
+
+	if x < 0 then
+		return alpha*(math.exp(x)-1)
+	end
+
+	return x
 end
 
-function lnn.binarystep(x,derivative)
-    if derivative then
-        return 0
-    else
-        if x > 0 then
-            return 1
-        else
-            return 0
-        end
-    end
+function lnn.activation.swish(x,derivative,alpha)
+	if derivative then
+		return x/(1+math.exp(-alpha*x))+(1/1+math.exp(-x))*(1-x/(1+math.exp(-alpha*x)))
+	end
+
+	return x/(1+math.exp(-alpha*x))
 end
 
-function lnn.softmax(x,derivative)
-    --declare the variables
-    local expsum = 0
-    local returntable = {}
+function lnn.activation.binarystep(x,derivative)
+	if derivative then
+		return 0
+	end
 
-    --do the stuff
-    for i = 1,#x do
-        expsum = expsum + math.exp(x[i])
-    end
+	if x > 0 then
+		return 1
+	end
 
-    if derivative then
-        for i = 1,#x do
-            returntable[i] = (math.exp(x[i])/expsum)*(1-(math.exp(x[i])/expsum))
-        end
-    else
-        for i = 1,#x do
-            returntable[i] = math.exp(x[i])/expsum
-        end
-    end
-    return returntable
+	return 0
 end
 
-function lnn.initialize(id,activation,insize,layercount,outcount)
-    --declare the variables
-    local activationtable = {"sig","tanh","relu","lrelu","elu","swish","bstep","linear"}
-    
-    --check if the activation is a valid activation function
-    if not lnn.findintable(activation,activationtable) then
-        error(string.format("%s is not a valid activation function, available activation functions are: 'sig', 'tanh', 'relu', 'lrelu', 'elu', 'swish', 'bstep' and 'linear'.",activation))
-    end
+function lnn.activation.softmax(x,derivative)
+	local expsum = 0
+	local returntable = {}
 
-    --initialize the neural network
+	--do the stuff
+	for i = 1,#x do
+		expsum = expsum + math.exp(x[i])
+	end
 
-    --initialize the neural network data
-    _G[id] = {}
-    _G[id]["activation"] = activation
-    _G[id]["layercount"] = layercount
-    _G[id]["outcount"] = outcount
-    _G[id]["insize"] = insize
-    _G[id]["alpha"] = 1
-    _G[id]["gradient"] = {}
-    _G[id]["gradient"]["gradw"] = {}
-    _G[id]["gradient"]["gradb"] = {}
-    _G[id]["id"] = id
-    _G[id]["weight"] = {}
-    _G[id]["bias"] = {}
-    _G[id]["current"] = {}
+	if derivative then
+		for i = 1,#x do
+			returntable[i] = (math.exp(x[i])/expsum)*(1-(math.exp(x[i])/expsum))
+		end
 
-    --initialize the neural network layers
+		return returntable
+	end
 
-    local amounttofill = 0
-    
-    --check if layercount is 0
-    if layercount == 0 then
-        --create the tables for the output weights
-        _G[id]["weight"]["ow"] = {}
-        for i = 1,insize*outcount do
-            _G[id]["weight"]["ow"][i] = math.random(-100,100)/100
-        end
+	for i = 1,#x do
+		returntable[i] = math.exp(x[i])/expsum
+	end
 
-        --create the values for the output node values (bias and current)
-        _G[id]["bias"]["ob"] = {}
-        _G[id]["current"]["o"] = {}
-        for i = 1,outcount do
-            _G[id]["bias"]["ob"][i] = math.random(-100,100)/100
-            _G[id]["current"]["o"][i] = 0
-        end
-        
-        return
-    end
+	return returntable
+end
 
-    --create the tables for the node values (bias and current)
-    for i = 1,layercount do
-        local ctablename = "c"..i
-        local btablename = "b"..i
-        _G[id]["current"][ctablename] = {}
-        _G[id]["bias"][btablename] = {}
-        
-        amounttofill = math.ceil(((outcount - insize) * i / (layercount - 0)) + insize)
+function lnn.activation.softplus(x,derivative)
+	if derivative then
+		return math.exp(x)/(1+math.exp(x)) --this function's derivative is the exact same as the sigmoid activation function
+	end
 
-        for a = 1,amounttofill do
-            _G[id]["current"][a] = 0.0
-            _G[id]["bias"][a] = math.random(-100,100)/100
-        end
-    end
+	return math.log(1+math.exp(x))
+end
 
-    --create the tables for the connection values (weight)
-    for i = 1,layercount do
-        local wtablename = "w"..i
-        _G[id]["weight"][wtablename] = {}
-        
-        if i > 1 then --get the amount to fill
-            amounttofill = math.ceil(((outcount - insize) * (i - 1) / (layercount - 0)) + insize)*math.ceil(((outcount - insize) * i / (layercount - 0)) + insize)
-        else
-            amounttofill = insize*math.ceil(((outcount - insize) * i / (layercount - 0)) + insize)
-        end
+function lnn.activation.softsign(x,derivative)
+	if derivative then
+		if x == 0 then return 1 end --hell yeah that only took me 2 minutes to come up with that solution!
+		return x/(x*(1+math.abs(x)^2))
+	end
 
-        for a = 1,amounttofill do
-            _G[id]["weight"][wtablename][a] = math.random(-100,100)/100
-        end
-    end
-    
-    --create the tables for the output (bias and current)
-    _G[id]["bias"]["ob"] = {}
-    _G[id]["current"]["o"] = {}
-    for i = 1,outcount do
-        _G[id]["bias"]["ob"][i] = math.random(-100,100)/100
-        _G[id]["current"]["o"][i] = 0.0
-    end
+	return x/1+math.abs(x)
+end
 
-    --create the tables for the output connection (weight)
-    _G[id]["weight"]["ow"] = {}
-    for i = 1,outcount*math.ceil(((outcount - insize) * layercount / (layercount - 0)) + insize) do
-        _G[id]["weight"]["ow"][i] = math.random(-100,100)/100
-    end
+function lnn.activation.linear(x,derivative,alpha)
+	if derivative then
+		return alpha
+	end
+
+	return x*alpha
+end
+
+--neural network functions
+
+function lnn.initialize(id,activation,layersizes)
+	--initialize the neural network
+
+	--initialize the neural network data
+	_G[id] = {
+		["activations"] = {},
+		["alpha"] = 1,
+		["gradient"] = {
+			["error"] = {},
+			["grad"] = {
+				["bias"] = {},
+				["weight"] = {}
+			},
+			["intable"] = {},
+			["learningrate"] = 0,
+			["momentum"] = 1
+		},
+		["id"] = id,
+		["weight"] = {},
+		["bias"] = {},
+		["current"] = {},
+		["layersizes"] = layersizes,
+		["weightcount"] = 0
+	}
+
+	if activation == "leakyrelu" then
+		_G[id]["alpha"] = 0.01
+	end
+
+	--initialize the neural network layers
+
+	local amounttofill = 0
+
+	--create the tables
+	for a = 1,#layersizes-1 do
+		--add into activations
+		_G[id]["activations"][a] = activation
+
+		_G[id]["current"][a] = {}
+		_G[id]["weight"][a] = {}
+
+		--create the tables for the current values
+		for i = 1,layersizes[a+1] do
+			_G[id]["current"][a][i] = 0.0
+		end
+
+		--calculate amounttofill
+		amounttofill = layersizes[a+1]*layersizes[a]
+
+		--create the tables for the connection values (weight)
+		for i = 1,amounttofill do
+			_G[id]["weight"][a][i] = math.random(-100,100)/100
+		end
+
+		--add to weightcount
+		_G[id]["weightcount"] = _G[id]["weightcount"] + amounttofill
+	end
+
+	for i = 1,#layersizes-2 do
+		_G[id]["bias"][i] = math.random(-100,100)/100 --yay im stupid, i thought each node had it's own bias, nope! every layer has a bias that is added to each node so each node has a bias, just not a unique bias. luckily, i don't have to change the code much!
+	end
 end
 
 function lnn.forwardpass(id,intable)
-    --declare the functions
-    local function getlayer(lastlayer,nextlayer,weights,biases)
-        --declare the variables
-        local sum = 0
+	local function getlayer(lastlayer,nextlayer,weights,bias,layernum) --i am super proud of this function :D
+		--declare the variables
+		local sum = 0
 
-        --get the sum of the connected weights to the current node we are on and replace the nextlayer
-        if _G[id]["activation"] == "sig" then
-            for a = 1,#nextlayer do
-                for i = 1,#lastlayer do
-                    sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
-                end
-                nextlayer[a] = lnn.sigmoid(sum+biases[a],false)
-                sum = 0
-            end
-        elseif _G[id]["activation"] == "tanh" then
-            for a = 1,#nextlayer do
-                for i = 1,#lastlayer do
-                    sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
-                end
-                nextlayer[a] = lnn.tanh(sum+biases[a],false)
-                sum = 0
-            end
-        elseif _G[id]["activation"] == "relu" then
-            for a = 1,#nextlayer do
-                for i = 1,#lastlayer do
-                    sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
-                end
-                nextlayer[a] = lnn.relu(sum+biases[a],false)
-                sum = 0
-            end
-        elseif _G[id]["activation"] == "lrelu" then
-            for a = 1,#nextlayer do
-                for i = 1,#lastlayer do
-                    sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
-                end
-                nextlayer[a] = lnn.leakyrelu(sum+biases[a],false)
-                sum = 0
-            end
-        elseif _G[id]["activation"] == "elu" then
-            for a = 1,#nextlayer do
-                for i = 1,#lastlayer do
-                    sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
-                end
-                nextlayer[a] = lnn.elu(sum+biases[a],false,_G[id]["alpha"])
-                sum = 0
-            end
-        elseif _G[id]["activation"] == "swish" then
-            for a = 1,#nextlayer do
-                for i = 1,#lastlayer do
-                    sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
-                end
-                nextlayer[a] = lnn.swish(sum+biases[a],false,_G[id]["alpha"])
-                sum = 0
-            end
-        elseif _G[id]["activation"] == "bstep" then
-            for a = 1,#nextlayer do
-                for i = 1,#lastlayer do
-                    sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
-                end
-                nextlayer[a] = lnn.binarystep(sum+biases[a],false)
-                sum = 0
-            end
-        elseif _G[id]["activation"] == "linear" then
-            for a = 1,#nextlayer do
-                for i = 1,#lastlayer do
-                    sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
-                end
-                nextlayer[a] = sum+biases[a]
-                sum = 0
-            end
-        else
-            error(string.format("id %s has an invalid activation function? (%s)",id,_G[id]["activation"]))
-        end
-    end
+		--get the sum of the connected weights to the current node we are on and replace the nextlayer
+		for a = 1,#nextlayer do
+			for i = 1,#lastlayer do
+				sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
+			end
+			nextlayer[a] = lnn.activation[_G[id]["activations"][layernum]](sum+bias,false,_G[id]["alpha"]) --even if it only has 2 parameters this still works but it pains me to do that
+			sum = 0
+		end
+	end
 
-    --do the stuff
+	--do the stuff
+	getlayer(intable,_G[id]["current"][1],_G[id]["weight"][1],0,1) --input layer to first hidden or output
+	for i = 2,#_G[id]["layersizes"]-1 do --rest of the hidden layers and output
+		getlayer(_G[id]["current"][i-1],_G[id]["current"][i],_G[id]["weight"][i],_G[id]["bias"][i-1],i)
+	end
 
-    --check if layercount is 0
-    if _G[id]["layercount"] == 0 then
-        getlayer(intable,_G[id]["current"]["o"],_G[id]["weight"]["ow"],_G[id]["bias"]["ob"])
-        return _G[id]["current"]["o"]
-    end
-
-    --if there's hidden layers
-    getlayer(intable,_G[id]["current"]["c1"],_G[id]["weight"]["w1"],_G[id]["bias"]["b1"]) --input layer to first hidden
-    for i = 2,_G[id]["layercount"] do --rest of the hidden layers
-        getlayer(_G[id]["current"]["c"..i-1],_G[id]["current"]["c"..i],_G[id]["weight"]["w"..i],_G[id]["bias"]["b"..i])
-    end
-    getlayer(_G[id]["current"]["c".._G[id]["layercount"]],_G[id]["current"]["o"],_G[id]["weight"]["ow"],_G[id]["bias"]["ob"])
-
-    return _G[id]["current"]["o"]
+	return _G[id]["current"][#_G[id]["current"]] --last table in current is output layer
 end
 
-function lnn.adjust(id,intable,output,expectedoutput,learningrate)
-    --declare the variables
-    local gradw = {}
-    local gradb = {}
-    local gradwsum = 0
-    local gradbsum = 0
-    local weightedsum = 0
-    local da_wsum = 0
+function lnn.returnerror(id,intable,output,expectedoutput,learningrate)
+	--declare the variables
+	local err = {{}}
 
-    --get the sum of the weighted inputs
-    if _G[id]["layercount"] > 0 then
-        for a = 1,#_G[id]["current"]["c1"] do
-            for i = 1,#intable do
-                weightedsum = weightedsum + _G[id]["weight"]["w1"][i+((a-1)*#intable)]*intable[i]
-            end
-        end
-    else
-        for a = 1,#_G[id]["current"]["o"] do
-            for i = 1,#intable do
-                weightedsum = weightedsum + _G[id]["weight"]["ow"][i+((a-1)*#intable)]*intable[i]
-            end
-        end
-    end
+	--calculate the error for each output node
+	for i = 1,#output do
+		err[1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+	end
 
-    --get da_wsum
-    if _G[id]["activation"] == "sig" then --elseif hell
-        da_wsum = lnn.sigmoid(weightedsum,true)
-    elseif _G[id]["activation"] == "tanh" then
-        da_wsum = lnn.tanh(weightedsum,true)
-    elseif _G[id]["activation"] == "relu" then
-        da_wsum = lnn.relu(weightedsum,true)
-    elseif _G[id]["activation"] == "lrelu" then
-        da_wsum = lnn.leakyrelu(weightedsum,true)
-    elseif _G[id]["activation"] == "elu" then
-        da_wsum = lnn.elu(weightedsum,true,1)
-    elseif _G[id]["activation"] == "swish" then
-        da_wsum = lnn.swish(weightedsum,true,0.8)
-    elseif _G[id]["activation"] == "bstep" then
-        da_wsum = lnn.binarystep(weightedsum,true)
-    elseif _G[id]["activation"] == "linear" then
-        da_wsum = 1
-    else
-        error(string.format("id %s has an invalid activation function? (%s)",id,_G[id]["activation"]))
-    end
+	--backpropagate the error
+	for a = #_G[id]["layersizes"]-2,1,-1 do
+		err[#err+1] = {}
+		for b = 1,_G[id]["layersizes"][a] do
+			err[#err][b] = 0
+			for i = 1,_G[id]["layersizes"][a+1] do
+				err[#err][b] = err[#err][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*err[#err-1][math.ceil(b/(_G[id]["layersizes"][a]/#err[#err-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+			end
+		end
+	end
 
-    --get gradw
-    for i = 1,#output do
-        gradw[i] = ((output[i]-expectedoutput[i])^2*da_wsum)*learningrate+((output[i]-expectedoutput[i])*learningrate)
-    end
-
-    --get gradb
-    for i = 1,#output do
-        gradb[i] = ((output[i]-expectedoutput[i])*da_wsum)*learningrate+((output[i]-expectedoutput[i])*learningrate)
-    end
-
-    --get gradwsum
-    for i = 1,#output do
-        gradwsum = gradwsum - gradw[i]
-    end
-
-    --get gradbsum
-    for i = 1,#output do
-        gradbsum = gradbsum - gradb[i]
-    end
-
-    --update the data on _G[id]
-    _G[id]["gradient"]["gradw"] = gradw
-    _G[id]["gradient"]["gradb"] = gradb
-    
-    --dirty code, good-ish performance. we all love clean code but i have to make it dirty here for performance, sorry :(
-    if _G[id]["layercount"] > 0 then
-        --adjust output layer weights and biases
-
-        --adjust the output layer weights
-        for a = 1,#output do
-            for i = 1,#_G[id]["current"]["c".._G[id]["layercount"]] do
-                _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["c".._G[id]["layercount"]])] - gradw[i]
-            end
-        end
-
-        --adjust the output layer biases
-        for i = 1,#output do
-            _G[id]["bias"]["ob"][i] = _G[id]["bias"]["ob"][i] - gradb[i]
-        end
-
-        --adjust the the rest of the weights and biases
-
-        --adjust the rest of the biases
-        for b = _G[id]["layercount"],1,-1 do
-            for i = 1,#_G[id]["bias"]["b"..b] do
-                _G[id]["bias"]["b"..b][i] = _G[id]["bias"]["b"..b][i] - gradbsum+((_G[id]["bias"]["b"..b][i]*-gradbsum)*learningrate)
-            end
-        end
-
-        --adjust the rest of the weights
-        for b = _G[id]["layercount"],1,-1 do
-            for i = 1,#_G[id]["weight"]["w"..b] do
-                _G[id]["weight"]["w"..b][i] = _G[id]["weight"]["w"..b][i] - gradwsum+((_G[id]["weight"]["w"..b][i]*-gradwsum)*learningrate)
-            end
-        end
-    else
-        --adjust output layer weights and biases
-
-        --adjust the output layer weights
-        for a = 1,#output do
-            for i = 1,#_G[id]["current"]["o"] do
-                _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["o"])] = _G[id]["weight"]["ow"][i+((a-1)*#_G[id]["current"]["o"])] - gradw[i]
-            end
-        end
-
-        --adjust the output layer biases
-        for i = 1,#output do
-            _G[id]["bias"]["ob"][i] = _G[id]["bias"]["ob"][i] - gradb[i]
-        end
-    end
+	return err
 end
 
-function lnn.getmse(output,expectedoutput)
-    --declare the variables
-    local mse = 0
+function lnn.adjust.adjustfromgradient(id,gradient)
+	--update the weights
+	for a = #_G[id]["layersizes"]-1,1,-1 do
+		for i = 1,#_G[id]["weight"][a] do
+			_G[id]["weight"][a][i] = _G[id]["weight"][a][i] - gradient["grad"]["weight"][#_G[id]["layersizes"]-a][i]
+		end
+	end
 
-    --do the stuff
-    for i = 1,#output do
-        mse = mse + (expectedoutput[i] - output[i])^2
-    end
-    return mse/#output
+	--update the biases
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		_G[id]["bias"][i] = _G[id]["bias"][i] - gradient["grad"]["bias"][i]
+	end
+
+	--update the data on _G[id]
+	_G[id]["gradient"] = gradient
 end
 
-function lnn.getmae(output,expectedoutput)
-    --declare the variables
-    local mae = 0
+--basic adjust functions
 
-    --do the stuff
-    for i = 1,#output do
-        mae = mae + math.abs(output[i] - expectedoutput[i])
-    end
-    return mae/#output
+function lnn.adjust.basic.adjust(id,intable,output,expectedoutput,learningrate)
+	--declare the variables
+	local grad = {
+		["error"] = {{}},
+		["grad"] = {
+			["bias"] = {},
+			["weight"] = {{}}
+		},
+		["intable"] = intable,
+		["learningrate"] = learningrate,
+		["momentum"] = _G[id]["gradient"]["momentum"]
+	}
+
+	--calculate the error for each output node
+	for i = 1,#output do
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+	end
+
+	--backpropagate the error
+	for a = #_G[id]["layersizes"]-2,1,-1 do
+		grad["error"][#grad["error"]+1] = {}
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["error"][#grad["error"]][b] = 0
+			for i = 1,_G[id]["layersizes"][a] do
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+			end
+		end
+	end
+
+	--update the weights
+	for a = #_G[id]["layersizes"]-1,1,-1 do
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["grad"]["weight"][#_G[id]["layersizes"]-a] = {}
+			for i = 1,_G[id]["layersizes"][a] do
+				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
+				_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] = _G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] - curgrad
+				grad["grad"]["weight"][#_G[id]["layersizes"]-a][i+((b-1)*_G[id]["layersizes"][a])] = curgrad
+			end
+		end
+	end
+
+	--update the biases
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-2))*lnn.sumtable(grad["error"][(#_G[id]["layersizes"]-1)-i]),-learningrate),learningrate)
+		_G[id]["bias"][i] = _G[id]["bias"][i] - curgrad
+		grad["grad"]["bias"][i] = curgrad
+	end
+
+	--update the data on _G[id]
+	_G[id]["gradient"] = grad
 end
 
-function lnn.getsse(output,expectedoutput)
-    --declare the variables
-    local sse = 0
+function lnn.adjust.basic.returngradient(id,intable,output,expectedoutput,learningrate)
+	--declare the variables
+	local grad = {
+		["error"] = {{}},
+		["grad"] = {
+			["bias"] = {},
+			["weight"] = {{}}
+		},
+		["intable"] = intable,
+		["learningrate"] = learningrate,
+		["momentum"] = _G[id]["gradient"]["momentum"]
+	}
 
-    --do the stuff
-    for i = 1,#output do
-        sse = (output[i]-expectedoutput[i])^2
-    end
-    return sse/#output
+	--calculate the error for each output node
+	for i = 1,#output do
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+	end
+
+	--backpropagate the error
+	for a = #_G[id]["layersizes"]-2,1,-1 do
+		grad["error"][#grad["error"]+1] = {}
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["error"][#grad["error"]][b] = 0
+			for i = 1,_G[id]["layersizes"][a] do
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+			end
+		end
+	end
+
+	--calculate the weight gradient
+	for a = #_G[id]["layersizes"]-1,1,-1 do
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["grad"]["weight"][#_G[id]["layersizes"]-a] = {}
+			for i = 1,_G[id]["layersizes"][a] do
+				grad["grad"]["weight"][#_G[id]["layersizes"]-a][i+((b-1)*_G[id]["layersizes"][a])] = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate)
+			end
+		end
+	end
+
+	--calculate the bias gradient
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		grad["grad"]["bias"][i] = math.min(math.max((learningrate/(#_G[id]["layersizes"]-2))*lnn.sumtable(grad["error"][(#_G[id]["layersizes"]-1)-i]),-learningrate),learningrate)
+	end
+
+	return grad
 end
 
-function lnn.getrmse(output,expectedoutput)
-    --declare the variables
-    local rmse = 0
 
-    --do the stuff
-    for i = 1,#output do
-        rmse = rmse + (expectedoutput[i] - output[i])^2
-    end
+--momentum adjust functions
 
-    return math.sqrt((rmse/#output))
+function lnn.adjust.momentum.adjust(id,intable,output,expectedoutput,learningrate)
+	--declare the variables
+	local grad = {
+		["error"] = {{}},
+		["grad"] = {
+			["bias"] = {},
+			["weight"] = {{}}
+		},
+		["intable"] = intable,
+		["learningrate"] = learningrate,
+		["momentum"] = _G[id]["gradient"]["momentum"]
+	}
+	local pweightdelta = 0
+	local pbiasdelta = 0
+
+	--calculate the error for each output node
+	for i = 1,#output do
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+	end
+
+	--backpropagate the error
+	for a = #_G[id]["layersizes"]-2,1,-1 do
+		grad["error"][#grad["error"]+1] = {}
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["error"][#grad["error"]][b] = 0
+			for i = 1,_G[id]["layersizes"][a] do
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+			end
+		end
+	end
+
+	--update the weights
+	for a = #_G[id]["layersizes"]-1,1,-1 do
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["grad"]["weight"][#_G[id]["layersizes"]-a] = {}
+			for i = 1,_G[id]["layersizes"][a] do
+				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
+
+				--calculate the momentum
+				local dweight = curgrad+(grad["momentum"]*learningrate)*pweightdelta
+				grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
+
+				--update the weight
+				_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] = _G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])] - dweight
+				grad["grad"]["weight"][#_G[id]["layersizes"]-a][i+((b-1)*_G[id]["layersizes"][a+1])] = dweight
+
+				--store weight update
+				pweightdelta = dweight
+			end
+		end
+	end
+
+	--update the biases
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-2))*lnn.sumtable(grad["error"][(#_G[id]["layersizes"]-1)-i]),-learningrate),learningrate)
+
+		--calculate the momentum
+		local dbias = curgrad+(grad["momentum"]*learningrate)*pbiasdelta --programming is possibly the most fufilling thing ive ever done
+		grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
+
+		--update the bias
+		_G[id]["bias"][i] = _G[id]["bias"][i] - curgrad
+		grad["grad"]["bias"][i] = curgrad
+
+		--store bias update
+		pweightdelta = dbias
+	end
+
+	--update the data on _G[id]
+	_G[id]["gradient"] = grad
 end
 
-function lnn.getcrossentropy(output,expectedoutput)
-    --declare the variables
-    local sum = 0
+function lnn.adjust.momentum.returngradient(id,intable,output,expectedoutput,learningrate)
+	--declare the variables
+	local grad = {
+		["error"] = {{}},
+		["grad"] = {
+			["bias"] = {},
+			["weight"] = {{}}
+		},
+		["intable"] = intable,
+		["learningrate"] = learningrate,
+		["momentum"] = _G[id]["gradient"]["momentum"]
+	}
+	local pweightdelta = 0
+	local pbiasdelta = 0
 
-    --do the stuff
-    for i = 1,#output do
-        if output[i]+0.01 < 0 or expectedoutput[i]+0.01 < 0 then
-            print("WARNING: All values put into the binary cross entropy function must be greater than -0.09 otherwise it will return 'nan'!")
-        end
-        sum = sum + (expectedoutput[i]+0.01*math.log(output[i]+0.01)) + (1-expectedoutput[i]+0.01) * math.log(1-output[i]+0.01)
-    end
-    return -sum
+	--calculate the error for each output node
+	for i = 1,#output do
+		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+	end
+
+	--backpropagate the error
+	for a = #_G[id]["layersizes"]-2,1,-1 do
+		grad["error"][#grad["error"]+1] = {}
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["error"][#grad["error"]][b] = 0
+			for i = 1,_G[id]["layersizes"][a] do
+				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+			end
+		end
+	end
+
+	--calculate the weight gradient
+	for a = #_G[id]["layersizes"]-1,1,-1 do
+		for b = 1,_G[id]["layersizes"][a+1] do
+			grad["grad"]["weight"][#_G[id]["layersizes"]-a] = {}
+			for i = 1,_G[id]["layersizes"][a] do
+				local curgrad = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate) --exploding gradients are even more of a problem than i thought they were
+
+				--calculate the momentum
+				grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
+
+				grad["grad"]["weight"][#_G[id]["layersizes"]-a][i+((b-1)*_G[id]["layersizes"][a])] = curgrad+(grad["momentum"]*learningrate)*pweightdelta
+
+				--store weight update
+				pweightdelta = curgrad+(grad["momentum"]*learningrate)*pweightdelta
+			end
+		end
+	end
+
+	--calculate the bias gradient
+	for i = #_G[id]["layersizes"]-2,1,-1 do
+		local curgrad = math.min(math.max((learningrate/(#_G[id]["layersizes"]-2))*lnn.sumtable(grad["error"][(#_G[id]["layersizes"]-1)-i]),-learningrate),learningrate)
+
+		--calculate the momentum
+		grad["momentum"] = grad["momentum"] + (1-grad["momentum"])*curgrad
+
+		grad["grad"]["bias"][i] = curgrad+(grad["momentum"]*learningrate)*pbiasdelta
+
+		--store bias update
+		pweightdelta = curgrad+(grad["momentum"]*learningrate)*pbiasdelta
+	end
+
+	return grad
 end
 
-function lnn.getbinarycrossentropy(output,expectedoutput)
-    --declare the variables
-    local sum = 0
+--default loss functions
 
-    --do the stuff
-    for i = 1,#output do
-        if output[i]+0.01 < 0 or expectedoutput[i]+0.01 < 0 then
-            print("WARNING: All values put into the binary cross entropy function must be greater than -0.009 otherwise it will return 'nan'!")
-        end
-        sum = sum + (output[i]*math.log(expectedoutput[i]+0.01)) + ((1-output[i]+0.01)*math.log(1-expectedoutput[i]+0.01))
-    end
-    
-    return sum/-#output
+function lnn.loss.mse(output,expectedoutput)
+	--declare the variables
+	local mse = 0
+
+	--do the stuff
+	for i = 1,#output do
+		mse = mse + (expectedoutput[i] - output[i])^2
+	end
+	return mse/#output
 end
 
-function lnn.getcategoricalcrossentropy(output,expectedoutput)
-    --declare the variables
-    local sum = 0
+function lnn.loss.mae(output,expectedoutput)
+	--declare the variables
+	local mae = 0
 
-    --do the stuff
-    for i = 1,#output do
-        if output[i]+0.01 < 0 or expectedoutput[i]+0.01 < 0 then
-            print("WARNING: All values put into the categorical cross entropy function must be greater than -0.009 otherwise it will return 'nan'!")
-        end
-        sum = sum + expectedoutput[i]+0.01*math.log(output[i]+0.01)
-    end
-
-    return -sum
+	--do the stuff
+	for i = 1,#output do
+		mae = mae + math.abs(output[i] - expectedoutput[i])
+	end
+	return mae/#output
 end
 
---either debugging or visualizing, could be used for both.
+function lnn.loss.sse(output,expectedoutput)
+	--declare the variables
+	local sse = 0
 
-function lnn.debug.returnweights(id)
-    --declare the variables
-    local returntable = {}
-
-    --do the stuff
-    for i = 1,_G[id]["layercount"] do
-        returntable[i] = _G[id]["weight"]["w"..i]
-    end
-    returntable[#returntable+1] = _G[id]["weight"]["ow"]
-
-    return returntable
+	--do the stuff
+	for i = 1,#output do
+		sse = (output[i]-expectedoutput[i])^2
+	end
+	return sse/#output
 end
 
-function lnn.debug.returnbiases(id)
-    --declare the variables
-    local returntable = {}
+function lnn.loss.rmse(output,expectedoutput)
+	--declare the variables
+	local rmse = 0
 
-    --do the stuff
-    for i = 1,_G[id]["layercount"] do
-        returntable[i] = _G[id]["bias"]["b"..i]
-    end
-    returntable[#returntable+1] = _G[id]["bias"]["ob"]
+	--do the stuff
+	for i = 1,#output do
+		rmse = rmse + (expectedoutput[i] - output[i])^2
+	end
 
-    return returntable
+	return math.sqrt((rmse/#output))
 end
 
-function lnn.debug.returncurrent(id)
-    --declare the variables
-    local returntable = {}
+function lnn.loss.crossentropy(output,expectedoutput)
+	--declare the variables
+	local sum = 0
 
-    --do the stuff
-    for i = 1,_G[id]["layercount"] do
-        returntable[i] = _G[id]["current"]["c"..i]
-    end
-    returntable[#returntable+1] = _G[id]["current"]["o"]
-
-    return returntable
+	--do the stuff
+	for i = 1,#output do
+		sum = sum + (expectedoutput[i]*math.log(output[i])) + (1-expectedoutput[i]) * math.log(1-output[i])
+	end
+	return -sum
 end
 
-function lnn.debug.returngradient(id)
-    return _G[id]["gradient"]
+function lnn.loss.categoricalcrossentropy(output,expectedoutput)
+	--declare the variables
+	local sum = 0
+
+	--do the stuff
+	for i = 1,#output do
+		sum = sum + (expectedoutput[i]*math.log(output[i]))
+	end
+
+	return -sum
 end
 
-function lnn.debug.returndata(id)
-    return _G[id]
+--data functions, yayaya
+
+function lnn.data.randomize(id)
+	for a = 1,#_G[id]["layersizes"]-1 do
+		--randomize biases
+		_G[id]["bias"][a] = math.random(-100,100)/100
+
+		--randomize weights
+		for i = 1,#_G[id]["weight"][a] do
+			_G[id]["weight"][a][i] = math.random(-100,100)/100
+		end
+	end
 end
 
-function lnn.debug.clearid(id)
-    _G[id] = nil
+function lnn.data.addrandom(id,lowerlimit,upperlimit)
+	--do the stuff
+	for a = 1,#_G[id]["layersizes"]-1 do
+		--randomize biases
+		_G[id]["bias"][a] = _G[id]["bias"][a] + lowerlimit + math.random()*(upperlimit-lowerlimit) --https://stackoverflow.com/a/59494965 :D
+
+		--randomize weights
+		for i = 1,#_G[id]["weight"][a] do
+			_G[id]["weight"][a][i] = _G[id]["weight"][a][i] + lowerlimit + math.random()*(upperlimit-lowerlimit)
+		end
+	end
 end
+
+--why is there only exportdata? because you can just use require() if its .lua or dofile() to import the data.
+
+function lnn.data.exportdata(id,filename)
+	--clear the file
+	io.open(filename,"w"):close()
+
+	--do the stuff
+	local f = io.open(filename,"a+")
+
+	if f ~= nil then
+		--write the basic data
+		f:write(string.format("return {\n['alpha'] = %s,\n['id'] = '%s',\n['activations'] = {",_G[id]["alpha"],id))
+
+		--write the activations
+		for i = 1,#_G[id]["activations"] do
+			f:write(string.format("'%s'%s",_G[id]["activations"][i],","))
+		end
+		f:write("},\n['weight'] = {\n")
+
+		--write the weight data
+		for a = 1,#_G[id]["layersizes"]-1 do
+			f:write("{")
+			for i = 1,#_G[id]["weight"][a] do
+				f:write(_G[id]["weight"][a][i]..",")
+			end
+			f:write("},\n")
+		end
+
+		f:write("},\n['current'] = {\n")
+
+		--write the current data
+		for a = 1,#_G[id]["layersizes"]-1 do
+			f:write("{")
+			for i = 1,#_G[id]["current"][a] do
+				f:write(_G[id]["current"][a][i]..",")
+			end
+			f:write("},\n")
+		end
+
+		f:write("},\n['bias'] = {")
+
+		--write the bias data
+		for i = 1,#_G[id]["layersizes"]-2 do
+			f:write(_G[id]["bias"][i]..",")
+		end
+
+		f:write("},\n['layersizes'] = {")
+
+		--write layersizes
+		for i = 1,#_G[id]["layersizes"] do
+			f:write(_G[id]["layersizes"][i]..",")
+		end
+
+		--write weightcount
+		f:write(string.format("},\n['weightcount'] = %s,\n",_G[id]["weightcount"]))
+
+		--write the gradient data
+		f:write("['gradient'] = {\n")
+
+		f:write("['error'] = {")
+		for a = 1,#_G[id]["gradient"]["error"] do
+			f:write("\n{")
+			for i = 1,#_G[id]["gradient"]["error"][a] do
+				f:write(_G[id]["gradient"]["error"][a][i]..",")
+			end
+			f:write("},\n")
+		end
+		f:write("},\n")
+
+		f:write("['grad'] = {\n['bias'] = {")
+		for i = 1,#_G[id]["gradient"]["grad"]["bias"] do
+			f:write(_G[id]["gradient"]["grad"]["bias"][i]..",")
+		end
+		f:write("},\n")
+
+		f:write("['weight'] = {")
+		for a = 1,#_G[id]["gradient"]["grad"]["weight"] do
+			f:write("\n{")
+			for i = 1,#_G[id]["gradient"]["grad"]["weight"][a] do
+				f:write(_G[id]["gradient"]["grad"]["weight"][a][i]..",")
+			end
+			f:write("},\n")
+		end
+
+		f:write("}\n},\n['intable'] = {")
+
+		for i = 1,#_G[id]["gradient"]["intable"] do
+			f:write(_G[id]["gradient"]["intable"][i]..",")
+		end
+
+		f:write(string.format("},\n['learningrate'] = %s,\n['momentum'] = %s\n}\n}",_G[id]["gradient"]["learningrate"],_G[id]["gradient"]["momentum"]))
+	else
+		print("something went wrong, f is nil?")
+	end
+end
+
+return lnn --its require() time

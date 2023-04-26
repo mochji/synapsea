@@ -2,12 +2,12 @@
 
 ## Lua: https://lua.org
 
-## NOTE:
-### this is the fast version of the stable branch with no error checking, this is around 20% to 35% faster than the stable branch. because there is no error checking this is for users who know what they're doing and how to use the library.
+## NOTE
 
-***
+This is the fast branch with no error checking, this is for people who know how to use the library and know what they're doing.
 
-Description:
+## DESCRIPTION
+
 A simple neural network library for Lua with functions for activation functions and their derivatives,
 forward and backward propagation as well as calculating cost functions like MSE or cross entropy.
 Using an ID system for each neural network you can have multiple neural networks in 1 file, manage
@@ -20,287 +20,875 @@ Youtube: <a href="https://youtube.com/@xxoa_/">@xxoa_</a>
 
 Github: <a href="https://github.com/x-xxoa">x-xxoa</a>
 
+tumblr: <a href="https://x-xxoa.tumblr.com">@x-xxoa</a>
+
 Email: xxoa.yt@gmail.com
 
-## VERSION FORMATTING
+## VERSION NUMBERING SCHEME
 
 x.y.zz-abc
 
-where x is the major version, y is the minor version, zz is the patch version and abc declares if it's unstable or not.
+x is the major version, y is the minor version, zz is the patch version and abc is the branch like `fast` or `unstable`.
+
+A patch is usually a small change to a function or 2, a minor version is usually a large change to a lot of functions or a system overhaul aswell as changes to documentation and the major version goes up on the first release of the year that makes the minor version number go up. If the minor version reaches a number above 9 in 1 year somehow it will just go to 10 and so on.
 
 Example:
 
-`v1.2.03-unstable` would mean the unstable version of the 3rd patch of the 2nd minor version of the 1st major version.
+`v1.2.00-unstable` would mean the unstable version of the 2nd minor version of the 1st major version.
 
 `v1.1.02` would mean the stable version of the 2nd patch of the 1st minor version of the 1st major version.
 
-## SUPPORTED ACTIVATION & ERROR FUNCTIONS
+`v2.3.08-fast` would mean the fast version of the 8th patch of the 3rd minor version of the 2nd major version.
 
-### AVAILABLE ACTIVATION FUNCTIONS
- - Sigmoid ("sig")
+## DEFAULT ACTIVATION & ERROR FUNCTIONS
+
+### DEFAULT ACTIVATION FUNCTIONS
+ - Sigmoid ("sigmoid")
  - Hyperbolic Tangent ("tanh")
  - ReLU ("relu")
- - LReLU ("lrelu")
+ - LReLU ("leakyrelu")
  - ELU ("elu")
  - Swish ("swish")
- - Binary Step ("bstep")
+ - Binary Step ("binarystep")
+ - Softmax **NOTE:** Cannot be used as the activation function in the default neural network functions. (well you can but it will error because x is a number.)
+ - Softplus ("softplus")
+ - Softsign ("softsign")
  - Linear ("linear")
- - Softmax **NOTE:** To use the softmax activation function you'll have to do something like this: `local out = lnn.softmax(lnn.forwardpass("test",inp),false)` since all layers would have to be an equal size if you were using it on all layers and i've looked at images of softmax neural networks and they only had 1 softmax layer on the output and i want to give the user control over the activation function they use and not lock them into one.
 
-### AVAILABLE COST/ERROR FUNCTIONS
+### DEFAULT COST/ERROR FUNCTIONS
  - MSE (Mean Squared Error)
  - MAE (Mean Absolute Error)
  - SSE (Sum of Squared Error)
  - RMSE (Root of Mean Squared Error)
  - Cross Entropy
- - Binary Cross Entropy
  - Categorical Cross Entropy
-
-## FUNCTIONS
-
-### ERROR CATCHING FUNCTIONS
-
-the '**lnn.asserttype()**' function has 3 parameters: variable (the variable you want to check the type of), variablename (the variable name for more verbose error messages) and thetype
-(the type of variable you want to confirm it is).
-
-if the variable type is equal to the type of variable you want it to be it will continue the code, if not it will produce an error
-message with information about the variable.
-
-***
-
-the '**lnn.assertsize()**' function has 4 parameters: a (the first table), b (the second table), aname (the name of the first table, for more verbose error messages) and bname (the name
-of the second table (for more verbose error messages).
-
-if the size of a is equal to the size of b it will continue the code, if not it will produce an error message with information
-about the table sizes.
-
-***
-
-the '**lnn.findintable()**' function has 2 parameters: item (the item you want to find in the table) and table (the table you want to find item in).
-
-it does what it sounds like, if it
-finds item in table it will return true, if not it will return false.
-
-### ACTIVATION FUNCTIONS
-
-the '**lnn.sigmoid()'** function has 2 parameters: x (the number you want to put into the sigmoid function) and derivative (if you want the derivative of the sigmoid function).
-
-if the derivative parameter is true it returns x put into the derivative of the sigmoid function and if it's false it returns x put into the sigmoid function.
-
-***
-
-the '**lnn.tanh()'** function has 2 parameters: x (the number you want to put into the tanh function) and derivative (if you want the derivative of the tanh function).
-
-if the
-derivative parameter is true it returns x put into the derivative of the tanh function and if it's false it returns x put into the tanh function.
-
-***
-
-the '**lnn.relu()**' function has 2 parameters: x (the number you want to put into the relu function) and derivative (if you want the derivative of the relu function).
-
-if the
-derivative parameter is true it returns x put into the derivative of the relu function and if it's false it returns x put into the relu function.
-
-***
-
-the '**lnn.leakyrelu()**' function has 2 parameters: x (the number you want to put into the leakyrelu function) and derivative (if you want the derivative of the leakyrelu function).
-
-if the derivative parameter is true it returns x put into the derivative of the leakyrelu function and if it's false it returns x put into the leakyrelu function.
-
-***
-
-the '**lnn.elu()**' function has 3 parameters: x (the number you want to put into the elu function), derivative (if you want the derivative of the elu function) and alpha (the amount
-to be multiplied by e^x if x is less than 0. the default value for alpha used by the neural network is 1 but you can change it by chaning `_G[id_name_here_but_in_quotations]["alpha"]` to your desired value.).
-
-if the derivative parameter is true it returns x put into the derivative of the elu function and if it's false it returns x put
-into the elu function.
-
-***
-
-the '**lnn.swish()**' function has 3 parameters: x (the number you want to put into the swish function), derivative (if you want the derivative of the elu function) and alpha (the amount
-to be multiplied by x in e^-alpha*x. the default value for alpha used by the neural network is 1 but you can change it by chaning `_G[id_name_here_but_in_quotations]["alpha"]` to your desired value.).
-
-if the derivative parameter is true it returns x put into the derivative of the swish function and if it's false it returns x put
-into the swish function.
-
-***
-
-the '**lnn.binarystep**' function has 2 parameters: x (the number you want to put into the binary step function) and derivative (if you want the derivative of the binary step function which is literally just 0.).
-
-if the derivative parameter is true it returns x put into the derivative of the binary step function (0) and if it's false it returns x put into the binary step function.
-
-***
-
-the '**lnn.softmax**' function has 2 parameters: x (the table you want to put into the softmax function) and derivative (if you want the derivative of the softmax function).
-
-if the derivative parameter is true it returns x put into the derivative of the softmax function and if it's false it returns x put into the softmax function.
-
-***
-
-### NOTE:
-there is a linear activation function 'linear' but you don't need a function for that.
-
-### NEURAL NETWORK FUNCTIONS
-
-the '**lnn.initialize()**' function has 5 parameters: id (the id for the neural network), activation (the activation function for the neual network), insize (the size of the inputs for
-the neural network) layercount (the amount of layers for the neural network) and outcount (the size of the output nodes for the neural network). 
-
-it creates the data values for the
-neural network, the weights, biases and current values. the amount of nodes in each layer is calculated from a 2 point slope, (y2-y1)/(x1-x2), where y2 is the output node count, y1
-is the input node count, x1 is 0 and x2 is the layercount, the amount of hidden layers in the neural network.
-
-***
-
-the '**lnn.forwardpass()**' function has 2 parameters: id (the id for the neural network) and intable (the input for the neural network).
-
-it propagates the input forward through the
-neural network with the activation function as specified from the 'lnn.initialize()' function. it returns a table even if the amount of output nodes is 1. 
- 
-***
-
-the '**lnn.adjust()**' function has 5 parameters: id (the id for the neural network), intable (the input table to adjust the weights and biases with respect to), out (the real output
-from the neural network), expectedout (the expected or ideal output from the neural network) and learningrate (usually a low value like 0.01 or 0.001).
-
-it adjusts the weights and
-the biases by calculating gradw and gradb then subtracting gradw from the weights and subtracting gradb from the biases.
-
-### ERROR/COST FUNCTIONS
-
-the '**lnn.getmse()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network).
-
-the functiom
-returns the mean squared error calculated from the output and expected output.
-
-***
-
-the '**lnn.getsse()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network).
-
-the function
-returns the sum of squared error calculated from the output and expected output.
-
-***
-
-the '**lnn.getmae()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network).
-
-the function 
-returns the mean absolute error calculated from the output and expected output.
-
-***
-
-the '**lnn.getrmse)**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network).
-
-the function returns the root of mean squared error calculated from the output and expected output.
-
-***
-
-the '**lnn.getcrossentropy()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network).
-
-the
-function returns the cross entropy value calculated from the output and expected output. if any number put into the function is negative it will output a warning stating "WARNING: All
-values put into binary cross entropy function must be greater than -0.009 otherwise it will return 'nan'!".
-
-***
-
-the '**lnn.getbinarycrossentropy()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network). 
-
-the
-function returns the binary cross entropy value calculated from the output and expected output. if any number put into the function is negative it will output a warning stating "WARNING: All
-values put into binary cross entropy function must be greater than -0.009 otherwise it will return 'nan'!".
-
-***
-
-the '**lnn.getcategoricalcrossentropy()**' function has 2 parameters: output (the real output from the neural network) and expectedoutput (the expected or ideal output from the neural network).
-
-the
-function returns the categorical cross entropy value calculated from the output and expected output. if any number put into the function is negative it will output a warning stating "WARNING: All
-values put into categorical cross entropy function must be greater than -0.009 otherwise it will return 'nan'!".
-
-### DEBUGGING/VISUALIZING FUNCTIONS
-
-the '**lnn.debug.returnweights()**' function has 1 parameter: id (the id for the neural network).
-
-the function returns a table with the weight values for the neural network. this can
-be used for visualizing or debugging.
-
-***
-
-the '**lnn.debug.returnbiases()**' function has 1 parameter: id (the id for the neural network). 
-
-the function returns a table with the bias values for the neural network. this can be
-used for visualizing or debugging.
-
-***
-
-the '**lnn.debug.returncurrent()**' function has 1 parameter: id (the id for the neural network).
-
-the function returns a table with the current values (the node value of each layer) for
-the neural network. this can be used for visualizing or debugging.
-
-***
-
-the '**lnn.debug.returngradient()**' function has 1 parameter: id (the id for the neural network).
-
-the function returns a table with the gradient values for the neural network. this can
-be used for visualizing or debugging. (or you can just use _G[id][gradient][gradw or gradb])
-
-***
-
-the '**lnn.debug.returndata()**' function has 1 parameter: id (the id for the neural network). 
-
-the function returns the table with the data for the neural network (info like layercount,
-outcount, ect). (or you can just use _G[id])
-
-***
-
-the '**lnn.debug.clearid()**' function has 1 parameter: id (the id for the neural network).
-
-the function sets _G[id] (the table where the neural network data is stored to nil. (or you can
-just use _G[id] = nil)
 
 ## STRENGTHS AND LIMITATIONS
 
 ### STRENGTHS
 
- - because this neural network uses Lua it has the ability to be run in LuaJIT which is really fast, almost 141 times faster than normal Lua!
+ - Ability to run in LuaJIT.
 
- - because this uses no external libraries that means that all this requires is bare Lua 5.4 to run (might not work on older versions of Lua) and no package manager which reduces
- the chance that something breaks due to a package update to 0 and a just leaves a Lua update to break stuff.
+ - No external libraries & can run off bare Lua (5.1.x and above).
 
- - because it uses an id system and integrates them into the functions it's easy to manage the neural networks with clean and readable code.
+ - ID system for managing neural networks with clean code.
 
- - because there are multiple activation functions and cost functions it can fit a lot of use cases. ( not all but a lot :) )
+ - Support for different activations on different layers.
+
+ - Simple and easy to understand structure.
 
 ### LIMITATIONS
 
- - because it uses _G[] to store the neural network values it count be slow and clutter variables.
+ - _G[] can be slower and clutter variables
 
- - because this is in Lua there might not be as many features of neural network libraries in other programming languages or even other ones on Lua. the main point of this is
- that it's easy and simple with no spaghetti code. (for you, there's metric tons of spaghetti code in the functions)
+ - There might not be as many features of neural network libraries in other programming languages or even other ones in Lua. the main point of this is that it's easy and simple with no spaghetti code.
 
- - because of how the lnn.initialize() function works you do not have exact control over the total amount of nodes in each layer in the neural network, you can only have it in a
- linear line.
+ - The `lnn.adjust()` function doesn't support custom loss functions at the moment. (but you could create your own back-propagation algorithm for the neural networks since they're easy to interface with !)
 
- - because of the error checking, this isn't as fast as it could be. check the 'fast' branch for no error checking. **NOTE:** the fast branch might not be updated at the same speed that the 'stable' branch is.
+## ALL FUNCTIONS
 
-## HOW THE NEURAL NETWORK WORKS
+### ERROR CATCHING/USEFUL FUNCTIONS
 
-the neural networks starts by creating the functions, the first and only function created is getlayer(). getlayer() takes the last layer, the next layer, the weight layer inbetween
-and the bias table for the next layer. it then declares 1 variable, sum, and loops for the amount of items in the nextlayer (#nextlayer, loop variable is a). then in that loop there
-is another loop that loops for the amount of items in the lastlayer (#lastlayer, loop variable is i), then it adds the i'th item in lastlayer multiplied by the i+(a-1) multiplied by
-the amount of items in the last layer (#lastlayer). then the a'th item in the next layer (nextlayer) is set to sum + the current node's bias (biases[a]) put into the activation
-function of choice.
+ - [**lnn.asserttype()**](#at)
+ - [**lnn.assertsize()**](#as)
+ - [**lnn.findintable()**](#fit)
+ - [**lnn.sumtable()**](#st)
 
-the input is fed into the neural network in the form of a table, this is because it's easy to work with tables and if you want to read an image like BMP or PNG you would have to
-write code to convert it to a table (or use https://github.com/Didericis/png-lua#pnglua :D) getlayer() handles the calculations of each node in the next layer based on the
-bias, weight and current values of the last layer. it repeats this until we get to the output layer.
+### DEFAULT ACTIVATION FUNCTIONS
 
-the adjust gets the weighted sum of the weights and puts it into the derivative of the activation function. it then calculates the gradient descent table for the weights and then the gradient descent
-table for the biases, it adjusts the output layer weights based on gradw and then the rest of the weights, also based on gradw. after that it adjusts the output biases based on  gradb, and then adjusts the rest of the biases, also based on gradb.
+ - [**lnn.activation.sigmoid()**](#sig)
+ - [**lnn.activation.tanh()**](#ta)
+ - [**lnn.activation.relu()**](#re)
+ - [**lnn.activation.leakyrelu()**](#lre)
+ - [**lnn.activation.elu()**](#el)
+ - [**lnn.activation.swish()**](#sw)
+ - [**lnn.activation.binarystep()**](#bs)
+ - [**lnn.activation.softmax()**](#sm)
+ - [**lnn.activation.softplus()**](#sp)
+ - [**lnn.activation.softsign()**](#ss)
+ - [**lnn.activation.linear()**](#li)
 
-## OTHER STUFF
+### NEURAL NETWORK FUNCTIONS
 
-have questions? email me or add a question on the issues page with the tag question. find a bug? describe it and tag it with bug, minor bug, major bug or edge case on the issues page. anything else? if applicable, add it on the issues page with the correct tag, ill get to it hopefully.
+ - [**lnn.initialize()**](#in)
+ - [**lnn.forwardpass()**](#fp)
+ - [**lnn.returnerror()**](#rte)
+ - [**lnn.adjust.adjustfromgradient()**](#afg)
+ - [**lnn.adjust.basic.adjust()**](#ad)
+ - [**lnn.adjust.basic.returngradient()**](#rg)
+ - [**lnn.adjust.momentum.adjust()**](#mad)
+ - [**lnn.adjust.momentum.returngradient()**](#mrg)
 
-## FUTURE PLANS
+### DEFAULT LOSS FUNCTIONS
 
-i plan to make this a luarocks package but it is a PAIN to get working.
+ - [**lnn.loss.mse()**](#mse)
+ - [**lnn.loss.mae()**](#mae)
+ - [**lnn.loss.sse()**](#sse)
+ - [**lnn.loss.rmse()**](#rmse)
+ - [**lnn.loss.crossentropy()**](#ce)
+ - [**lnn.loss.categoricalcrossentropy()**](#cce)
+
+### DATA FUNCTIONS
+
+ - [**lnn.data.randomize()**](#ra)
+ - [**lnn.data.addrandom()**](#ar)
+ - [**lnn.data.exportdata()**](#ed)
+
+# NEURAL NETWORK TABLE STRUCTURES
+
+## NEURAL NETWORK TABLE
+
+```
+id = {                     --TYPES:        DESCRIPTION:
+	activations            --table         table containing activations for each layer
+	alpha                  --number        used as a multiplication constant in some activation functions, 1 by default, 0.01 if activation is leakyrelu
+	gradient               --table         (see the section below)
+	id                     --string        id for the neural network
+	weight                 --table         table containing tables containing the weights, numbered by the next layer so weight 1 is connected to node 1 in the 2nd layer and node 1 in the 1st layer and weight 2 is connected to node 1 in the 2nd layer and node 2 in the 1st layer for example
+	bias                   --table         table containing the bias for each layer, every hidden layer has a bias and is added to the layer after it.
+	current                --table         table containing tables containing the values of the node
+	layersizes             --table         table containing the sizes of the input, hidden and output layers
+	weightcount            --number        the total amount of weights in the neural network
+}
+```
+
+## GRADIENT TABLE
+
+```
+grad = {                   --TYPES:        DESCRIPTION:
+	error,                 --table         error of every node
+	grad = {               --table         table containing the gradients for the weights and biases
+		weight             --table         table containing the gradient for every weight
+		bias               --table         table containing the gradient for every bias
+	},
+	learningrate,          --number        step size for training, usually a low number like 0.01 or 0.001
+	momentum               --number        momentum, not used in this function.
+}
+```
+
+# OTHER STUFF
+
+Have questions? Email me or add a question on the issues page with the tag `question`. Find a bug? Describe it and tag it with `bug`, `minor bug`, `major bug` or `edge case` on the issues page. Anything else? If applicable, add it on the issues page with the correct tag, I'll get to it... hopefully.
+
+# FUNCTION DOCUMENTATION
+
+## ERROR CATCHING/USEFUL FUNCTIONS
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="at"></a>
+   # lnn.asserttype()
+   ### DESCRIPTION
+   Compares the type of `variable` against `expectedtype`.
+   
+   ### PARAMETERS
+   | parameter name   | type       | description                                               |
+   |------------------|------------|-----------------------------------------------------------|
+   | **variable**     | **any**    | The variable that you want to check the type of.          |
+   | **variablename** | **string** | The name of the variable for more verbose error messages. |
+   | **expectedtype** | **string** | The expected type of the variable.                        |
+   
+   This function allows you to check the type of a variable to prevent or catch errors before they happen. This function compares `type(variable)` to `expectedtype` and calls `error()` with a string formatted like so if the 2 strings are different:
+
+   >"`variablename` (`variable`) is not a `expectedtype` or is nil. Type: `type(variable)`"
+   
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="as"></a>
+   # lnn.assertsize()
+   ### DESCRIPTION
+   Compares the size of `a` against `b`.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                            |
+   |----------------|-------------|--------------------------------------------------------|
+   | **a**          | **table**   | The first table.                                       |
+   | **b**          | **table**   | The second table.                                      |
+   | **aname**      | **string**  | The name of table `a` for more verbose error messages. |
+   | **bname**      | **string**  | The name of table `b` for more verbose error messages. |
+   | **zerocheck**  | **boolean** | Should the function error if either size is 0.         |
+   
+   This function allows you to check the size of 2 tables to prevent or catch errors before they happen. This function compares `#a` to `#b` and calls `error()` with a string formatted like so if the 2 numbers are different:
+
+   >"`aname` (`#a`) is not the same size as `bname` (`#b`)."
+
+   Additionally, if `zerocheck` is true, if either one of the table sizes is 0 it will call `error()` with a string formatted like this:
+
+   >"`aname` (`#a`) or `bname` (`#b`) is equal to zero."
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="fit"></a>
+   # lnn.findintable()
+   ### DESCRIPTION
+   Performs a linear search on `table` to find `item`.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                   |
+   |----------------|-------------|-------------------------------------------------------------------------------|
+   | **table**      | **table**   | The table you want to find `item` in.                                         |
+   | **item**       | **any**     | The item you want to find in `table`.                                         |
+   | **recursive**  | **boolean** | Should the function call itself when the current index of `table` is a table. |
+
+   This function performs a linear search on `table` to find `item`, if `recursive` is true and the current index of `table` is a table it will call the lnn.findintable() function on the current table index. If it finds `item` in `table` it will return the current table index number (the i in the for loop, i'm not good with words) and if it doesn't find `item` it will return false. 
+
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="st"></a>
+   # lnn.sumtable()
+   ### DESCRIPTION
+   Adds all items in `table` to get the sum of the table.
+   
+   ### PARAMETERS
+   | parameter name | type       | description                                      |
+   |----------------|------------|--------------------------------------------------|
+   | **table**      | **table**  | The table you want to get the sum of. |
+   
+   This function allows you to get the sum of all numbers in a table.
+
+</div>
+
+## DEFAULT ACTIVATION FUNCTIONS
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="sig"></a>
+   # lnn.activation.sigmoid()
+   ### DESCRIPTION
+   Returns `x` put into the sigmoid function if `derivative` is false and returns `x` put into the derivative of the sigmoid function if `derivative` is true.
+   
+   ### PARAMETERS
+   | parameter name   | type        | description                                                                   |
+   |------------------|-------------|-------------------------------------------------------------------------------|
+   | **x**            | **number**  | The number you want to put into the sigmoid function.                         |
+   | **derivative**   | **boolean** | Should the function return x put into the derivative of the sigmoid function. |
+   
+   If `derivative` is false this function returns `x` put into the sigmoid activation function, otherwise if `derivative` is true it returns `x` put into the derivative of the sigmoid activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$\frac{1}{1+e^{-x}}$$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="ta"></a>
+   # lnn.activation.tanh()
+   ### DESCRIPTION
+   Returns `x` put into the Tanh (Hyperbolic Tangent) function if `derivative` is false and returns `x` put into the derivative of the Tanh function if `derivative` is true.
+   
+   ### PARAMETERS
+   | parameter name   | type        | description                                                                   |
+   |------------------|-------------|-------------------------------------------------------------------------------|
+   | **x**            | **number**  | The number you want to put into the tanh function.                            |
+   | **derivative**   | **boolean** | Should the function return x put into the derivative of the tanh function.    |
+   
+   If `derivative` is false this function returns `x` put into the Tanh activation function, otherwise if `derivative` is true it returns `x` put into the derivative of the Tanh activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$\frac{e^{2x}-1}{e^{2x}+1}$$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="re"></a>
+   # lnn.activation.relu()
+   ### DESCRIPTION
+   Returns `x` put into the ReLU (Rectified Linear Unit) function if `derivative` is false and returns `x` put into the derivative of the ReLU function if `derivative` is true.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                |
+   |----------------|-------------|----------------------------------------------------------------------------|
+   | **x**          | **number**  | The number you want to put into the ReLU function.                         |
+   | **derivative** | **boolean** | Should the function return x put into the derivative of the ReLU function. |
+   
+   If `derivative` is false this function returns `x` put into the ReLU activation function, otherwise if `derivative` is true it returns `x` put into the derivative of the ReLU activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$max(0,x)$$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="lre"></a>
+   # lnn.activation.leakyrelu()
+   ### DESCRIPTION
+   Returns `x` put into the LeakyReLU (Leaky Rectified Linear Unit) activation function if `derivative` is false and retuns `x` put into the derivative of the LReLU activation function if `derivative` is true.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                 |
+   |----------------|-------------|-----------------------------------------------------------------------------|
+   | **x**          | **number**  | The number you want to put into the LReLU activation function.              |
+   | **derivative** | **boolean** | Should the function return x put into the derivative of the LReLU function. |
+   
+   If `derivative` is false this function returns `x` put into the LReLU activation function, otherwise if `derivative` is true, it returns `x` put into the derivative of the LReLU activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   \begin{cases}
+	   x,&\text{if } x\gt0\\
+       x\cdot\alpha,&\text{otherwise}
+   \end{cases}
+   $$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="el"></a>
+   # lnn.activation.elu()
+   ### DESCRIPTION
+   Returns `x` put into the ELU (Exponential Linear Unit) activation function if `derivative` is false and retuns `x` put into the derivative of the ELU activation function if `derivative` is true.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                                                       |
+   |----------------|-------------|-------------------------------------------------------------------------------------------------------------------|
+   | **x**          | **number**  | The number you want to put into the ELU activation function.                                                      |
+   | **derivative** | **boolean** | Should the function return x put into the derivative of the ELU function.                                         |
+   | **alpha**      | **number**  | Kind of like... scale? of the graph? This is why you should do research too! I'm not good at explaining in words! |
+   
+   If `derivative` is false this function returns `x` put into the ELU activation function, otherwise if `derivative` is true, it returns `x` put into the derivative of the ELU activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   \begin{cases}
+	   x,&\text{if } x\gt0\\
+	   e^{x}-1,&\text{otherwise}
+   \end{cases}
+   $$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="sw"></a>
+   # lnn.activation.swish()
+   ### DESCRIPTION
+   Returns `x` put into the Swish activation function if `derivative` is false and retuns `x` put into the derivative of the Swish activation function if `derivative` is true.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                 |
+   |----------------|-------------|-----------------------------------------------------------------------------|
+   | **x**          | **number**  | The number you want to put into the Swish activation function.              |
+   | **derivative** | **boolean** | Should the function return x put into the derivative of the Swish function. |
+   | **alpha**      | **number**  | Again, just kind of like... just a.. constant that is multiplied somewhere. |
+   
+   If `derivative` is false this function returns `x` put into the Swish activation function, otherwise if `derivative` is true, it returns `x` put into the derivative of the Swish activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   \frac{x}{1+e^{(-\alpha)\cdot\text{x}}}
+   $$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="bs"></a>
+   # lnn.activation.binarystep()
+   ### DESCRIPTION
+   Returns 1 if `x` > 0, returns 0 if `x` =< 0.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                       |
+   |----------------|-------------|-----------------------------------------------------------------------------------|
+   | **x**          | **number**  | The number you want to put into the binary step activation function.              |
+   | **derivative** | **boolean** | Should the function return x put into the derivative of the binary step function. |
+   
+   If `derivative` is false this function returns 1 if `x` > 0 and returns 0 if `x` =< 0 otherwise if `derivative` is true, it returns 0.
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   \begin{cases}
+   1,\text{if }x > 0\\
+   0,\text{otherwise }
+   \end{cases}
+   $$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="sm"></a>
+   # lnn.activation.softmax()
+   ### DESCRIPTION
+   Returns `x` put into the Softmax activation function if `derivative` is false and retuns `x` put into the derivative of the Softmax activation function if `derivative` is true.
+
+   ### NOTE:
+   `x` for this function is a table, not a number!
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                              |
+   |----------------|-------------|------------------------------------------------------------------------------------------|
+   | **x**          | **table**   | The table you want to put into the Softmax activation function.                          |
+   | **derivative** | **boolean** | Should the function return x put into the derivative of the Softmax activation function. |
+
+   If `derivative` is false this function returns `x` put into the Softmax activation function, otherwise if `derivative` is true, it returns `x` put into the derivative of the Softmax activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   \sum_{i=1}^{|A|x}\frac{{e^{x_{i}}}}{\sum_{a=1}^{|A|x}e^{x_{a}}}
+   $$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="sp"></a>
+   # lnn.activation.softplus()
+   ### DESCRIPTION
+   Returns `x` put into the Softplus activation function if `derivative` is false and retuns `x` put into the derivative of the Softplus activation function if `derivative` is true.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                               |
+   |----------------|-------------|-------------------------------------------------------------------------------------------|
+   | **x**          | **number**  | The number you want to put into the Softplus activation function.                         |
+   | **derivative** | **boolean** | Should the function return x put into the derivative of the Softplus activation function. |
+
+   If `derivative` is false this function returns `x` put into the Softplus activation function, otherwise if `derivative` is true, it returns `x` put into the derivative of the Softplus activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   log(1+e^{x})
+   $$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="ss"></a>
+   # lnn.activation.softsign()
+   ### DESCRIPTION
+   Returns `x` put into the Softsign activation function if `derivative` is false and retuns `x` put into the derivative of the Softsign activation function if `derivative` is true.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                                                                               |
+   |----------------|-------------|-------------------------------------------------------------------------------------------|
+   | **x**          | **number**  | The number you want to put into the Softsign activation function.                         |
+   | **derivative** | **boolean** | Should the function return x put into the derivative of the Softsign activation function. |
+
+   If `derivative` is false this function returns `x` put into the Softsign activation function, otherwise if `derivative` is true, it returns `x` put into the derivative of the Softsign activation function.
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   \frac{x}{1+|x|}
+   $$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="li"></a>
+   # lnn.activation.linear()
+   ### DESCRIPTION
+   Returns `x` if `derivative` is false and retuns 1 if `derivative` is true. This is mainly just for cleaner code so there's not a special statment for the `linear` activation function.
+   
+   ### PARAMETERS
+   | parameter name | type        | description                    |
+   |----------------|-------------|--------------------------------|
+   | **x**          | **number**  | The number you want to return. |
+   | **derivative** | **boolean** | Should the function return 1.  |
+   | **alpha**      | **number**  | Number to be multiplied by x.  |
+
+   ### MATHEMATICAL FUNCTION
+   $$
+   x
+   $$
+
+</div>
+
+## NEURAL NETWORK FUNCTIONS
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="in"></a>
+   # lnn.initialize()
+   ### DESCRIPTION
+   Creates a neural network with an id of `id` and creates all the required data for it in a table in _G.
+
+   ### PARAMETERS
+   | parameter name | type       | description                                                                       |
+   |----------------|------------|-----------------------------------------------------------------------------------|
+   | **id**         | **string** | The id for the neural network, cannot be the same as another neural network's id. |
+   | **activation** | **string** | Should be the name of a function in `lnn.activation`.                             |
+   | **layersizes** | **table**  | The table containing the sizes for each layer in the neural network.              |
+
+   This function creates a neural network with an id of `id` and creates all the data for it. the `activation` parameter should be the name of a function in `lnn.activation`, so "sigmoid" would be a valid activation function and if you made your own function in `lnn.activation` that would also be a valid activation function. The `layersizes` parameter should be a table containing the sizes for all layers. The first number in `layersizes` would be the input size, the last number in `layersizes` would be the output size and the numbers inbetween would be the hidden layer sizes. You can create a neural network with no hidden layers by just having 2 numbers, input and output size.
+
+   ### RETURN VALUE
+   Nothing
+
+   ### EXAMPLE
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="fp"></a>
+   # lnn.activation.forwardpass()
+   ### DESCRIPTION
+   Forward propagates the intable through the neural network with an id of `id`. (gets the output of `id` with input `intable`)
+
+   ### PARAMETERS
+   | parameter name | type       | description                                                 |
+   |----------------|------------|-------------------------------------------------------------|
+   | **id**         | **string** | The id of the neural network you want to get the output of. |
+   | **intable**    | **table**  | Input for the neural network.                               |
+
+   Gets the output of `id` with input `intable`, go to the how the neural network works section for information on how this function works.
+
+   ### RETURN VALUE
+   Neural network output (`_G[id]["current"][_G[id]["layercount"]+1]`)
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="rte"></a>
+   # lnn.returnerror()
+   ### DESCRIPTION
+   Calculates the error of neural network `id` with input `intable`, output `output` and expected/ideal output `expectedoutput`.
+
+   ### PARAMETERS
+   | parameter name     | type       | description                                                                                  |
+   |--------------------|------------|----------------------------------------------------------------------------------------------|
+   | **id**             | **string** | The id of the neural network you want to adjust.                                             |
+   | **intable**        | **table**  | Input for the neural network.                                                                |
+   | **output**         | **table**  | The real output for the neural network.                                                      |
+   | **expectedoutput** | **table**  | The expected/ideal output for the neural network with an input of `intable`.                 |
+   | **learningrate**   | **number** | THe step size for adjusting the weights and biases, usually a low number like 0.01 or 0.001. |
+
+   ### RETURN VALUE
+   Error of nodes with respect to the parameters.
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="afg"></a>
+   # lnn.adjust.adjustfromgradient()
+   ### DESCRIPTION
+   Adjusts `id`'s weights and biases from `gradient`.
+
+   ### PARAMETERS
+   | parameter name | type       | description                                                                                                          |
+   |----------------|------------|----------------------------------------------------------------------------------------------------------------------|
+   | **id**         | **string** | The id of the neural network you want to adjust.                                                                     |
+   | **gradient**   | **table**  | Table containing the  data, assumed to be returned from `lnn.adjust.**.returngradient()` or with the same structure. |
+
+   ### RETURN VALUE
+   Nothing
+
+</div>
+
+## BASIC ADJUST FUNCTIONS
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="ad"></a>
+   # lnn.adjust.basic.adjust()
+   ### DESCRIPTION
+   Calculates the gradient of neural network `id` with input `intable`, output `output` and expected/ideal output `expectedoutput` and adjusts `id`'s weights and biases for stochastic gradient descent without momentum.
+
+   ### PARAMETERS
+   | parameter name     | type       | description                                                                                  |
+   |--------------------|------------|----------------------------------------------------------------------------------------------|
+   | **id**             | **string** | The id of the neural network you want to adjust.                                             |
+   | **intable**        | **table**  | Input for the neural network.                                                                |
+   | **output**         | **table**  | The real output for the neural network.                                                      |
+   | **expectedoutput** | **table**  | The expected/ideal output for the neural network with an input of `intable`.                 |
+   | **learningrate**   | **number** | THe step size for adjusting the weights and biases, usually a low number like 0.01 or 0.001. |
+
+   ### RETURN VALUE
+   Nothing
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="rg"></a>
+   # lnn.adjust.basic.returngradient()
+   ### DESCRIPTION
+   Calculates the gradient of neural network `id` with input `intable`, output `output` and expected/ideal ouitput of `expectedoutput and returns the gradient and error without momentum. Could be used for batch or mini-batch gradient descent.
+
+   ### PARAMETERS
+   | parameter name     | type       | description                                                                                  |
+   |--------------------|------------|----------------------------------------------------------------------------------------------|
+   | **id**             | **string** | The id of the neural network you want to calculate the gradient of.                          |
+   | **intable**        | **table**  | Input for the neural network.                                                                |
+   | **output**         | **table**  | The real output for the neural network.                                                      |
+   | **expectedoutput** | **table**  | The expected/ideal output for the neural network with an input of `intable`.                 |
+   | **learningrate**   | **number** | THe step size for adjusting the weights and biases, usually a low number like 0.01 or 0.001. |
+
+   ### RETURN VALUE
+   Gradient
+
+</div>
+
+## MOMENTUM ADJUST FUNCTIONS
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="mad"></a>
+   # lnn.adjust.momentum.adjust()
+   ### DESCRIPTION
+   Calculates the gradient of neural network `id` with input `intable`, output `output` and expected/ideal output `expectedoutput` and adjusts `id`'s weights and biases for stochastic gradient descent with momentum.
+
+   ### PARAMETERS
+   | parameter name     | type       | description                                                                                  |
+   |--------------------|------------|----------------------------------------------------------------------------------------------|
+   | **id**             | **string** | The id of the neural network you want to adjust.                                             |
+   | **intable**        | **table**  | Input for the neural network.                                                                |
+   | **output**         | **table**  | The real output for the neural network.                                                      |
+   | **expectedoutput** | **table**  | The expected/ideal output for the neural network with an input of `intable`.                 |
+   | **learningrate**   | **number** | THe step size for adjusting the weights and biases, usually a low number like 0.01 or 0.001. |
+
+   ### RETURN VALUE
+   Nothing
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="mrg"></a>
+   # lnn.adjust.momentum.returngradient()
+   ### DESCRIPTION
+   Calculates the gradient of neural network `id` with input `intable`, output `output` and expected/ideal ouitput of `expectedoutput and returns the gradient and error with momentum. Could be used for batch or mini-batch gradient descent.
+
+   ### PARAMETERS
+   | parameter name     | type       | description                                                                                  |
+   |--------------------|------------|----------------------------------------------------------------------------------------------|
+   | **id**             | **string** | The id of the neural network you want to calculate the gradient of.                          |
+   | **intable**        | **table**  | Input for the neural network.                                                                |
+   | **output**         | **table**  | The real output for the neural network.                                                      |
+   | **expectedoutput** | **table**  | The expected/ideal output for the neural network with an input of `intable`.                 |
+   | **learningrate**   | **number** | THe step size for adjusting the weights and biases, usually a low number like 0.01 or 0.001. |
+
+   ### RETURN VALUE
+   Gradient
+
+</div>
+
+## DEFAULT LOSS FUNCTIONS
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="mse"></a>
+   # lnn.loss.mse()
+   ### DESCRIPTION
+   Returns the Mean Squared Error of `output` minus `expectedoutput`.
+
+   ### PARAMETERS
+   | parameter name     | type      | description                |
+   |--------------------|-----------|----------------------------|
+   | **output**         | **table** | The real output.           |
+   | **expectedoutput** | **table** | The expected/ideal output. |
+
+   ### MATHEMATICAL FUNCTION
+   $$(\frac{\sum_{i=1}^{|A|o}o-eo}{|A|o})^{2}$$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="mae"></a>
+   # lnn.loss.mae()
+   ### DESCRIPTION
+   Returns the Mean Absolute Error of `output` minus `expectedoutput`.
+
+   ### PARAMETERS
+   | parameter name     | type      | description                |
+   |--------------------|-----------|----------------------------|
+   | **output**         | **table** | The real output.           |
+   | **expectedoutput** | **table** | The expected/ideal output. |
+
+   ### MATHEMATICAL FUNCTION
+   $$|\frac{\sum_{i=1}^{|A|o}o-eo}{|A|o}|$$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="sse"></a>
+   # lnn.loss.sse()
+   ### DESCRIPTION
+   Returns the Sum of Squared Error of `output` minus `expectedoutput`.
+
+   ### PARAMETERS
+   | parameter name     | type      | description                |
+   |--------------------|-----------|----------------------------|
+   | **output**         | **table** | The real output.           |
+   | **expectedoutput** | **table** | The expected/ideal output. |
+
+   ### MATHEMATICAL FUNCTION
+   $$\sum_{i=1}^{|A|o}o-eo^{2}$$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="rmse"></a>
+   # lnn.loss.rmse()
+   ### DESCRIPTION
+   Returns the Root of Mean Squared Error of `output` minus `expectedoutput`.
+
+   ### PARAMETERS
+   | parameter name     | type      | description                |
+   |--------------------|-----------|----------------------------|
+   | **output**         | **table** | The real output.           |
+   | **expectedoutput** | **table** | The expected/ideal output. |
+
+   ### MATHEMATICAL FUNCTION
+   $$\sqrt((\frac{\sum_{i=0}^{|A|o}o-eo}{|A|o})^{2})$$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="ce"></a>
+   # lnn.loss.crossentropy()
+   ### DESCRIPTION
+   Returns the Cross Entropy of `output` and `expectedoutput`.
+
+   ### PARAMETERS
+   | parameter name     | type      | description                |
+   |--------------------|-----------|----------------------------|
+   | **output**         | **table** | The real output.           |
+   | **expectedoutput** | **table** | The expected/ideal output. |
+
+   ### MATHEMATICAL FUNCTION
+   $$\sum_{i=1}^{|A|o}{eo_{i}\cdot\log(o_{i})}$$
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="cce"></a>
+   # lnn.loss.categoricalcrossentropy()
+   ### DESCRIPTION
+   Returns the Categorical Cross Entropy of `output` and `expectedoutput`.
+
+   ### PARAMETERS
+   | parameter name     | type      | description                |
+   |--------------------|-----------|----------------------------|
+   | **output**         | **table** | The real output.           |
+   | **expectedoutput** | **table** | The expected/ideal output. |
+
+   ### MATHEMATICAL FUNCTION
+   $$\sum_{i=1}^{|A|o}{eo_{i}\cdot log(o_{i})}$$
+
+</div>
+
+## DATA FUNCTIONS
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="ra"></a>
+   # lnn.data.randomize()
+   ### DESCRIPTION
+   Randomizes `id`'s weights and biases.
+
+   ### PARAMETERS
+   | parameter name | type       | description                                                  |
+   |----------------|------------|--------------------------------------------------------------|
+   | **id**         | **string** | The id that you want to randomize the weights and biases of. |
+
+   This function sets `id`'s weights and biases to a random number between -1 and 1.
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="ar"></a>
+   # lnn.data.addrandom()
+   ### DESCRIPTION
+   Adds a random amount between `upperlimit` and `lowerlimit` to `id`'s weights and biases.
+
+   ### PARAMETERS
+   | parameter name | type       | description                                                               |
+   |----------------|------------|---------------------------------------------------------------------------|
+   | **id**         | **string** | The id that you want to add a random amount to the weights and biases of. |
+   | **lowerlimit** | **number** | The lower limit.                                                          |
+   | **upperlimit** | **number** | The upper limit.                                                          |
+
+   This function adds a random amount between `upperlimit` and `lowerlimit` to `id`'s weights and biases, could be useful when training a stickman to walk or something like that.
+
+</div>
+
+<br>
+
+<div style="border-radius: 15px; border: 2px solid rgb(100,100,120); padding: 10px;">
+   
+   <a id="ed"></a>
+   # lnn.data.exportdata()
+   ### DESCRIPTION
+   Exports `id`'s data to `filename`
+
+   ### PARAMETERS
+   | parameter name | type       | description                                                 |
+   |----------------|------------|-------------------------------------------------------------|
+   | **id**         | **string** | The id that you want to export.                             |
+   | **filename**   | **string** | The name of the file you want the id's data to be saved to. |
+
+   This function exports the data in `_G[id]` to `filename`.
+
+</div>
+
+You reached the bottom, if you see this, hello?

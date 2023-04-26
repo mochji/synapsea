@@ -371,7 +371,7 @@ function lnn.forwardpass(id,intable)
 	end
 
 	if #intable ~= _G[id]["layersizes"][1] then
-		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#intable,id,_G[id]["layercount"][1]))
+		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#intable,id,_G[id]["layersizes"][1]))
 	end
 
 	--declare the functions

@@ -142,6 +142,7 @@ Example:
 
 ## NEURAL NETWORK TABLE
 
+```
 id = {                     --TYPES:        DESCRIPTION:
 	activations            --table         table containing activations for each layer
 	alpha                  --number        used as a multiplication constant in some activation functions, 1 by default, 0.01 if activation is leakyrelu
@@ -155,6 +156,7 @@ id = {                     --TYPES:        DESCRIPTION:
 }
 
 ## GRADIENT TABLE
+```
 
 ```
 grad = {                   --TYPES:        DESCRIPTION:

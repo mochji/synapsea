@@ -154,9 +154,9 @@ id = {                     --TYPES:        DESCRIPTION:
 	layersizes             --table         table containing the sizes of the input, hidden and output layers
 	weightcount            --number        the total amount of weights in the neural network
 }
+```
 
 ## GRADIENT TABLE
-```
 
 ```
 grad = {                   --TYPES:        DESCRIPTION:

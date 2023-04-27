@@ -15,7 +15,7 @@ _G["lnn"] = {
 function lnn.asserttype(variable,variablename,expectedtype)
 	--check for errors in the function that checks for errors.
 	if type(expectedtype)  ~= "string" or type(variablename) ~= "string" then
-		error("variablename and thetype must be a string!")
+		error("variablename and thetype must be a string.")
 	end
 
 	--give an error if false or nil
@@ -27,10 +27,10 @@ end
 function lnn.assertsize(a,b,aname,bname,zerocheck)
 	--check for errors in the function that checks for errors but different.
 	if type(a) ~= "table" or type(b) ~= "table" then
-		error("a and b must be a table!")
+		error("a and b must be a table.")
 	end
 	if type(aname) ~= "string" or type(bname) ~= "string" then
-		error("aname and bname must be a string!")
+		error("aname and bname must be a string.")
 	end
 
 	--give an error they're not the same size or 0.
@@ -599,7 +599,6 @@ function lnn.adjust.basic.returngradient(id,intable,output,expectedoutput,learni
 	return grad
 end
 
-
 --momentum adjust functions
 
 function lnn.adjust.momentum.adjust(id,intable,output,expectedoutput,learningrate)
@@ -812,7 +811,7 @@ function lnn.loss.sse(output,expectedoutput)
 	lnn.asserttype(output,"output","table")
 	lnn.asserttype(expectedoutput,"expectedutput","table")
 
-	lnn.assertsize(#output,#expectedoutput,"output","expectedoutput")
+	lnn.assertsize(output,expectedoutput,"output","expectedoutput")
 
 	--declare the variables
 	local sse = 0
@@ -888,14 +887,16 @@ function lnn.data.randomize(id)
 
 	--do the stuff
 
+	--randomize weights
 	for a = 1,#_G[id]["layersizes"]-1 do
-		--randomize biases
-		_G[id]["bias"][a] = math.random(-100,100)/100
-
-		--randomize weights
 		for i = 1,#_G[id]["weight"][a] do
 			_G[id]["weight"][a][i] = math.random(-100,100)/100
 		end
+	end
+
+	--randomize biases
+	for i = 1,#_G[id]["layersizes"]-2 do
+		_G[id]["bias"][i] = math.random(-100,100)/100
 	end
 end
 
@@ -909,15 +910,16 @@ function lnn.data.addrandom(id,lowerlimit,upperlimit)
 		error(string.format("id (%s) doesn't exist.",id))
 	end
 
-	--do the stuff
+	--randomize weights
 	for a = 1,#_G[id]["layersizes"]-1 do
-		--randomize biases
-		_G[id]["bias"][a] = _G[id]["bias"][a] + lowerlimit + math.random()*(upperlimit-lowerlimit) --https://stackoverflow.com/a/59494965 :D
-
 		--randomize weights
 		for i = 1,#_G[id]["weight"][a] do
 			_G[id]["weight"][a][i] = _G[id]["weight"][a][i] + lowerlimit + math.random()*(upperlimit-lowerlimit)
 		end
+	end
+	--randomize biases
+	for i = 1,#_G[id]["layersizes"]-2 do
+		_G[id]["bias"][i] = _G[id]["bias"][i] + lowerlimit + math.random()*(upperlimit-lowerlimit) --https://stackoverflow.com/a/59494965 :D
 	end
 end
 

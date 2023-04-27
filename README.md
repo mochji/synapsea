@@ -89,6 +89,8 @@ Example:
 
  - The `lnn.adjust()` function doesn't support custom loss functions at the moment. (but you could create your own back-propagation algorithm for the neural networks since they're easy to interface with !)
 
+ - No support for CNNs. (yet)
+
 ## ALL FUNCTIONS
 
 ### ERROR CATCHING/USEFUL FUNCTIONS

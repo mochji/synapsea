@@ -15,7 +15,7 @@ _G["lnn"] = {
 function lnn.asserttype(variable,variablename,expectedtype)
 	--check for errors in the function that checks for errors.
 	if type(expectedtype)  ~= "string" or type(variablename) ~= "string" then
-		error("variablename and thetype must be a string.")
+		error("variablename and expectedtype must be a string.")
 	end
 
 	--give an error if false or nil

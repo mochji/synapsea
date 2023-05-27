@@ -1,4 +1,5 @@
-# Lua Neural Network Library
+# Synapsea
+### (formerly Lua Neural Network)
 
 ## Lua: https://lua.org
 

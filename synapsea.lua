@@ -370,32 +370,55 @@ function lnn.forwardpass(id,intable)
 		error(string.format("id (%s) doesnt exist.",id))
 	end
 
-	if #intable ~= _G[id]["layersizes"][1] then
-		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#intable,id,_G[id]["layersizes"][1]))
+	local layer_sizes = _G[id]["layersizes"]
+	if #intable ~= layer_sizes[1] then
+		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).", #intable, id, layer_sizes[1]))
 	end
 
 	--declare the functions
 	local function getlayer(lastlayer,nextlayer,weights,bias,layernum) --i am super proud of this function :D
 		--declare the variables
 		local sum = 0
+		local alpha = _G[id]["alpha"]
 
+		local activation = lnn.activation[_G[id]["activations"][layernum]]
 		--get the sum of the connected weights to the current node we are on and replace the nextlayer
-		for a = 1,#nextlayer do
-			for i = 1,#lastlayer do
-				sum = sum + lastlayer[i]*(weights[i+((a-1)*#lastlayer)])
+		if activation == lnn.activation.softmax then
+			lnn.assertsize(lastlayer, nextlayer, "lastlayer", "nextlayer", true)
+			local insoftmax = {}
+			for a = 1, #nextlayer do
+				for i = 1, #lastlayer do
+					sum = sum + lastlayer[i] * (weights[i + ((a - 1) * #lastlayer)])
+				end
+				insoftmax[a] = sum + bias --even if it only has 2 parameters this still works but it pains me to do that
+				sum = 0
 			end
-			nextlayer[a] = lnn.activation[_G[id]["activations"][layernum]](sum+bias,false,_G[id]["alpha"]) --even if it only has 2 parameters this still works but it pains me to do that
+			local outsoftmax = activation(insoftmax, false, alpha)
+			for i = 1, #nextlayer do
+				nextlayer[i] = outsoftmax[i]
+			end
+			return
+		end
+
+		for a = 1, #nextlayer do
+			for i = 1, #lastlayer do
+				sum = sum + lastlayer[i] * (weights[i + ((a - 1) * #lastlayer)])
+			end
+			nextlayer[a] = activation(sum + bias, false, alpha) --even if it only has 2 parameters this still works but it pains me to do that
 			sum = 0
 		end
 	end
 
+	local bias = _G[id]["bias"]
+	local weight = _G[id]["weight"]
+	local current = _G[id]["current"]
 	--do the stuff
-	getlayer(intable,_G[id]["current"][1],_G[id]["weight"][1],0,1) --input layer to first hidden or output
-	for i = 2,#_G[id]["layersizes"]-1 do --rest of the hidden layers and output
-		getlayer(_G[id]["current"][i-1],_G[id]["current"][i],_G[id]["weight"][i],_G[id]["bias"][i-1],i)
+	getlayer(intable, current[1], weight[1], 0, 1) --input layer to first hidden or output
+	for i = 2, #layer_sizes - 1 do --rest of the hidden layers and output
+		getlayer(current[i - 1], current[i], weight[i], bias[i - 1], i)
 	end
 
-	return _G[id]["current"][#_G[id]["current"]] --last table in current is output layer
+	return current[#current] --last table in current is output layer
 end
 
 function lnn.returnerror(id,intable,output,expectedoutput,learningrate)
@@ -446,20 +469,27 @@ function lnn.adjust.adjustfromgradient(id,gradient)
 		error(string.format("id (%s) doesn't exist.",id))
 	end
 
-	if #gradient["intable"] ~= _G[id]["layersizes"][1] then
+	local layer_sizes = _G[id]["layersizes"]
+	if #gradient["intable"] ~= layer_sizes[1] then
 		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#gradient["intable"],id,_G[id]["layercount"][1]))
 	end
 
+	local weight = _G[id]["weight"]
+	local grad_weight = gradient["grad"]["weight"]
 	--update the weights
-	for a = #_G[id]["layersizes"]-1,1,-1 do
-		for i = 1,#_G[id]["weight"][a] do
-			_G[id]["weight"][a][i] = _G[id]["weight"][a][i] - gradient["grad"]["weight"][#_G[id]["layersizes"]-a][i]
+	for a = #layer_sizes - 1, 1, -1 do
+		local weight_i = #layer_sizes - a
+		local weight_a = weight[a]
+		for i = 1, #weight_a do
+			weight_a[i] = weight_a[i] - grad_weight[weight_i][i]
 		end
 	end
 
+	local bias = _G[id]["bias"]
+	local grad_bias = gradient["grad"]["bias"]
 	--update the biases
-	for i = #_G[id]["layersizes"]-2,1,-1 do
-		_G[id]["bias"][i] = _G[id]["bias"][i] - gradient["grad"]["bias"][i]
+	for i = #layer_sizes - 2, 1, -1 do
+		bias[i] = bias[i] - grad_bias[i]
 	end
 
 	--update the data on _G[id]
@@ -549,7 +579,8 @@ function lnn.adjust.basic.returngradient(id,intable,output,expectedoutput,learni
 		error(string.format("id (%s) doesn't exist.",id))
 	end
 
-	if #intable ~= _G[id]["layersizes"][1] then
+	local layer_sizes = _G[id]["layersizes"]
+	if #intable ~= layer_sizes[1] then
 		error(string.format("intable (%s) is not the same size as the input size when id (%s) was initialized (%s).",#intable,id,_G[id]["layercount"][1]))
 	end
 
@@ -565,35 +596,71 @@ function lnn.adjust.basic.returngradient(id,intable,output,expectedoutput,learni
 		["momentum"] = _G[id]["gradient"]["momentum"]
 	}
 
+	local alpha = _G[id]["alpha"]
+	local current = _G[id]["current"]
+	local grad_error = grad["error"]
+	local activations = _G[id]["activations"]
+	local activation_last = lnn.activation[activations[#activations]]
+	local outsoftmax_last
 	--calculate the error for each output node
-	for i = 1,#output do
-		grad["error"][1][i] = (output[i]-expectedoutput[i])*lnn.activation[_G[id]["activations"][#_G[id]["activations"]]](output[i],true,_G[id]["alpha"])+(output[i]-expectedoutput[i])*learningrate
+	if activation_last == lnn.activation.softmax then
+		lnn.assertsize(output, current[#current - 1], "output", "prevlayer", true)
+		outsoftmax_last = activation_last(output, true, alpha)
+	end
+	for i = 1, #output do
+		grad_error[1][i] = (output[i] - expectedoutput[i]) * (outsoftmax_last and outsoftmax_last[i] or activation_last(output[i], true, alpha)) + (output[i] - expectedoutput[i]) * learningrate
 	end
 
+	local weight = _G[id]["weight"]
 	--backpropagate the error
-	for a = #_G[id]["layersizes"]-2,1,-1 do
-		grad["error"][#grad["error"]+1] = {}
-		for b = 1,_G[id]["layersizes"][a+1] do
-			grad["error"][#grad["error"]][b] = 0
-			for i = 1,_G[id]["layersizes"][a] do
-				grad["error"][#grad["error"]][b] = grad["error"][#grad["error"]][b] + (_G[id]["weight"][a][i+((b-1)*_G[id]["layersizes"][a])]*grad["error"][#grad["error"]-1][math.ceil(b/(_G[id]["layersizes"][a]/#grad["error"][#grad["error"]-1]))])*lnn.activation[_G[id]["activations"][a]](_G[id]["current"][a][b],true,_G[id]["alpha"]) --you never saw this.
+	for a = #layer_sizes - 2, 1, -1 do
+		local size_a = layer_sizes[a]
+		local size_b = layer_sizes[a + 1]
+		local size_max = math.max(size_a, size_b)
+		grad_error[#grad_error + 1] = {}
+		local error_b = grad_error[#grad_error]
+		local error_c = grad_error[#grad_error - 1]
+		local weight_a = weight[a]
+		local current_a = current[a]
+		local activation_a = lnn.activation[activations[a]]
+
+		local outsoftmax
+		if activation_a == lnn.activation.softmax then
+			lnn.assertsize(current_a, current[a + 1], "alayer", "blayer", true)
+			outsoftmax = activation_a(current_a, true, alpha)
+		end
+		for b = 1, size_b do
+			error_b[b] = 0
+			for i = 1, size_a do
+				local error_c_i = math.ceil(b / (size_max / #error_c))
+				local error_c_v = error_c[error_c_i]
+				error_b[b] = error_b[b] + (weight_a[i + ((b - 1) * size_a)] * error_c_v) * (outsoftmax and outsoftmax[b] or activation_a(current_a[b], true, alpha)) --you never saw this.
 			end
 		end
 	end
 
+	local intable_sum = lnn.sumtable(intable)
+	local grad_weight = grad["grad"]["weight"]
+	local weight_count = _G[id]["weightcount"]
 	--calculate the weight gradient
-	for a = #_G[id]["layersizes"]-1,1,-1 do
-		for b = 1,_G[id]["layersizes"][a+1] do
-			grad["grad"]["weight"][#_G[id]["layersizes"]-a] = {}
-			for i = 1,_G[id]["layersizes"][a] do
-				grad["grad"]["weight"][#_G[id]["layersizes"]-a][i+((b-1)*_G[id]["layersizes"][a])] = math.min(math.max((learningrate/(_G[id]["weightcount"]))*(grad["error"][#_G[id]["layersizes"]-a][b]*lnn.sumtable(intable)),-learningrate),learningrate)
+	for a = #layer_sizes - 1, 1, -1 do
+		local size_a = layer_sizes[a]
+		local weight_i = #layer_sizes - a
+		grad_weight[weight_i] = {}
+		local grad_weight = grad_weight[weight_i]
+
+		for b = 1, layer_sizes[a + 1] do
+			local error_b = grad_error[weight_i][b]
+			for i = 1, size_a do
+				grad_weight[i + ((b - 1) * size_a)] = math.min(math.max((learningrate / (weight_count)) * (error_b * intable_sum), -learningrate), learningrate)
 			end
 		end
 	end
 
+	local grad_bias = grad["grad"]["bias"]
 	--calculate the bias gradient
-	for i = #_G[id]["layersizes"]-2,1,-1 do
-		grad["grad"]["bias"][i] = math.min(math.max((learningrate/(#_G[id]["layersizes"]-2))*lnn.sumtable(grad["error"][(#_G[id]["layersizes"]-1)-i]),-learningrate),learningrate)
+	for i = #layer_sizes - 2, 1, -1 do
+		grad_bias[i] = math.min(math.max((learningrate / (#layer_sizes - 2)) * lnn.sumtable(grad_error[(#layer_sizes - 1) - i]), -learningrate), learningrate)
 	end
 
 	return grad
@@ -935,10 +1002,10 @@ function lnn.data.exportdata(id,filename)
 	end
 
 	--clear the file
-	io.open(filename,"w"):close()
+	local f = io.open(filename,"w+") if f then f:close() end
 
 	--do the stuff
-	local f = io.open(filename,"a+")
+	f = io.open(filename,"a+")
 
 	if f ~= nil then
 		--write the basic data

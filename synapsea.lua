@@ -1001,97 +1001,99 @@ function lnn.data.exportdata(id,filename)
 		error(string.format("id (%s) doesn't exist.",id))
 	end
 
-	--clear the file
-	local f = io.open(filename,"w+") if f then f:close() end
-
 	--do the stuff
-	f = io.open(filename,"a+")
+	local out = ""
 
-	if f ~= nil then
-		--write the basic data
-		f:write(string.format("return {\n['alpha'] = %s,\n['id'] = '%s',\n['activations'] = {",_G[id]["alpha"],id))
+	--write the basic data
+	out = out .. string.format("return {\n['alpha'] = %s,\n['id'] = '%s',\n['activations'] = {",_G[id]["alpha"],id)
 
-		--write the activations
-		for i = 1,#_G[id]["activations"] do
-			f:write(string.format("'%s'%s",_G[id]["activations"][i],","))
-		end
-		f:write("},\n['weight'] = {\n")
-
-		--write the weight data
-		for a = 1,#_G[id]["layersizes"]-1 do
-			f:write("{")
-			for i = 1,#_G[id]["weight"][a] do
-				f:write(_G[id]["weight"][a][i]..",")
-			end
-			f:write("},\n")
-		end
-
-		f:write("},\n['current'] = {\n")
-
-		--write the current data
-		for a = 1,#_G[id]["layersizes"]-1 do
-			f:write("{")
-			for i = 1,#_G[id]["current"][a] do
-				f:write(_G[id]["current"][a][i]..",")
-			end
-			f:write("},\n")
-		end
-
-		f:write("},\n['bias'] = {")
-
-		--write the bias data
-		for i = 1,#_G[id]["layersizes"]-2 do
-			f:write(_G[id]["bias"][i]..",")
-		end
-
-		f:write("},\n['layersizes'] = {")
-
-		--write layersizes
-		for i = 1,#_G[id]["layersizes"] do
-			f:write(_G[id]["layersizes"][i]..",")
-		end
-
-		--write weightcount
-		f:write(string.format("},\n['weightcount'] = %s,\n",_G[id]["weightcount"]))
-
-		--write the gradient data
-		f:write("['gradient'] = {\n")
-
-		f:write("['error'] = {")
-		for a = 1,#_G[id]["gradient"]["error"] do
-			f:write("\n{")
-			for i = 1,#_G[id]["gradient"]["error"][a] do
-				f:write(_G[id]["gradient"]["error"][a][i]..",")
-			end
-			f:write("},\n")
-		end
-		f:write("},\n")
-
-		f:write("['grad'] = {\n['bias'] = {")
-		for i = 1,#_G[id]["gradient"]["grad"]["bias"] do
-			f:write(_G[id]["gradient"]["grad"]["bias"][i]..",")
-		end
-		f:write("},\n")
-
-		f:write("['weight'] = {")
-		for a = 1,#_G[id]["gradient"]["grad"]["weight"] do
-			f:write("\n{")
-			for i = 1,#_G[id]["gradient"]["grad"]["weight"][a] do
-				f:write(_G[id]["gradient"]["grad"]["weight"][a][i]..",")
-			end
-			f:write("},\n")
-		end
-
-		f:write("}\n},\n['intable'] = {")
-
-		for i = 1,#_G[id]["gradient"]["intable"] do
-			f:write(_G[id]["gradient"]["intable"][i]..",")
-		end
-
-		f:write(string.format("},\n['learningrate'] = %s,\n['momentum'] = %s\n}\n}",_G[id]["gradient"]["learningrate"],_G[id]["gradient"]["momentum"]))
-	else
-		print("something went wrong, f is nil?")
+	--write the activations
+	for i = 1,#_G[id]["activations"] do
+		out = out .. string.format("'%s'%s",_G[id]["activations"][i],",")
 	end
+	out = out .. "},\n['weight'] = {\n"
+
+	--write the weight data
+	for a = 1,#_G[id]["layersizes"]-1 do
+		out = out .. "{"
+		for i = 1,#_G[id]["weight"][a] do
+			out = out .. _G[id]["weight"][a][i]..","
+		end
+		out = out .. "},\n"
+	end
+
+	out = out .. "},\n['current'] = {\n"
+
+	--write the current data
+	for a = 1,#_G[id]["layersizes"]-1 do
+		out = out .. "{"
+		for i = 1,#_G[id]["current"][a] do
+			out = out .. _G[id]["current"][a][i]..","
+		end
+		out = out .. "},\n"
+	end
+
+	out = out .. "},\n['bias'] = {"
+
+	--write the bias data
+	for i = 1,#_G[id]["layersizes"]-2 do
+		out = out .. _G[id]["bias"][i]..","
+	end
+
+	out = out .. "},\n['layersizes'] = {"
+
+	--write layersizes
+	for i = 1,#_G[id]["layersizes"] do
+		out = out .. _G[id]["layersizes"][i]..","
+	end
+
+	--write weightcount
+	out = out .. string.format("},\n['weightcount'] = %s,\n",_G[id]["weightcount"])
+
+	--write the gradient data
+	out = out .. "['gradient'] = {\n"
+
+	out = out .. "['error'] = {"
+	for a = 1,#_G[id]["gradient"]["error"] do
+		out = out .. "\n{"
+		for i = 1,#_G[id]["gradient"]["error"][a] do
+			out = out .. _G[id]["gradient"]["error"][a][i]..","
+		end
+		out = out .. "},\n"
+	end
+	out = out .. "},\n"
+
+	out = out .. "['grad'] = {\n['bias'] = {"
+	for i = 1,#_G[id]["gradient"]["grad"]["bias"] do
+		out = out .. _G[id]["gradient"]["grad"]["bias"][i]..","
+	end
+	out = out .. "},\n"
+
+	out = out .. "['weight'] = {"
+	for a = 1,#_G[id]["gradient"]["grad"]["weight"] do
+		out = out .. "\n{"
+		for i = 1,#_G[id]["gradient"]["grad"]["weight"][a] do
+			out = out .. _G[id]["gradient"]["grad"]["weight"][a][i]..","
+		end
+		out = out .. "},\n"
+	end
+
+	out = out .. "}\n},\n['intable'] = {"
+
+	for i = 1,#_G[id]["gradient"]["intable"] do
+		out = out .. _G[id]["gradient"]["intable"][i]..","
+	end
+
+	out = out .. string.format("},\n['learningrate'] = %s,\n['momentum'] = %s\n}\n}",_G[id]["gradient"]["learningrate"],_G[id]["gradient"]["momentum"])
+
+	--save copy
+	os.rename(filename, filename .. ".backup")
+
+	--write to file
+	local f = io.open(filename, "w+")
+	assert(f, "something went wrong, f is nil?")
+	f:write(out)
+	f:close()
 end
 
 return lnn --its require() time

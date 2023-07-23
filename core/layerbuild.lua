@@ -78,21 +78,6 @@ local layerbuild = {
 	activate
 }
 
---[[
-	args:
-
-	weightsInitializer,
-	weightsInitParameters,
-	weightsTrainable,
-	biasInitializer,
-	biasInitParameters,
-	biasTrainable,
-	inputShape,
-	outputSize,
-	useBias,
-	usePrelu
-]]--
-
 function layerbuild.dense(args)
 	local layer = {
 		config = {
@@ -303,6 +288,93 @@ function layerbuild.zeroPad3D(args)
 		inputShape = args.inputShape,
 		outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2, args.inputShape[3] + args.paddingAmount[3] * 2}
 	}
+end
+
+function layerbuild.crop1D(args)
+	return {
+		config = {
+			start = args.start,
+			outputShape = args.outputShape
+		},
+		inputShape = args.inputShape,
+		outputShape = args.outputShape
+	}
+end
+
+layerbuild.crop2D = layerbuild.crop1D
+
+layerbuild.crop3D = layerbuild.crop1D
+
+function layerbuild.randomCrop1D(args)
+	return {
+		config = {
+			outputShape = args.outputShape
+		},
+		inputShape = args.inputShape,
+		outputShape = args.outputShape
+	}
+end
+
+layerbuild.randomCrop2D = layerbuild.randomCrop1D
+
+layerbuild.randomCrop3D = layerbuild.randomCrop1D
+
+function layerbuild.convolutional1D(args)
+	local layer = {
+		config = {
+			activation = args.activation,
+			stride = args.stride
+		},
+		inputShape = args.inputShape,
+		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1},
+		trainable = {},
+		initializer = {},
+		parameters = {
+			alpha = args.alpha
+		}
+	}
+
+	if not args.dilation then
+		layer.config.dilation = {1}
+	else
+		layer.config.dilation = args.dilation
+	end
+
+	-- initializers
+
+	if args.filterInitializer then
+		layer.initializer.filter = {
+			initializer = args.filterInitializer,
+			initializerParameters = args.filterInitParameters
+		}
+	end
+
+	if args.biasesInitializer and args.useBias then
+		layer.initializer.biases = {
+			initializer = args.biasesInitializer,
+			initializerParameters = args.biasesInitParameters
+		}
+	end
+
+	-- trainable
+
+	if args.filterTrainable then
+		layer.trainable.filter = true
+	end
+
+	if args.biasesTrainable and args.useBias then
+		layer.trainable.biases = true
+	end
+
+	-- parameters
+
+	layer.parameters.filter = syntable.new(args.kernel, 0)
+
+	if args.useBias then
+		layer.parameters.biases = syntable.new(layer.outputShape, 0)
+	end
+
+	return layer
 end
 
 return layerbuild

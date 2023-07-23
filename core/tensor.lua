@@ -1,3 +1,10 @@
+--[[
+	https://github.com/x-xxoa/synapsea
+	core/tensor.lua
+
+	MIT License
+]]--
+
 local tensor = {}
 
 function tensor.new()

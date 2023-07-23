@@ -88,6 +88,8 @@ function model.initialize(args)
 		}
 	end
 
+	args.model.outputShape = args.model.layerConfig[#args.model.layerConfig].outputShape
+
 	return args.model
 end
 
@@ -119,11 +121,19 @@ local mod = model.new(
 )
 
 mod = model.addLayer(mod,
+	"averagePooling1D",
+	{
+		kernel = {2},
+		stride = {1}
+	}
+)
+
+mod = model.addLayer(mod,
 	"dense",
 	{
 		activation = "leakyrelu",
 		alpha = 0.1,
-		outputSize = 5,
+		outputSize = 3,
 		weightsInitializer = "normalRandom",
 		weightsInitParameters = {
 			mean = 0,
@@ -148,7 +158,7 @@ mod = model.initialize{
 	}
 }
 
-print(syntable.toString(mod, true))
+print(syntable.toString(mod))
 ]]--
 
 return model

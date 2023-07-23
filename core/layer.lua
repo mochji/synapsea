@@ -1,6 +1,6 @@
 --[[
 	https://github.com/x-xxoa/synapsea
-	core/layers.lua
+	core/layer.lua
 
 	MIT License
 ]]--
@@ -371,10 +371,10 @@ function layer.sumPooling3D(args)
 	return output
 end
 
---TODO: figure out what the hell global pooling is and if you made it correctly
+-- TODO: figure out if this is a correct implementation of global pooling
 
 function layer.averageGlobalPooling1D(args)
-	return {syntable.sum(args.input)/#args.input}
+	return {syntable.sum(args.input) / #args.input}
 end
 
 function layer.averageGlobalPooling2D(args)
@@ -387,7 +387,7 @@ function layer.averageGlobalPooling2D(args)
 	return output
 end
 
-layer.averageGlobalPooling3D = layer.averageGlobalPooling2D --syntable.sum() is recursive so doing this works
+layer.averageGlobalPooling3D = layer.averageGlobalPooling2D -- syntable.sum() is recursive so doing this works
 
 function layer.maxGlobalPooling1D(args)
 	return {syntable.max(args.input)}
@@ -464,7 +464,7 @@ function layer.upSample3D(args)
 end
 
 function layer.zeroPad1D(args)
-	for a = 1, #args.paddingAmount do
+	for a = 1, args.paddingAmount[1] do
 		table.insert(args.input, 1, 0)
 
 		args.input[#args.input + 1] = 0

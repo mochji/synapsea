@@ -96,7 +96,7 @@ local layerbuild = {
 function layerbuild.dense(args)
 	local layer = {
 		config = {
-			activation = args.activation,
+			activation = args.activation
 		},
 		inputShape = args.inputShape,
 		outputShape = {args.outputSize},
@@ -107,7 +107,7 @@ function layerbuild.dense(args)
 		}
 	}
 
-	if args.usePrelu then
+	if args.usePrelu and args.alpha then
 		layer.usePrelu = true
 	end
 
@@ -150,9 +150,158 @@ end
 
 function layerbuild.averagePooling1D(args)
 	local layer = {
+		config = {
+			kernel = args.kernel,
+			stride = args.stride
+		},
 		inputShape = args.inputShape,
-		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1},
-		config = args.config
+		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
+	}
+
+	if not args.dilation then
+		layer.config.dilation = {1}
+	else
+		layer.config.dilation = args.dilation
+	end
+
+	return layer
+end
+
+function layerbuild.averagePooling2D(args)
+	local layer = {
+		config = {
+			kernel = args.kernel,
+			stride = args.stride
+		},
+		inputShape = args.inputShape,
+		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1}
+	}
+
+	if not args.dilation then
+		layer.config.dilation = {1, 1}
+	else
+		layer.config.dilation = args.dilation
+	end
+
+	return layer
+end
+
+function layerbuild.averagePooling3D(args)
+	local layer = {
+		config = {
+			kernel = args.kernel,
+			stride = args.stride
+		},
+		inputShape = args.inputShape,
+		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1}
+	}
+
+	if not args.dilation then
+		layer.config.dilation = {1, 1, 1}
+	else
+		layer.config.dilation = args.dilation
+	end
+
+	return layer
+end
+
+layerbuild.maxPooling1D = layerbuild.averagePooling1D -- they do the same stuff so we can just do this
+
+layerbuild.maxPooling2D = layerbuild.averagePooling2D
+
+layerbuild.maxPooling3D = layerbuild.averagePooling3D
+
+layerbuild.sumPooling1D = layerbuild.averagePooling1D
+
+layerbuild.sumPooling2D = layerbuild.averagePooling2D
+
+layerbuild.sumPooling3D = layerbuild.averagePooling3D
+
+function layerbuild.averageGlobalPooling1D(args)
+	return {
+		inputShape = args.inputShape,
+		outputShape = {1}
+	}
+end
+
+function layerbuild.averageGlobalPooling2D(args)
+	return {
+		inputShape = args.inputShape,
+		outputShape = {args.inputShape[1]}
+	}
+end
+
+layerbuild.averageGlobalPooling3D = layerbuild.averageGlobalPooling2D
+
+layerbuild.maxGlobalPooling1D = layerbuild.averageGlobalPooling1D
+
+layerbuild.maxGlobalPooling2D = layerbuild.averageGlobalPooling2D
+
+layerbuild.maxGlobalPooling3D = layerbuild.averageGlobalPooling3D
+
+layerbuild.sumGlobalPooling1D = layerbuild.averageGlobalPooling1D
+
+layerbuild.sumGlobalPooling2D = layerbuild.averageGlobalPooling2D
+
+layerbuild.sumGlobalPooling3D = layerbuild.averageGlobalPooling3D
+
+function layerbuild.upSample1D(args)
+	return {
+		config = {
+			kernel = args.kernel
+		},
+		inputShape = args.inputShape,
+		outputShape = {args.inputShape[1] * args.kernel[1]}
+	}
+end
+
+function layerbuild.upSample2D(args)
+	return {
+		config = {
+			kernel = args.kernel
+		},
+		inputShape = args.inputShape,
+		outputShape = {args.inputShape[1] * args.kernel[1], args.inputShape[2] * args.kernel[2]}
+	}
+end
+
+function layerbuild.upSample3D(args)
+	return {
+		config = {
+			kernel = args.kernel
+		},
+		inputShape = args.inputShape,
+		outputShape = {args.inputShape[1] * args.kernel[1], args.inputShape[2] * args.kernel[2], args.inputShape[3] * args.kernel[3]}
+	}
+end
+
+function layerbuild.zeroPad1D(args)
+	return {
+		config = {
+			paddingAmount = args.paddingAmount
+		},
+		inputShape = args.inputShape,
+		outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2}
+	}
+end
+
+function layerbuild.zeroPad2D(args)
+	return {
+		config = {
+			paddingAmount = args.paddingAmount
+		},
+		inputShape = args.inputShape,
+		outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2}
+	}
+end
+
+function layerbuild.zeroPad3D(args)
+	return {
+		config = {
+			paddingAmount = args.paddingAmount
+		},
+		inputShape = args.inputShape,
+		outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2, args.inputShape[3] + args.paddingAmount[3] * 2}
 	}
 end
 

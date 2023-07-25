@@ -55,7 +55,6 @@ local layerbuild = {
 	locallyConnected2D,
 	locallyConnected3D,
 	flatten,
-	reshape,
 	normalize1D,
 	normalize2D,
 	normalize3D,
@@ -478,6 +477,327 @@ function layerbuild.convolutional3D(args)
 	end
 
 	return layer
+end
+
+function layerbuild.convolutionalTranspose1D(args)
+	local layer = {
+		config = {
+			activation = args.activation,
+			stride = args.stride,
+			paddingAmount = args.paddingAmount
+		},
+		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1},
+		trainable = {},
+		initializer = {},
+		parameters = {
+			alpha = args.alpha
+		},
+		activationArgs = args.activationArgs
+	}
+
+	if not args.dilation then
+		layer.config.dilation = {1}
+	else
+		layer.config.dilation = args.dilation
+	end
+
+	-- initializers
+
+	if args.filterInitializer then
+		layer.initializer.filter = {
+			initializer = args.filterInitializer,
+			initializerParameters = args.filterInitParameters
+		}
+	end
+
+	if args.biasesInitializer and args.useBias then
+		layer.initializer.biases = {
+			initializer = args.biasesInitializer,
+			initializerParameters = args.biasesInitParameters
+		}
+	end
+
+	-- trainable
+
+	if args.filterTrainable then
+		layer.trainable.filter = true
+	end
+
+	if args.biasesTrainable and args.useBias then
+		layer.trainable.biases = true
+	end
+
+	-- parameters
+
+	layer.parameters.filter = syntable.new(args.kernel, 0)
+
+	if args.useBias then
+		layer.parameters.biases = syntable.new(layer.outputShape, 0)
+	end
+
+	return layer
+end
+
+function layerbuild.convolutionalTranspose2D(args)
+	local layer = {
+		config = {
+			activation = args.activation,
+			stride = args.stride,
+			paddingAmount = args.paddingAmount
+		},
+		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1},
+		trainable = {},
+		initializer = {},
+		parameters = {
+			alpha = args.alpha
+		},
+		activationArgs = args.activationArgs
+	}
+
+	if not args.dilation then
+		layer.config.dilation = {1, 1}
+	else
+		layer.config.dilation = args.dilation
+	end
+
+	-- initializers
+
+	if args.filterInitializer then
+		layer.initializer.filter = {
+			initializer = args.filterInitializer,
+			initializerParameters = args.filterInitParameters
+		}
+	end
+
+	if args.biasesInitializer and args.useBias then
+		layer.initializer.biases = {
+			initializer = args.biasesInitializer,
+			initializerParameters = args.biasesInitParameters
+		}
+	end
+
+	-- trainable
+
+	if args.filterTrainable then
+		layer.trainable.filter = true
+	end
+
+	if args.biasesTrainable and args.useBias then
+		layer.trainable.biases = true
+	end
+
+	-- parameters
+
+	layer.parameters.filter = syntable.new(args.kernel, 0)
+
+	if args.useBias then
+		layer.parameters.biases = syntable.new(layer.outputShape, 0)
+	end
+
+	return layer
+end
+
+function layerbuild.convolutionalTranspose3D(args)
+	local layer = {
+		config = {
+			activation = args.activation,
+			stride = args.stride,
+			paddingAmount = args.paddingAmount
+		},
+		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1},
+		trainable = {},
+		initializer = {},
+		parameters = {
+			alpha = args.alpha
+		},
+		activationArgs = args.activationArgs
+	}
+
+	if not args.dilation then
+		layer.config.dilation = {1, 1, 1}
+	else
+		layer.config.dilation = args.dilation
+	end
+
+	-- initializers
+
+	if args.filterInitializer then
+		layer.initializer.filter = {
+			initializer = args.filterInitializer,
+			initializerParameters = args.filterInitParameters
+		}
+	end
+
+	if args.biasesInitializer and args.useBias then
+		layer.initializer.biases = {
+			initializer = args.biasesInitializer,
+			initializerParameters = args.biasesInitParameters
+		}
+	end
+
+	-- trainable
+
+	if args.filterTrainable then
+		layer.trainable.filter = true
+	end
+
+	if args.biasesTrainable and args.useBias then
+		layer.trainable.biases = true
+	end
+
+	-- parameters
+
+	layer.parameters.filter = syntable.new(args.kernel, 0)
+
+	if args.useBias then
+		layer.parameters.biases = syntable.new(layer.outputShape, 0)
+	end
+
+	return layer
+end
+
+layerbuild.convolutionalDepthwise1D = layerbuild.convolutional1D
+
+layerbuild.convolutionalDepthwise2D = layerbuild.convolutional2D
+
+layerbuild.convolutionalSeparable1D = layerbuild.convolutional1D
+
+layerbuild.convolutionalSeparable2D = layerbuild.convolutional2D
+
+layerbuild.convolutionalSeparable3D = layerbuild.convolutional3D
+
+layerbuild.convolutionalDepthwiseSeparable1D = layerbuild.convolutional2D
+
+layerbuild.convolutionalDepthwiseSeparable2D = layerbuild.convolutional3D
+
+function layerbuild.flatten(args)
+	return {
+		outputShape = args.inputShape
+	}
+end
+
+function layerbuild.normalize1D(args)
+	return {
+		outputShape = args.inputShape
+	}
+end
+
+layerbuild.normalize2D = layerbuild.normalize1D
+
+layerbuild.normalize3D = layerbuild.normalize3D
+
+function layerbuild.vectorAdd1D(args)
+	local layer = {
+		outputShape = args.inputShape,
+		initializer = {},
+		parameters = {}
+	}
+
+	-- initialization
+
+	if args.biasesInitializer then
+		layer.initializer.biases = {
+			initializer = args.biasesInitializer,
+			initializerParameters = args.biasesInitParameters
+		}
+	end
+
+	-- parameters
+
+	layer.parameters.biases = syntable.new(args.inputShape, 0)
+
+	return layer
+end
+
+layerbuild.vectorAdd2D = layerbuild.vectorAdd1D
+
+layerbuild.vectorAdd3D = layerbuild.vectorAdd1D
+
+layerbuild.vectorSubtract1D = layerbuild.vectorAdd1D
+
+layerbuild.vectorSubtract2D = layerbuild.vectorAdd1D
+
+layerbuild.vectorSubtract3D = layerbuild.vectorAdd1D
+
+function layerbuild.dot1D(args)
+	local layer = {
+		outputShape = args.inputShape,
+		initializer = {},
+		parameters = {}
+	}
+
+	-- initialization
+
+	if args.weightsInitializer then
+		layer.initializer.weights = {
+			initializer = args.weightsInitializer,
+			initializerParameters = args.weightsInitParameters
+		}
+	end
+
+	-- parameters
+
+	layer.parameters.weights = syntable.new(args.inputShape, 0)
+
+	return layer
+end
+
+layerbuild.dot2D = layerbuild.dot1D
+
+layerbuild.dot3D = layerbuild.dot1D
+
+layerbuild.vectorDivide1D = layerbuild.dot1D
+
+layerbuild.vectorDivide2D = layerbuild.dot1D
+
+layerbuild.vectorDivide3D = layerbuild.dot1D
+
+function layerbuild.dropOut(args)
+	return {
+		outputShape = args.inputShape,
+		config = {
+			rate = args.rate
+		}
+	}
+end
+
+function layerbuild.uniformNoise(args)
+	return {
+		outputShape = args.inputShape,
+		config = {
+			lowerLimit = args.lowerLimit,
+			upperLimit = args.upperLimit
+		}
+	}
+end
+
+function layerbuild.normalNoise(args)
+	return {
+		outputShape = args.inputShape,
+		config = {
+			mean = args.mean,
+			sd = args.sd
+		}
+	}
+end
+
+function layerbuild.softmax(args)
+	return {
+		outputShape = args.outputShape
+	}
+end
+
+function layerbuild.activate(args)
+	return {
+		outputShape = args.outputShape,
+		config = {
+			activation = args.activation,
+			derivative = args.derivative
+		},
+		parameters = {
+			alpha = args.alpha
+		}
+	}
 end
 
 return layerbuild

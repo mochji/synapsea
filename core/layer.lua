@@ -56,7 +56,6 @@ local layer = {
 	locallyConnected2D,
 	locallyConnected3D,
 	flatten,
-	reshape,
 	normalize1D,
 	normalize2D,
 	normalize3D,
@@ -709,7 +708,7 @@ end
 
 function layer.convolutionalTranspose1D(args)
 	return layer.convolutional1D{
-		input = layer.zeroPad1D(args.input,args.paddingAmount),
+		input = layer.zeroPad1D(args.input, args.paddingAmount),
 		filter = args.filter,
 		biases = args.biases,
 		dilation = args.dilation,
@@ -721,7 +720,7 @@ end
 
 function layer.convolutionalTranspose2D(args)
 	return layer.convolutional2D{
-		input = layer.zeroPad2D(args.input,args.paddingAmount),
+		input = layer.zeroPad2D(args.input, args.paddingAmount),
 		filter = args.filter,
 		biases = args.biases,
 		dilation = args.dilation,
@@ -733,7 +732,7 @@ end
 
 function layer.convolutionalTranspose3D(args)
 	return layer.convolutional3D{
-		input = layer.zeroPad3D(args.input,args.paddingAmount),
+		input = layer.zeroPad3D(args.input, args.paddingAmount),
 		filter = args.filter,
 		biases = args.biases,
 		dilation = args.dilation,
@@ -757,7 +756,7 @@ function layer.convolutionalDepthwise1D(args)
 		}
 
 		if args.biases then
-			tempArgs.biases = args.biases[i]
+			tempArgs.biases = args.biases[a]
 		end
 
 		output[a] = layer.convolutional1D(tempArgs)
@@ -780,7 +779,7 @@ function layer.convolutionalDepthwise2D(args)
 		}
 
 		if args.biases then
-			tempArgs.biases = args.biases[i]
+			tempArgs.biases = args.biases[a]
 		end
 
 		output[a] = layer.convolutional2D(tempArgs)
@@ -849,7 +848,7 @@ function layer.convolutionalSeparable3D(args)
 		}
 
 		if args.biases then
-			targs.biases = args.biases[a]
+			tempArgs.biases = args.biases[a]
 		end
 
 		output[a] = layer.convolutional3D(tempArgs)
@@ -872,7 +871,7 @@ function layer.convolutionalDepthwiseSeparable1D(args)
 		}
 
 		if args.biases then
-			targs.biases = args.biases[a]
+			tempArgs.biases = args.biases[a]
 		end
 
 		output[a] = layer.convolutionalDepthwise1D(tempArgs)
@@ -895,7 +894,7 @@ function layer.convolutionalDepthwiseSeparable2D(args)
 		}
 
 		if args.biases then
-			targs.biases = args.biases[a]
+			tempArgs.biases = args.biases[a]
 		end
 
 		output[a] = layer.convolutionalDepthwise2D(tempArgs)
@@ -906,10 +905,6 @@ end
 
 function layer.flatten(args)
 	return syntable.flatten(args.input)
-end
-
-function layer.reshape(args)
-	return syntable.reshape(args.input, args.dimensions)
 end
 
 function layer.normalize1D(args)

@@ -23,7 +23,6 @@ local syntable = {
 	divide,
 	find,
 	new,
-	reshape,
 	toString
 }
 
@@ -263,9 +262,6 @@ function syntable.new(dimensions, defaultvalue, index)
 	end
 
 	return table
-end
-
-function syntable.reshape(table, dimensions)
 end
 
 function syntable.toString(table, format, indent)

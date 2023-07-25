@@ -1,4 +1,4 @@
---[[:wq!
+--[[
 	https://github.com/x-xxoa/synapsea
 	core/layer.lua
 
@@ -714,6 +714,7 @@ function layer.convolutionalTranspose1D(args)
 		biases = args.biases,
 		dilation = args.dilation,
 		activation = args.activation,
+		activationArgs = args.activationArgs,
 		alpha = args.alpha
 	}
 end
@@ -725,6 +726,7 @@ function layer.convolutionalTranspose2D(args)
 		biases = args.biases,
 		dilation = args.dilation,
 		activation = args.activation,
+		activationArgs = args.activationArgs,
 		alpha = args.alpha
 	}
 end
@@ -736,6 +738,7 @@ function layer.convolutionalTranspose3D(args)
 		biases = args.biases,
 		dilation = args.dilation,
 		activation = args.activation,
+		activationArgs = args.activationArgs,
 		alpha = args.alpha
 	}
 end
@@ -749,6 +752,7 @@ function layer.convolutionalDepthwise1D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
+			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -771,6 +775,7 @@ function layer.convolutionalDepthwise2D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
+			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -793,6 +798,7 @@ function layer.convolutionalSeparable1D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
+			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -815,6 +821,7 @@ function layer.convolutionalSeparable2D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
+			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -837,6 +844,7 @@ function layer.convolutionalSeparable3D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
+			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -859,6 +867,7 @@ function layer.convolutionalDepthwiseSeparable1D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
+			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -881,6 +890,7 @@ function layer.convolutionalDepthwiseSeparable2D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
+			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 

@@ -13,9 +13,7 @@
 --import the core files
 
 local syn = {
-	version = "v1.3.00-unstable",
-	activation = require("core.activation"),
-	model = require("core.model")
+	version = "v1.3.00-unstable"
 }
 
 --other functions

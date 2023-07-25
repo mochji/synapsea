@@ -1,4 +1,4 @@
---[[
+--[[:wq!
 	https://github.com/x-xxoa/synapsea
 	core/layer.lua
 
@@ -92,9 +92,9 @@ function layer.dense(args)
 		end
 
 		if args.bias then
-			output[a] = activation(sum + args.bias, false, args.alpha)
+			output[a] = activation(sum + args.bias, false, args.alpha, args.activationArgs)
 		else
-			output[a] = activation(sum, false, args.alpha)
+			output[a] = activation(sum, false, args.alpha, args.activationArgs)
 		end
 	end
 
@@ -371,8 +371,6 @@ function layer.sumPooling3D(args)
 	return output
 end
 
--- TODO: figure out if this is a correct implementation of global pooling
-
 function layer.averageGlobalPooling1D(args)
 	return {syntable.sum(args.input) / #args.input}
 end
@@ -574,7 +572,7 @@ function layer.randomCrop1D(args)
 	return layer.crop1D{
 		input = args.input,
 		outputShape = args.outputShape,
-		start = {math.random(1, args.outputShape[1] + 1)}
+		start = {math.random(1, args.outputShape[1])}
 	}
 end
 
@@ -583,8 +581,8 @@ function layer.randomCrop2D(args)
 		input = args.input,
 		outputShape = args.outputShape,
 		start = {
-			math.random(1, args.outputShape[1] + 1),
-			math.random(1, args.outputShape[2] + 1)
+			math.random(1, args.outputShape[1]),
+			math.random(1, args.outputShape[2])
 		}
 	}
 end
@@ -594,9 +592,9 @@ function layer.randomCrop3D(args)
 		input = args.input,
 		outputShape = args.outputShape,
 		start = {
-			math.random(1, args.outputShape[1] + 1)
-			math.random(1, args.outputShape[2] + 1),
-			math.random(1, args.outputShape[2] + 1)
+			math.random(1, args.outputShape[1]),
+			math.random(1, args.outputShape[2]),
+			math.random(1, args.outputShape[2])
 		}
 	}
 end
@@ -619,9 +617,9 @@ function layer.convolutional1D(args)
 		startIndex = startIndex + args.stride[1]
 
 		if args.biases then
-			output[a] = activation(sum + args.biases[a], false, args.alpha)
+			output[a] = activation(sum + args.biases[a], false, args.alpha, args.activationArgs)
 		else
-			output[a] = activation(sum, false, args.alpha)
+			output[a] = activation(sum, false, args.alpha, args.activationArgs)
 		end
 	end
 
@@ -652,9 +650,9 @@ function layer.convolutional2D(args)
 			startIndexB = startIndexB + args.stride[2]
 
 			if args.biases then
-				output[a][b] = activation(sum + args.biases[a][b], false, args.alpha)
+				output[a][b] = activation(sum + args.biases[a][b], false, args.alpha, args.activationArgs)
 			else
-				output[a][b] = activation(sum, false, args.alpha)
+				output[a][b] = activation(sum, false, args.alpha, args.activationArgs)
 			end
 		end
 
@@ -694,9 +692,9 @@ function layer.convolutional3D(args)
 				startIndexC = startIndexC + args.stride[3]
 
 				if args.biases then
-					output[a][b][c] = activation(sum + args.biases[a][b][c], false, args.alpha)
+					output[a][b][c] = activation(sum + args.biases[a][b][c], false, args.alpha, args.activationArgs)
 				else
-					output[a][b][c] = activation(sum, false, args.alpha)
+					output[a][b][c] = activation(sum, false, args.alpha, args.activationArgs)
 				end
 			end
 
@@ -1115,7 +1113,7 @@ function layer.activate(args)
 				alpha = args.alpha
 			}
 		else
-			args.input[a] = activation(args.input[a], args.derivative, args.alpha)
+			args.input[a] = activation(args.input[a], args.derivative, args.alpha, args.activationArgs)
 		end
 	end
 

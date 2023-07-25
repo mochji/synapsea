@@ -5,10 +5,9 @@
 	MIT License
 ]]--
 
-local syntable = require("syntable")
 local syntensor = {}
 
-function syntensor.new(dimensions, defaultvalue, index)
+function syntensor.new(dimensions, defaultValue, index)
 	index = index or 1 -- if index is nil it will be set to 1
 
 	local tensor = {}
@@ -19,11 +18,11 @@ function syntensor.new(dimensions, defaultvalue, index)
 
 	if index == #dimensions then
 		for a = 1, dimensions[index] do
-			tensor[a] = defaultvalue
+			tensor[a] = defaultValue
 		end
 	else
 		for a = 1, dimensions[index] do
-			tensor[a] = syntensor.new(dimensions, defaultvalue, index + 1)
+			tensor[a] = syntensor.new(dimensions, defaultValue, index + 1)
 		end
 	end
 
@@ -31,30 +30,6 @@ function syntensor.new(dimensions, defaultvalue, index)
 end
 
 function syntensor.flatten(tensor)
-	if #tensor.dimensions == 1 then
-		return tensor
-	end
-
-	local flattenedTensor = {}
-
-	for a = 1, #tensor do
-		
-function syntensor.reshape()
 end
 
-function syntensor.transpose()
-end
-
-function syntensor.concatenate()
-end
-
-function syntensor.split()
-end
-
-local ten = tensor.new({3,4}, 0)
-
-print(#ten)
-
-print(syntable.toString(ten, true))
-
-return tensor
+return syntensor

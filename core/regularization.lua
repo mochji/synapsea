@@ -3,10 +3,6 @@
 	core/regularization.lua
 
 	MIT License
-
-	TODO:
-
-	add more regularizers
 ]]--
 
 local syntable = require("core.syntable")

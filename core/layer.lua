@@ -82,6 +82,7 @@ function layer.dense(args)
 	local output = {}
 
 	local activation = activation[args.activation]
+	args.bias = args.bias or 0
 
 	for a = 1, #args.outputSize do
 		local sum = 0
@@ -90,11 +91,7 @@ function layer.dense(args)
 			sum = sum + args.input[b]*args.weights[b][a]
 		end
 
-		if args.bias then
-			output[a] = activation(sum + args.bias, false, args.alpha, args.activationArgs)
-		else
-			output[a] = activation(sum, false, args.alpha, args.activationArgs)
-		end
+		output[a] = activation(sum + args.bias, false, args.alpha, args.activationArgs)
 	end
 
 	return output
@@ -108,7 +105,7 @@ function layer.averagePooling1D(args)
 		local sum = 0
 
 		for b = 1, #args.kernel[1] do
-			if b % args.dilation[1] == 1 then
+			if b % args.dilation[1] == 0 then
 				sum = sum + args.input[startIndex + b]
 			end
 		end
@@ -134,7 +131,7 @@ function layer.averagePooling2D(args)
 
 			for c = 1, args.kernel[1] do
 				for d = 1, args.kernel[2] do
-					if c % args.dilation[1] == 1 and d & args.dilation[2] == 1 then
+					if c % args.dilation[1] == 0 and d & args.dilation[2] == 1 then
 						sum = sum + args.input[startIndexA + c][startIndexB + d]
 					end
 				end
@@ -169,7 +166,7 @@ function layer.averagePooling3D(args)
 				for d = 1, args.kernel[1] do
 					for e = 1, args.kernel[2] do
 						for f = 1, args.kernel[3] do
-							if d % args.dilation[1] == 1 and e % args.dilation[2] == 1 and f % args.dilation[3] == 1 then
+							if d % args.dilation[1] == 0 and e % args.dilation[2] == 0 and f % args.dilation[3] == 0 then
 								sum = sum + args.input[startIndexA + d][startIndexB + e][startIndexC + f]
 							end
 						end
@@ -198,7 +195,7 @@ function layer.maxPooling1D(args)
 		local max = args.input[startIndex + 1]
 
 		for b = 1, #args.kernel[1] do -- yes i know we're comparing the first one against itself in the first iteration of this loop but its not really that much and 1 per output node is probably fine
-			if b % args.dilation[1] == 1 then
+			if b % args.dilation[1] == 0 then
 				max = math.max(max, args.input[startIndex + b])
 			end
 		end
@@ -224,7 +221,7 @@ function layer.maxPooling2D(args)
 
 			for c = 1, args.kernel[1] do
 				for d = 1, args.kernel[2] do
-					if c % args.dilation[1] == 1 and d % args.dilation[2] == 1 then
+					if c % args.dilation[1] == 0 and d % args.dilation[2] == 0 then
 						max = math.max(max, args.input[startIndexA + c][startIndexB + d])
 					end
 				end
@@ -259,7 +256,7 @@ function layer.maxPooling3D(args)
 				for d = 1, args.kernel[1] do
 					for e = 1, args.kernel[2] do
 						for f = 1, args.kernel[3] do
-							if d % args.dilation[1] == 1 and e % args.dilation[2] == 1 and f % args.dilation[3] == 1 then
+							if d % args.dilation[1] == 0 and e % args.dilation[2] == 0 and f % args.dilation[3] == 0 then
 								max = math.max(max, args.input[startIndexA + d][startIndexB + e][startIndexC + f])
 							end
 						end
@@ -288,7 +285,7 @@ function layer.sumPooling1D(args)
 		local sum = 0
 
 		for b = 1, #args.kernel[1] do
-			if b % args.dilation[1] == 1 then
+			if b % args.dilation[1] == 0 then
 				sum = sum + args.input[startIndex + b]
 			end
 		end
@@ -314,7 +311,7 @@ function layer.sumPooling2D(args)
 
 			for c = 1, args.kernel[1] do
 				for d = 1, args.kernel[2] do
-					if c % args.dilation[1] == 1 and d & args.dilation[2] == 1 then
+					if c % args.dilation[1] == 0 and d & args.dilation[2] == 1 then
 						sum = sum + args.input[startIndexA + c][startIndexB + d]
 					end
 				end
@@ -349,7 +346,7 @@ function layer.sumPooling3D(args)
 				for d = 1, args.kernel[1] do
 					for e = 1, args.kernel[2] do
 						for f = 1, args.kernel[3] do
-							if d % args.dilation[1] == 1 and e % args.dilation[2] == 1 and f % args.dilation[3] == 1 then
+							if d % args.dilation[1] == 0 and e % args.dilation[2] == 0 and f % args.dilation[3] == 0 then
 								sum = sum + args.input[startIndexA + d][startIndexB + e][startIndexC + f]
 							end
 						end
@@ -608,7 +605,7 @@ function layer.convolutional1D(args)
 		local sum = 0
 
 		for b = 1, #args.filter do
-			if b % args.dilation[1] == 1 then
+			if b % args.dilation[1] == 0 then
 				sum = sum + args.input[startIndex + b] * args.filter[b]
 			end
 		end
@@ -640,7 +637,7 @@ function layer.convolutional2D(args)
 
 			for c = 1, #args.filter do
 				for d = 1, #args.filter[c] do
-					if c % args.dilation[1] == 1 and d % args.dilation[2] == 1 then
+					if c % args.dilation[1] == 0 and d % args.dilation[2] == 0 then
 						sum = sum + args.input[startIndexA + c][startIndexB + d] * args.filter[c][d]
 					end
 				end
@@ -681,7 +678,7 @@ function layer.convolutional3D(args)
 				for d = 1, #args.filter do
 					for e = 1, #args.filter[d] do
 						for f = 1, #args.filter[d][e] do
-							if d % args.dilation[1] == 1 and e % args.dilation[2] == 1 and f % args.dilation[3] == 1 then
+							if d % args.dilation[1] == 0 and e % args.dilation[2] == 0 and f % args.dilation[3] == 0 then
 								sum = sum + args.input[startIndexA + d][startIndexB + e][startIndex + f] * args.filter[d][e][f]
 							end
 						end

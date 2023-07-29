@@ -7,8 +7,6 @@
 
 This is kinda bad right now, uhh yeah. I don't know when v1.3.00 is gonna come out but just letting you know, this is kinda bad right now !
 
-Also I'm a programmer, not a writer so the documentation is probably not of the highest quality but at least there is documentation. Please research yourself about neural networks, there are a lot of people out there who know a lot more than I do and know how to write. 
-
 ## DESCRIPTION
 
 A simple neural network library for Lua with functions for activation functions and their derivatives,

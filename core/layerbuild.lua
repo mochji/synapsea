@@ -78,10 +78,12 @@ local layerbuild = {
 }
 
 function layerbuild.dense(args)
-	local layer = {
+	local layer, layerBuild = {
 		config = {
-			activation = args.activation
+			activation = args.activation,
+			outputSize = args.outputSize
 		},
+		inputShape = args.inputShape,
 		outputShape = {args.outputSize},
 		trainable = {},
 		initializer = {},
@@ -89,7 +91,7 @@ function layerbuild.dense(args)
 			alpha = args.alpha
 		},
 		activationArgs = args.activationArgs
-	}
+	}, {}
 
 	if args.usePrelu and args.alpha then
 		layer.usePrelu = true
@@ -100,14 +102,14 @@ function layerbuild.dense(args)
 	if args.weightsInitializer then
 		layer.initializer.weights = {
 			initializer = args.weightsInitializer,
-			initializerParameters = args.weightsInitParameters
+			parameters = args.weightsInitParameters
 		}
 	end
 
 	if args.biasInitializer and args.useBias then
 		layer.initializer.bias = {
 			initializer = args.biasInitializer,
-			initializerParameters = args.biasInitParameters
+			parameters = args.biasInitParameters
 		}
 	end
 
@@ -123,13 +125,15 @@ function layerbuild.dense(args)
 
 	-- parameters
 
-	layer.parameters.weights = syntable.new({args.inputShape[1], args.outputSize}, 0)
+	layerBuild.weights = {
+		shape = {args.inputShape[1], args.outputSize}
+	}
 
 	if args.useBias then
 		layer.parameters.bias = 0
 	end
 
-	return layer
+	return layer, layerBuild
 end
 
 function layerbuild.averagePooling1D(args)
@@ -138,6 +142,7 @@ function layerbuild.averagePooling1D(args)
 			kernel = args.kernel,
 			stride = args.stride
 		},
+		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
 	}
 
@@ -156,6 +161,7 @@ function layerbuild.averagePooling2D(args)
 			kernel = args.kernel,
 			stride = args.stride
 		},
+		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1}
 	}
 
@@ -174,6 +180,7 @@ function layerbuild.averagePooling3D(args)
 			kernel = args.kernel,
 			stride = args.stride
 		},
+		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1}
 	}
 
@@ -200,12 +207,14 @@ layerbuild.sumPooling3D = layerbuild.averagePooling3D
 
 function layerbuild.averageGlobalPooling1D(args)
 	return {
+		inputShape = args.inputShape,
 		outputShape = {1}
 	}
 end
 
 function layerbuild.averageGlobalPooling2D(args)
 	return {
+		inputShape = args.inputShape,
 		outputShape = {args.inputShape[1]}
 	}
 end
@@ -229,6 +238,7 @@ function layerbuild.upSample1D(args)
 		config = {
 			kernel = args.kernel
 		},
+		inputShape = args.inputShape,
 		outputShape = {args.inputShape[1] * args.kernel[1]}
 	}
 end
@@ -238,6 +248,7 @@ function layerbuild.upSample2D(args)
 		config = {
 			kernel = args.kernel
 		},
+		inputShape = args.inputShape,
 		outputShape = {args.inputShape[1] * args.kernel[1], args.inputShape[2] * args.kernel[2]}
 	}
 end
@@ -247,6 +258,7 @@ function layerbuild.upSample3D(args)
 		config = {
 			kernel = args.kernel
 		},
+		inputShape = args.inputShape,
 		outputShape = {args.inputShape[1] * args.kernel[1], args.inputShape[2] * args.kernel[2], args.inputShape[3] * args.kernel[3]}
 	}
 end
@@ -256,6 +268,7 @@ function layerbuild.zeroPad1D(args)
 		config = {
 			paddingAmount = args.paddingAmount
 		},
+		inputShape = args.inputShape,
 		outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2}
 	}
 end
@@ -265,6 +278,7 @@ function layerbuild.zeroPad2D(args)
 		config = {
 			paddingAmount = args.paddingAmount
 		},
+		inputShape = args.inputShape,
 		outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2}
 	}
 end
@@ -274,6 +288,7 @@ function layerbuild.zeroPad3D(args)
 		config = {
 			paddingAmount = args.paddingAmount
 		},
+		inputShape = args.inputShape,
 		outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2, args.inputShape[3] + args.paddingAmount[3] * 2}
 	}
 end
@@ -284,6 +299,7 @@ function layerbuild.crop1D(args)
 			start = args.start,
 			outputShape = args.outputShape
 		},
+		inputShape = args.inputShape,
 		outputShape = args.outputShape
 	}
 end
@@ -297,6 +313,7 @@ function layerbuild.randomCrop1D(args)
 		config = {
 			outputShape = args.outputShape
 		},
+		inputShape = args.inputShape,
 		outputShape = args.outputShape
 	}
 end
@@ -306,11 +323,12 @@ layerbuild.randomCrop2D = layerbuild.randomCrop1D
 layerbuild.randomCrop3D = layerbuild.randomCrop1D
 
 function layerbuild.convolutional1D(args)
-	local layer = {
+	local layer, layerBuild = {
 		config = {
 			activation = args.activation,
 			stride = args.stride
 		},
+		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1},
 		trainable = {},
 		initializer = {},
@@ -318,7 +336,7 @@ function layerbuild.convolutional1D(args)
 			alpha = args.alpha
 		},
 		activationArgs = args.activationArgs
-	}
+	}, {}
 
 	if not args.dilation then
 		layer.config.dilation = {1}
@@ -331,14 +349,14 @@ function layerbuild.convolutional1D(args)
 	if args.filterInitializer then
 		layer.initializer.filter = {
 			initializer = args.filterInitializer,
-			initializerParameters = args.filterInitParameters
+			parameters = args.filterInitParameters
 		}
 	end
 
 	if args.biasesInitializer and args.useBias then
 		layer.initializer.biases = {
 			initializer = args.biasesInitializer,
-			initializerParameters = args.biasesInitParameters
+			parameters = args.biasesInitParameters
 		}
 	end
 
@@ -354,21 +372,26 @@ function layerbuild.convolutional1D(args)
 
 	-- parameters
 
-	layer.parameters.filter = syntable.new(args.kernel, 0)
+	layerBuild.filter = {
+		shape = args.kernel
+	}
 
 	if args.useBias then
-		layer.parameters.biases = syntable.new(layer.outputShape, 0)
+		layerBuild.biases = {
+			shape = layer.outputShape
+		}
 	end
 
-	return layer
+	return layer, layerBuild
 end
 
 function layerbuild.convolutional2D(args)
-	local layer = {
+	local layer, layerBuild = {
 		config = {
 			activation = args.activation,
 			stride = args.stride
 		},
+		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1},
 		trainable = {},
 		initializer = {},
@@ -376,7 +399,7 @@ function layerbuild.convolutional2D(args)
 			alpha = args.alpha
 		},
 		activationArgs = args.activationArgs
-	}
+	}, {}
 
 	if not args.dilation then
 		layer.config.dilation = {1, 1}
@@ -389,14 +412,14 @@ function layerbuild.convolutional2D(args)
 	if args.filterInitializer then
 		layer.initializer.filter = {
 			initializer = args.filterInitializer,
-			initializerParameters = args.filterInitParameters
+			parameters = args.filterInitParameters
 		}
 	end
 
 	if args.biasesInitializer and args.useBias then
 		layer.initializer.biases = {
 			initializer = args.biasesInitializer,
-			initializerParameters = args.biasesInitParameters
+			parameters = args.biasesInitParameters
 		}
 	end
 
@@ -412,21 +435,26 @@ function layerbuild.convolutional2D(args)
 
 	-- parameters
 
-	layer.parameters.filter = syntable.new(args.kernel, 0)
+	layerBuild.filter = {
+		shape = args.kernel
+	}
 
 	if args.useBias then
-		layer.parameters.biases = syntable.new(layer.outputShape, 0)
+		layerBuild.biases = {
+			shape = layer.outputShape
+		}
 	end
 
-	return layer
+	return layer, layerBuild
 end
 
 function layerbuild.convolutional3D(args)
-	local layer = {
+	local layer, layerBuild = {
 		config = {
 			activation = args.activation,
 			stride = args.stride
 		},
+		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1},
 		trainable = {},
 		initializer = {},
@@ -434,7 +462,7 @@ function layerbuild.convolutional3D(args)
 			alpha = args.alpha
 		},
 		activationArgs = args.activationArgs
-	}
+	}, {}
 
 	if not args.dilation then
 		layer.config.dilation = {1, 1, 1}
@@ -447,14 +475,14 @@ function layerbuild.convolutional3D(args)
 	if args.filterInitializer then
 		layer.initializer.filter = {
 			initializer = args.filterInitializer,
-			initializerParameters = args.filterInitParameters
+			parameters = args.filterInitParameters
 		}
 	end
 
 	if args.biasesInitializer and args.useBias then
 		layer.initializer.biases = {
 			initializer = args.biasesInitializer,
-			initializerParameters = args.biasesInitParameters
+			parameters = args.biasesInitParameters
 		}
 	end
 
@@ -470,22 +498,27 @@ function layerbuild.convolutional3D(args)
 
 	-- parameters
 
-	layer.parameters.filter = syntable.new(args.kernel, 0)
+	layerBuild.filter = {
+		shape = args.kernel
+	}
 
 	if args.useBias then
-		layer.parameters.biases = syntable.new(layer.outputShape, 0)
+		layerBuild.biases = {
+			shape = layer.outputShape
+		}
 	end
 
-	return layer
+	return layer, layerBuild
 end
 
 function layerbuild.convolutionalTranspose1D(args)
-	local layer = {
+	local layer, layerBuild = {
 		config = {
 			activation = args.activation,
 			stride = args.stride,
 			paddingAmount = args.paddingAmount
 		},
+		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1},
 		trainable = {},
 		initializer = {},
@@ -493,7 +526,7 @@ function layerbuild.convolutionalTranspose1D(args)
 			alpha = args.alpha
 		},
 		activationArgs = args.activationArgs
-	}
+	}, {}
 
 	if not args.dilation then
 		layer.config.dilation = {1}
@@ -506,14 +539,14 @@ function layerbuild.convolutionalTranspose1D(args)
 	if args.filterInitializer then
 		layer.initializer.filter = {
 			initializer = args.filterInitializer,
-			initializerParameters = args.filterInitParameters
+			parameters = args.filterInitParameters
 		}
 	end
 
 	if args.biasesInitializer and args.useBias then
 		layer.initializer.biases = {
 			initializer = args.biasesInitializer,
-			initializerParameters = args.biasesInitParameters
+			parameters = args.biasesInitParameters
 		}
 	end
 
@@ -529,22 +562,27 @@ function layerbuild.convolutionalTranspose1D(args)
 
 	-- parameters
 
-	layer.parameters.filter = syntable.new(args.kernel, 0)
+	layerBuild.filter = {
+		shape = args.kernel
+	}
 
 	if args.useBias then
-		layer.parameters.biases = syntable.new(layer.outputShape, 0)
+		layerBuild.biases = {
+			shape = layer.outputShape
+		}
 	end
 
-	return layer
+	return layer, layerBuild
 end
 
 function layerbuild.convolutionalTranspose2D(args)
-	local layer = {
+	local layer, layerBuild = {
 		config = {
 			activation = args.activation,
 			stride = args.stride,
 			paddingAmount = args.paddingAmount
 		},
+		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1},
 		trainable = {},
 		initializer = {},
@@ -552,7 +590,7 @@ function layerbuild.convolutionalTranspose2D(args)
 			alpha = args.alpha
 		},
 		activationArgs = args.activationArgs
-	}
+	}, {}
 
 	if not args.dilation then
 		layer.config.dilation = {1, 1}
@@ -565,14 +603,14 @@ function layerbuild.convolutionalTranspose2D(args)
 	if args.filterInitializer then
 		layer.initializer.filter = {
 			initializer = args.filterInitializer,
-			initializerParameters = args.filterInitParameters
+			parameters = args.filterInitParameters
 		}
 	end
 
 	if args.biasesInitializer and args.useBias then
 		layer.initializer.biases = {
 			initializer = args.biasesInitializer,
-			initializerParameters = args.biasesInitParameters
+			parameters = args.biasesInitParameters
 		}
 	end
 
@@ -588,22 +626,27 @@ function layerbuild.convolutionalTranspose2D(args)
 
 	-- parameters
 
-	layer.parameters.filter = syntable.new(args.kernel, 0)
+	layerBuild.filter = {
+		shape = args.kernel
+	}
 
 	if args.useBias then
-		layer.parameters.biases = syntable.new(layer.outputShape, 0)
+		layerBuild.biases = {
+			shape = layer.outputShape
+		}
 	end
 
-	return layer
+	return layer, layerBuild
 end
 
 function layerbuild.convolutionalTranspose3D(args)
-	local layer = {
+	local layer, layerBuild = {
 		config = {
 			activation = args.activation,
 			stride = args.stride,
 			paddingAmount = args.paddingAmount
 		},
+		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1},
 		trainable = {},
 		initializer = {},
@@ -611,7 +654,7 @@ function layerbuild.convolutionalTranspose3D(args)
 			alpha = args.alpha
 		},
 		activationArgs = args.activationArgs
-	}
+	}, {}
 
 	if not args.dilation then
 		layer.config.dilation = {1, 1, 1}
@@ -624,14 +667,14 @@ function layerbuild.convolutionalTranspose3D(args)
 	if args.filterInitializer then
 		layer.initializer.filter = {
 			initializer = args.filterInitializer,
-			initializerParameters = args.filterInitParameters
+			parameters = args.filterInitParameters
 		}
 	end
 
 	if args.biasesInitializer and args.useBias then
 		layer.initializer.biases = {
 			initializer = args.biasesInitializer,
-			initializerParameters = args.biasesInitParameters
+			parameters = args.biasesInitParameters
 		}
 	end
 
@@ -653,7 +696,7 @@ function layerbuild.convolutionalTranspose3D(args)
 		layer.parameters.biases = syntable.new(layer.outputShape, 0)
 	end
 
-	return layer
+	return layer, layerBuild
 end
 
 layerbuild.convolutionalDepthwise1D = layerbuild.convolutional1D
@@ -672,12 +715,14 @@ layerbuild.convolutionalDepthwiseSeparable2D = layerbuild.convolutional3D
 
 function layerbuild.flatten(args)
 	return {
-		outputShape = args.inputShape
+		inputShape = args.inputShape,
+		outputShape = {syntable.product(args.inputShape)}
 	}
 end
 
 function layerbuild.normalize1D(args)
 	return {
+		inputShape = args.inputShape,
 		outputShape = args.inputShape
 	}
 end
@@ -687,26 +732,29 @@ layerbuild.normalize2D = layerbuild.normalize1D
 layerbuild.normalize3D = layerbuild.normalize3D
 
 function layerbuild.vectorAdd1D(args)
-	local layer = {
+	local layer, layerBuild = {
+		inputShape = args.inputShape,
 		outputShape = args.inputShape,
 		initializer = {},
 		parameters = {}
-	}
+	}, {}
 
 	-- initialization
 
 	if args.biasesInitializer then
 		layer.initializer.biases = {
 			initializer = args.biasesInitializer,
-			initializerParameters = args.biasesInitParameters
+			parameters = args.biasesInitParameters
 		}
 	end
 
 	-- parameters
 
-	layer.parameters.biases = syntable.new(args.inputShape, 0)
+	layerBuild.biases = {
+		shape = args.inputShape
+	}
 
-	return layer
+	return layer, layerBuild
 end
 
 layerbuild.vectorAdd2D = layerbuild.vectorAdd1D
@@ -720,26 +768,29 @@ layerbuild.vectorSubtract2D = layerbuild.vectorAdd1D
 layerbuild.vectorSubtract3D = layerbuild.vectorAdd1D
 
 function layerbuild.dot1D(args)
-	local layer = {
+	local layer, layerBuild = {
+		inputShape = args.inputShape,
 		outputShape = args.inputShape,
 		initializer = {},
 		parameters = {}
-	}
+	}, {}
 
 	-- initialization
 
 	if args.weightsInitializer then
 		layer.initializer.weights = {
 			initializer = args.weightsInitializer,
-			initializerParameters = args.weightsInitParameters
+			parameters = args.weightsInitParameters
 		}
 	end
 
 	-- parameters
 
-	layer.parameters.weights = syntable.new(args.inputShape, 0)
+	layerBuild.weights = {
+		shape = args.inputShape
+	}
 
-	return layer
+	return layer, layerBuild
 end
 
 layerbuild.dot2D = layerbuild.dot1D
@@ -754,6 +805,7 @@ layerbuild.vectorDivide3D = layerbuild.dot1D
 
 function layerbuild.dropOut(args)
 	return {
+		inputShape = args.inputShape,
 		outputShape = args.inputShape,
 		config = {
 			rate = args.rate
@@ -763,6 +815,7 @@ end
 
 function layerbuild.uniformNoise(args)
 	return {
+		inputShape = args.inputShape,
 		outputShape = args.inputShape,
 		config = {
 			lowerLimit = args.lowerLimit,
@@ -773,6 +826,7 @@ end
 
 function layerbuild.normalNoise(args)
 	return {
+		inputShape = args.inputShape,
 		outputShape = args.inputShape,
 		config = {
 			mean = args.mean,
@@ -783,12 +837,14 @@ end
 
 function layerbuild.softmax(args)
 	return {
-		outputShape = args.outputShape
+		inputShape = args.inputShape,
+		outputShape = args.inputShape
 	}
 end
 
 function layerbuild.activate(args)
 	return {
+		inputShape = args.inputShape,
 		outputShape = args.outputShape,
 		config = {
 			activation = args.activation,

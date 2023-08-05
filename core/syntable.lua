@@ -1,5 +1,4 @@
---[[
-	https://github.com/x-xxoa/synapsea
+--[[ https://github.com/x-xxoa/synapsea
 	core/syntable.lua
 
 	MIT License
@@ -23,6 +22,7 @@ local syntable = {
 	divide,
 	find,
 	new,
+	totalItems,
 	toString
 }
 
@@ -115,7 +115,7 @@ function syntable.absoluteDifference(table)
 end
 
 function syntable.product(table)
-	local product = 0
+	local product = 1
 
 	for a = 1, #table do
 		if type(table[a]) == "table" then
@@ -129,7 +129,7 @@ function syntable.product(table)
 end
 
 function syntable.absoluteProduct(table)
-	local product = 0
+	local product = 1
 
 	for a = 1, #table do
 		if type(table[a]) == "table" then
@@ -264,39 +264,57 @@ function syntable.new(dimensions, defaultvalue, index)
 	return table
 end
 
-function syntable.toString(table, format, indent)
+function syntable.totalItems(table)
+	local totalItems = 0
+
+	for a, _ in pairs(table) do
+		if type(table[a]) == "table" then
+			totalItems = totalItems + syntable.totalItems(table[a])
+		else
+			totalItems = totalItems + 1
+		end
+	end
+
+	return totalItems
+end
+
+function syntable.toString(table, format, showFunctions, indent)
 	local tableStr, indentStr = "{", ""
 
 	indent = indent or 1
 
 	if format then
-		indentStr = string.rep("    ", indent)
+		indentStr = "    "
 		tableStr = tableStr .. "\n"
 	end
-  
-	for i, v in pairs(table) do
-		tableStr = tableStr .. indentStr .. i .. " = "
 
+	for i, v in pairs(table) do
 		local valueType = type(v)
 
-		if valueType == "table" then
-			tableStr = tableStr .. syntable.toString(v, format, indent + 1)
-		elseif valueType == "string" then
-			tableStr = tableStr .. string.format("'%s'", v)
-		else
-			if v == 0 / 0 then
-				tableStr = tableStr .. "0 / 0"
-			elseif v == math.huge then
-				tableStr = tablestr .. "math.huge"
+		if showFunctions and valueType == "function" or valueType ~= "function" then
+			tableStr = tableStr .. string.rep(indentStr, indent) .. i .. " = "
+
+			if valueType == "number" then
+				tableStr = tableStr .. v
+			elseif valueType == "table" then
+				tableStr = tableStr .. syntable.toString(v, format, showFunctions, indent + 1)
+			elseif valueType == "string" then
+				tableStr = tableStr .. string.format("'%s'", v)
 			else
-				tableStr = tableStr .. tostring(v)
+				if v == 0 / 0 then
+					tableStr = tableStr .. "0 / 0"
+				elseif v == math.huge then
+					tableStr = tablestr .. "math.huge"
+				else
+					tableStr = tableStr .. string.format("'%s'", tostring(v))
+				end
 			end
-		end
 
-		tableStr = tableStr .. ", "
+			tableStr = tableStr .. ", "
 
-		if format then
-			tableStr = tableStr .. "\n"
+			if format then
+				tableStr = tableStr .. "\n"
+			end
 		end
 	end
 
@@ -306,9 +324,7 @@ function syntable.toString(table, format, indent)
 		tableStr = tableStr:sub(1, #tableStr - 2)
 	end
 
-	if format then
-		tableStr = tableStr .. string.rep("    ", indent - 1)
-	end
+	tableStr = tableStr .. string.rep(indentStr, indent - 1)
 
 	return tableStr .. "}"
 end

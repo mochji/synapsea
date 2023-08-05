@@ -16,7 +16,7 @@ local synmath = {
 }
 
 function synmath.random.uniform(lowerLimit, upperLimit)
-	return lowerlimit + math.random() * (upperLimit - lowerLimit) -- random float between upperLimit and lowerLimit
+	return lowerLimit + math.random() * (upperLimit - lowerLimit) -- random float between upperLimit and lowerLimit
 end
 
 function synmath.random.normal(mean, sd)

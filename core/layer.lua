@@ -84,7 +84,7 @@ function layer.dense(args)
 	local activation = activation[args.activation]
 	args.bias = args.bias or 0
 
-	for a = 1, #args.outputSize do
+	for a = 1, args.outputSize do
 		local sum = 0
 
 		for b = 1, #args.input do
@@ -120,7 +120,7 @@ end
 
 function layer.averagePooling2D(args)
 	local output, startIndexA, kernelProduct = {}, 0, syntable.product(args.kernel) -- were getting the product of the kernel so we dont perform the same calculation every output node
-	local outputHeight, outputWidth = math.floor((#args.filter - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.filter[1] - args.kernel[2]) / args.stride[2]) + 1
+	local outputHeight, outputWidth = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1
 
 	for a = 1, outputHeight do
 		output[a] = {}

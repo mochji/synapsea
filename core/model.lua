@@ -91,7 +91,7 @@ function model.new(inputShape, metaData)
 			layerNameSizes[a] = #model.layerConfig[a].type
 		end
 
-		local layerSpacing = math.max(table.unpack(layerNameSizes)) + 1
+		local layerSpacing = math.max(math.max(table.unpack(layerNameSizes)) + 1, 16)
 		local totalLength = layerSpacing + 78
 
 		-- get total amount of parameters
@@ -182,7 +182,7 @@ function model.new(inputShape, metaData)
 
 		-- global data
 
-		summaryStr = string.format("%s\nTotal Layers: %d\nHidden Layers: %d\n\nTotal Parameters: %d\nTrainable Parameters: %d\nNon-Trainable Parameters: %d\nSynapsea Version: %s\n", summaryStr, #model.layerConfig + 2, #model.layerConfig, parameterCount.trainable, parameterCount.nonTrainable, parameterCount.trainable + parameterCount.nonTrainable, model.metaData.synapseaVersion)
+		summaryStr = string.format("%s\nTotal Layers: %d\nHidden Layers: %d\n\nTotal Parameters: %d\nTrainable Parameters: %d\nNon-Trainable Parameters: %d\nSynapsea Version: %s\n", summaryStr, #model.layerConfig + 2, #model.layerConfig, parameterCount.trainable + parameterCount.nonTrainable, parameterCount.trainable, parameterCount.nonTrainable, model.metaData.synapseaVersion)
 
 		if returnString then
 			return summaryStr
@@ -224,7 +224,7 @@ function model.new(inputShape, metaData)
 			}
 		end
 
-		model.addLayer, model.removeLayer, model.parameterBuild = nil, nil, nil
+		model.addLayer, model.removeLayer, model.parameterBuild, model.initialize = nil, nil, nil, nil
 		model.outputShape = model.layerConfig[#model.layerConfig].outputShape
 		model.layers = #model.layerConfig
 

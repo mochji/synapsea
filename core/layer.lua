@@ -91,7 +91,7 @@ function layer.dense(args)
 			sum = sum + args.input[b]*args.weights[b][a]
 		end
 
-		output[a] = activation(sum + args.bias, false, args.alpha, args.activationArgs)
+		output[a] = activation(sum + args.bias, false, args.alpha)
 	end
 
 	return output
@@ -613,9 +613,9 @@ function layer.convolutional1D(args)
 		startIndex = startIndex + args.stride[1]
 
 		if args.biases then
-			output[a] = activation(sum + args.biases[a], false, args.alpha, args.activationArgs)
+			output[a] = activation(sum + args.biases[a], false, args.alpha)
 		else
-			output[a] = activation(sum, false, args.alpha, args.activationArgs)
+			output[a] = activation(sum, false, args.alpha)
 		end
 	end
 
@@ -646,9 +646,9 @@ function layer.convolutional2D(args)
 			startIndexB = startIndexB + args.stride[2]
 
 			if args.biases then
-				output[a][b] = activation(sum + args.biases[a][b], false, args.alpha, args.activationArgs)
+				output[a][b] = activation(sum + args.biases[a][b], false, args.alpha)
 			else
-				output[a][b] = activation(sum, false, args.alpha, args.activationArgs)
+				output[a][b] = activation(sum, false, args.alpha)
 			end
 		end
 
@@ -688,9 +688,9 @@ function layer.convolutional3D(args)
 				startIndexC = startIndexC + args.stride[3]
 
 				if args.biases then
-					output[a][b][c] = activation(sum + args.biases[a][b][c], false, args.alpha, args.activationArgs)
+					output[a][b][c] = activation(sum + args.biases[a][b][c], false, args.alpha)
 				else
-					output[a][b][c] = activation(sum, false, args.alpha, args.activationArgs)
+					output[a][b][c] = activation(sum, false, args.alpha)
 				end
 			end
 
@@ -710,7 +710,6 @@ function layer.convolutionalTranspose1D(args)
 		biases = args.biases,
 		dilation = args.dilation,
 		activation = args.activation,
-		activationArgs = args.activationArgs,
 		alpha = args.alpha
 	}
 end
@@ -722,7 +721,6 @@ function layer.convolutionalTranspose2D(args)
 		biases = args.biases,
 		dilation = args.dilation,
 		activation = args.activation,
-		activationArgs = args.activationArgs,
 		alpha = args.alpha
 	}
 end
@@ -734,7 +732,6 @@ function layer.convolutionalTranspose3D(args)
 		biases = args.biases,
 		dilation = args.dilation,
 		activation = args.activation,
-		activationArgs = args.activationArgs,
 		alpha = args.alpha
 	}
 end
@@ -748,7 +745,6 @@ function layer.convolutionalDepthwise1D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
-			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -771,7 +767,6 @@ function layer.convolutionalDepthwise2D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
-			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -794,7 +789,6 @@ function layer.convolutionalSeparable1D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
-			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -817,7 +811,6 @@ function layer.convolutionalSeparable2D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
-			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -840,7 +833,6 @@ function layer.convolutionalSeparable3D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
-			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -863,7 +855,6 @@ function layer.convolutionalDepthwiseSeparable1D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
-			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -886,7 +877,6 @@ function layer.convolutionalDepthwiseSeparable2D(args)
 			filter = args.filter[a],
 			dilation = args.dilation,
 			activation = args.activation,
-			activationArgs = args.activationArgs,
 			alpha = args.alpha
 		}
 
@@ -1115,7 +1105,7 @@ function layer.activate(args)
 				alpha = args.alpha
 			}
 		else
-			args.input[a] = activation(args.input[a], args.derivative, args.alpha, args.activationArgs)
+			args.input[a] = activation(args.input[a], args.derivative, args.alpha)
 		end
 	end
 

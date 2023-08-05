@@ -74,20 +74,20 @@ model:addLayer(
 		outputSize = 5,
 		weightsInitializer = "uniformRandom",
 		weightsInitParameters = {
-			lowerLimit = -0.1,
-			upperLimit = 0.1
+			lowerLimit = -1,
+			upperLimit = 1
 		},
 		weightsTrainable = true,
 		usePrelu = true
 	}
 )
 
+model:export("modeltest.lua", true)
+
 model:initialize(
 	"momentum",
 	{momentum = 0.9}
 )
-
-model:export("modeltest.lua", true)
 
 model:summary()
 

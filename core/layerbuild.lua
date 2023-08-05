@@ -89,8 +89,7 @@ function layerbuild.dense(args)
 		initializer = {},
 		parameters = {
 			alpha = args.alpha
-		},
-		activationArgs = args.activationArgs
+		}
 	}, {}
 
 	if args.usePrelu and args.alpha then
@@ -334,8 +333,7 @@ function layerbuild.convolutional1D(args)
 		initializer = {},
 		parameters = {
 			alpha = args.alpha
-		},
-		activationArgs = args.activationArgs
+		}
 	}, {}
 
 	if not args.dilation then
@@ -397,8 +395,7 @@ function layerbuild.convolutional2D(args)
 		initializer = {},
 		parameters = {
 			alpha = args.alpha
-		},
-		activationArgs = args.activationArgs
+		}
 	}, {}
 
 	if not args.dilation then
@@ -460,8 +457,7 @@ function layerbuild.convolutional3D(args)
 		initializer = {},
 		parameters = {
 			alpha = args.alpha
-		},
-		activationArgs = args.activationArgs
+		}
 	}, {}
 
 	if not args.dilation then
@@ -524,8 +520,7 @@ function layerbuild.convolutionalTranspose1D(args)
 		initializer = {},
 		parameters = {
 			alpha = args.alpha
-		},
-		activationArgs = args.activationArgs
+		}
 	}, {}
 
 	if not args.dilation then
@@ -588,8 +583,7 @@ function layerbuild.convolutionalTranspose2D(args)
 		initializer = {},
 		parameters = {
 			alpha = args.alpha
-		},
-		activationArgs = args.activationArgs
+		}
 	}, {}
 
 	if not args.dilation then
@@ -652,8 +646,7 @@ function layerbuild.convolutionalTranspose3D(args)
 		initializer = {},
 		parameters = {
 			alpha = args.alpha
-		},
-		activationArgs = args.activationArgs
+		}
 	}, {}
 
 	if not args.dilation then

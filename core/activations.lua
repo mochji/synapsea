@@ -1,29 +1,43 @@
 --[[
 	https://github.com/x-xxoa/synapsea
-	core/activation.lua
+	core/activations.lua
 
-	MIT License
+	Synapsea, a machine learning library made in pure Lua.
+	Copyright (C) 2023 x-xxoa
+																		   
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+																		   
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+																		   
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local activation = {
+local activationsModule = {
 	sigmoid,
 	tanh,
 	relu,
-	leakyrelu,
+	leakyRelu,
 	elu,
 	exponential,
 	swish,
-	binarystep,
-	softmax,
-	softplus,
-	softsign,
+	binaryStep,
+	softMax,
+	softPlus,
+	softSign,
 	linear,
-	variablelinear,
-	hardsigmoid,
-	hardtanh
+	variableLinear,
+	hardSigmoid,
+	hardTanh
 }
 
-function activation.sigmoid(x, derivative)
+function activationsModule.sigmoid(x, derivative)
 	if derivative then
 		return (1 / (1 + math.exp(-x))) * (1 - (1 / (1 + math.exp(-x))))
 	end
@@ -31,15 +45,15 @@ function activation.sigmoid(x, derivative)
 	return 1 / (1 + math.exp(-x))
 end
 
-function activation.tanh(x, derivative)
+function activationsModule.tanh(x, derivative)
 	if derivative then
 		return 1 - (((math.exp(2 * x) - 1) / (math.exp(2 * x) + 1))^2)
 	end
 
-	return (math.exp(2 * x) - 1) / (math.exp(2 * x) + 1)
+	return math.tanh(x)
 end
 
-function activation.relu(x, derivative)
+function activationsModule.relu(x, derivative)
 	if derivative then
 		if x > 0 then
 			return 1
@@ -51,7 +65,7 @@ function activation.relu(x, derivative)
 	return math.max(0, x)
 end
 
-function activation.leakyrelu(x, derivative, alpha)
+function activationsModule.leakyRelu(x, derivative, alpha)
 	if derivative then
 		if x > 0 then
 			return 1
@@ -67,7 +81,7 @@ function activation.leakyrelu(x, derivative, alpha)
 	return x * alpha
 end
 
-function activation.elu(x, derivative, alpha)
+function activationsModule.elu(x, derivative, alpha)
 	if derivative then
 		if x < 0 then
 			return alpha * math.exp(x)
@@ -83,11 +97,11 @@ function activation.elu(x, derivative, alpha)
 	return x
 end
 
-function activation.exponential(x)
+function activationsModule.exponential(x)
 	return math.exp(x)
 end
 
-function activation.swish(x, derivative, alpha)
+function activationsModule.swish(x, derivative, alpha)
 	if derivative then
 		return (math.exp(-alpha * x) * x + math.exp(-alpha * x) + 1) / ((math.exp(-alpha * x) + 1)^2)
 	end
@@ -95,7 +109,7 @@ function activation.swish(x, derivative, alpha)
 	return x / (1 + math.exp(-alpha * x))
 end
 
-function activation.binarystep(x, derivative)
+function activationsModule.binaryStep(x, derivative)
 	if derivative then
 		return 0
 	end
@@ -107,7 +121,7 @@ function activation.binarystep(x, derivative)
 	return 0
 end
 
-function activation.softmax(x, derivative)
+function activationsModule.softMax(x, derivative)
 	local expSum, output = 0, {}
 
 	for a = 1, #x do
@@ -129,7 +143,7 @@ function activation.softmax(x, derivative)
 	return output
 end
 
-function activation.softplus(x, derivative)
+function activationsModule.softPlus(x, derivative)
 	if derivative then
 		return 1 / (1 + math.exp(-x))
 	end
@@ -137,7 +151,7 @@ function activation.softplus(x, derivative)
 	return math.log(1 + math.exp(x))
 end
 
-function activation.softsign(x, derivative)
+function activationsModule.softSign(x, derivative)
 	if derivative then
 		if x == 0 then
 			return 1 -- at x = 0 this is undefined so this is a fix
@@ -149,7 +163,7 @@ function activation.softsign(x, derivative)
 	return x / (1 + math.abs(x))
 end
 
-function activation.linear(x, derivative)
+function activationsModule.linear(x, derivative)
 	if derivative then
 		return 1
 	end
@@ -157,7 +171,7 @@ function activation.linear(x, derivative)
 	return x
 end
 
-function activation.variablelinear(x, derivative, alpha)
+function activationsModule.variableLinear(x, derivative, alpha)
 	if derivative then
 		return alpha
 	end
@@ -165,7 +179,7 @@ function activation.variablelinear(x, derivative, alpha)
 	return x * alpha
 end
 
-function activation.hardsigmoid(x, derivative)
+function activationsModule.hardSigmoid(x, derivative)
 	if derivative then
 		if x < -2.5 or x > 2.5 then
 			return 0
@@ -177,7 +191,7 @@ function activation.hardsigmoid(x, derivative)
 	return math.max(0, math.min(1, x * 0.2 + 0.5))
 end
 
-function activation.hardtanh(x, derivative)
+function activationsModule.hardTanh(x, derivative)
 	if derivative then
 		if x < -1 or x > 1 then
 			return 0
@@ -189,4 +203,4 @@ function activation.hardtanh(x, derivative)
 	return math.max(0, math.min(1, x * 2))
 end
 
-return activation
+return activationsModule

@@ -7,98 +7,59 @@
 
 	https://github.com/x-xxoa/synapsea
 
-	MIT License
+	Synapsea, a machine learning library made in pure Lua.
+	Copyright (C) 2023 x-xxoa
+																		   
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+																		   
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+																		   
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
---import the core files
+-- import the core files
 
-local syn = {
-	version = "v1.3.00-unstable",
-	table = require("core.syntable"),
+local arrayRequire = require("synArrayRequireInfo")
+package.path = package.path .. ";" .. arrayRequire.addRequirePath
+
+local synapsea = {
+	math = require("core.math"),
+	activations = require("core.activations"),
+	losses = require("core.losses"),
+	initializers = require("core.initializers"),
+	optimizers = require("core.optimizers"),
+	regularizers = require("core.regularizers"),
+	layers = require("core.layers"),
+	backProp = require("core.backProp"),
 	model = require("core.model"),
-	initialize = require("core.initialize")
+	metrics = require("core.metrics"),
+	callBacks = require("core.callBacks"),
+	array = require(arrayRequire.requireString),
+	debug = require("core.debug")
 }
 
-local model = syn.model.new(
-	{64, 64},
-	{
-		this = "help my lego movie phase",
-		is = "coming back because of one",
-		metadata = "tiktok i saw help please"
-	}
-)
+-- add lua math functions into synapsea.math
 
-model:addLayer(
-	"averagePooling2D",
-	{
-		kernel = {6, 6},
-		stride = {2, 2}
-	}
-)
+for mathName, _ in pairs(math) do
+	synapsea.math[mathName] = math[mathName]
+end
 
-model:addLayer(
-	"convolutional2D",
-	{
-		activation = "relu",
-		kernel = {6, 6},
-		stride = {2, 2},
-		filterInitializer = "normalRandom",
-		filterInitParameters = {
-			sd = 1,
-			mean = 0
-		},
-		biasInitializer = "constant",
-		biasInitParameters = {
-			value = 0.1
-		},
-		filterTrainable = true,
-		useBias = true
-	}
-)
+-- convert all layers to metatables
 
-model:addLayer(
-	"averagePooling2D",
-	{
-		kernel = {2, 2},
-		stride = {2, 2}
-	}
-)
+local layerBuild = require("core.layerBuild")
 
-model:addLayer("flatten")
+for layerName, _ in pairs(synapsea.layers) do
+	synapsea.layers[layerName] = setmetatable(
+		{build = layerBuild[layerName]},
+		{__call = synapsea.layers[layerName]}
+	)
+end
 
-model:addLayer(
-	"dense",
-	{
-		activation = "leakyrelu",
-		alpha = 0.1,
-		outputSize = 5,
-		weightsInitializer = "uniformRandom",
-		weightsInitParameters = {
-			lowerLimit = -1,
-			upperLimit = 1
-		},
-		weightsTrainable = true,
-		usePrelu = true
-	}
-)
-
-model:export("modeltest.lua", true)
-
-model:initialize(
-	"momentum",
-	{momentum = 0.9}
-)
-
-model:summary()
-
-local input = syn.table.new({64, 64}, 0)
-
-input = syn.initialize.uniformRandom{
-	input = input,
-	lowerLimit = 0,
-	upperLimit = 1
-}
-
-for i,v in pairs(model:forwardPass(input)) do print(i,v) end
-
-return syn
+return synapsea

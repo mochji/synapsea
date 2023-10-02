@@ -39,24 +39,24 @@ local synapsea = {
 	model = require("core.model"),
 	metrics = require("core.metrics"),
 	callBacks = require("core.callBacks"),
-	array = require("core.array.init")
+	array = require("core.array.init"),
 	debug = require("core.debug")
 }
 
 -- add lua math functions into synapsea.math
 
-for mathName, _ in pairs(math) do
-	synapsea.math[mathName] = math[mathName]
+for name, func in pairs(math) do
+	synapsea.math[name] = func
 end
 
 -- convert all layers to metatables
 
 local layerBuild = require("core.layerBuild")
 
-for layerName, _ in pairs(synapsea.layers) do
-	synapsea.layers[layerName] = setmetatable(
-		{build = layerBuild[layerName]},
-		{__call = synapsea.layers[layerName]}
+for name, func in pairs(synapsea.layers) do
+	synapsea.layers[name] = setmetatable(
+		{build = layerBuild[name]},
+		{__call = func}
 	)
 end
 

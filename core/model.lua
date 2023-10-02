@@ -19,6 +19,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
+local arrayDataModule = require("core.array.core.data")
 local layerBuildModule = require("core.layerBuild")
 local initializersModule = require("core.initializers")
 local layersModule = require("core.layers")
@@ -48,7 +49,7 @@ function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
 			buildParameters.inputShape = model.layerConfig[layerNumber - 1].outputShape
 		end
 
-		layer, parameterBuild = layerBuild[layerType](buildParameters)
+		layer, parameterBuild = layerBuildModule[layerType](buildParameters)
 		table.insert(model.parameterBuild, layerNumber, parameterBuild or {})
 	else
 		layer = buildParameters
@@ -175,7 +176,13 @@ function modelModule.new(inputShape, metaData)
 	return model
 end
 
-function modelModule.export(model, fileName)
+function modelModule.export(model, fileName, format)
+	local f, err, code = io.open(fileName, "w")
+
+	assert(f, string.format("Couldn't open %s for writing, %s (%s).", fileName, err, code))
+
+	f:write("return " .. arrayDataModule.tableToString(model, format))
+	f:close()
 end
 
 function modelModule.import(fileName)

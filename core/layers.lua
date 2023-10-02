@@ -20,7 +20,7 @@
 ]]--
 
 local arrayMathModule = require("core.array.core.math")
-local arrayManipulationModule = require("core.array.core.arrayManipulation")
+local arrayTransformationModule = require("core.array.core.arrayTransformation")
 local activationsModule = require("core.activations")
 local mathModule = require("core.math")
 local layersModule = {
@@ -162,7 +162,7 @@ function layersModule.averagePooling2D(args)
 
 			for c = 1, kernel[1] do
 				for d = 1, kernel[2] do
-					if c % dilation[1] == 0 and d & dilation[2] == 1 then
+					if c % dilation[1] == 0 and d % dilation[2] == 1 then
 						sum = sum + input[startIndexA + c][startIndexB + d]
 					end
 				end
@@ -354,7 +354,7 @@ function layersModule.sumPooling2D(args)
 
 			for c = 1, kernel[1] do
 				for d = 1, kernel[2] do
-					if c % dilation[1] == 0 and d & dilation[2] == 1 then
+					if c % dilation[1] == 0 and d % dilation[2] == 1 then
 						sum = sum + input[startIndexA + c][startIndexB + d]
 					end
 				end
@@ -940,11 +940,11 @@ end
 ]]--
 
 function layersModule.flatten(args)
-	return arrayManipulationModule.flatten(args.input)
+	return arrayTransformationModule.flatten(args.input)
 end
 
 function layersModule.reshape(args)
-	return arrayManipulation.reshape(args.input, args.shape)
+	return arrayTransformationModule.reshape(args.input, args.shape)
 end
 
 function layersModule.minMaxNormalize1D(args)

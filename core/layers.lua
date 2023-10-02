@@ -19,10 +19,8 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local arrayRequire = dofile("synArrayRequireInfo.lua")
-package.path = package.path .. ";" .. arrayRequire.addRequirePath
-
-local arrayModule = require(arrayRequire.requireString)
+local arrayMathModule = require("core.array.core.math")
+local arrayManipulationModule = require("core.array.core.arrayManipulation")
 local activationsModule = require("core.activations")
 local mathModule = require("core.math")
 local layersModule = {
@@ -415,7 +413,7 @@ function layersModule.sumPooling3D(args)
 end
 
 function layersModule.averageGlobalPooling1D(args)
-	return {arrayModule.math.sum(args.input) / #args.input}
+	return {arrayMathModule.sum(args.input) / #args.input}
 end
 
 function layersModule.averageGlobalPooling2D(args)
@@ -423,7 +421,7 @@ function layersModule.averageGlobalPooling2D(args)
 	local input = args.input
 
 	for a = 1, #input do
-		output[a] = arrayModule.math.sum(input[a]) / #input
+		output[a] = arrayMathModule.sum(input[a]) / #input
 	end
 
 	return output
@@ -440,7 +438,7 @@ function layersModule.maxGlobalPooling2D(args)
 	local input = args.input
 
 	for a = 1, #input do
-		output[a] = arrayModule.math.max(input[a])
+		output[a] = arrayMathModule.max(input[a])
 	end
 
 	return output
@@ -449,7 +447,7 @@ end
 layersModule.maxGlobalPooling3D = layersModule.maxGlobalPooling2D
 
 function layersModule.sumGlobalPooling1D(args)
-	return {arrayModule.math.sum(args.input)}
+	return {arrayMathModule.sum(args.input)}
 end
 
 function layersModule.sumGlobalPooling2D(args)
@@ -457,7 +455,7 @@ function layersModule.sumGlobalPooling2D(args)
 	local input = args.input
 
 	for a = 1, #input do
-		output[a] = arrayModule.math.product.sum(input[a])
+		output[a] = arrayMathModule.sum(input[a])
 	end
 
 	return output
@@ -942,15 +940,15 @@ end
 ]]--
 
 function layersModule.flatten(args)
-	return arrayModule.flatten(args.input)
+	return arrayManipulationModule.flatten(args.input)
 end
 
 function layersModule.reshape(args)
-	return arrayModule.reshape(args.input, args.shape)
+	return arrayManipulation.reshape(args.input, args.shape)
 end
 
 function layersModule.minMaxNormalize1D(args)
-	local max, min = arrayModule.math.max(args.input), arrayModule.math.min(args.input)
+	local max, min = arrayMathModule.max(args.input), arrayMathModule.min(args.input)
 	local maxMinusMin = max - min
 	local input = args.input
 
@@ -962,7 +960,7 @@ function layersModule.minMaxNormalize1D(args)
 end
 
 function layersModule.minMaxNormalize2D(args)
-	local max, min = arrayModule.math.max(args.input), arrayModule.math.min(args.input)
+	local max, min = arrayMathModule.max(args.input), arrayMathModule.min(args.input)
 	local maxMinusMin = max - min
 	local input = args.input
 
@@ -976,7 +974,7 @@ function layersModule.minMaxNormalize2D(args)
 end
 
 function layersModule.minMaxNormalize3D(args)
-	local max, min = arrayModule.math.max(args.input), arrayModule.math.min(args.input)
+	local max, min = arrayMathModule.max(args.input), arrayMathModule.min(args.input)
 	local maxMinusMin = max - min
 	local input = args.input
 

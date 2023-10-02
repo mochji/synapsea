@@ -19,10 +19,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local arrayRequire = dofile("synArrayRequireInfo.lua")
-package.path = package.path .. ";" .. arrayRequire.addRequirePath
-
-local arrayModule = require(arrayRequire.requireString)
+local arrayMathModule = require("core.array.core.math")
 local regularizersModule = {
 	l1,
 	l2
@@ -30,7 +27,7 @@ local regularizersModule = {
 
 function regularizersModule.l1(args)
 	local function regularizerFunc(gradient, lambda, l1Norm)
-		l1Norm = l1Norm or arrayModule.math.array.absoluteSum(gradient)
+		l1Norm = l1Norm or arrayMathModule.absoluteSum(gradient)
 
 		for a = 1, #gradient do
 			if type(args.gradient[a]) == "table" then
@@ -54,7 +51,7 @@ end
 
 function regularizersModule.l2(args)
 	local function regularizerFunc(gradient, lambda, l2Norm)
-		l2Norm = l2Norm or arrayModule.math.array.exponentSum(gradient, 2)
+		l2Norm = l2Norm or arrayMathModule.exponentSum(gradient, 2)
 
 		for a = 1, #gradient do
 			if type(args.gradient[a]) == "table" then

@@ -6,6 +6,7 @@
 	Read the README.md file for documentation and information, 
 
 	https://github.com/x-xxoa/synapsea
+	init.lua
 
 	Synapsea, a machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
@@ -26,9 +27,6 @@
 
 -- import the core files
 
-local arrayRequire = require("synArrayRequireInfo")
-package.path = package.path .. ";" .. arrayRequire.addRequirePath
-
 local synapsea = {
 	math = require("core.math"),
 	activations = require("core.activations"),
@@ -41,7 +39,7 @@ local synapsea = {
 	model = require("core.model"),
 	metrics = require("core.metrics"),
 	callBacks = require("core.callBacks"),
-	array = require(arrayRequire.requireString),
+	array = require("core.array.init")
 	debug = require("core.debug")
 }
 

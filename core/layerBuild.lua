@@ -19,10 +19,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local arrayRequire = dofile("synArrayRequireInfo.lua") -- ik dofile is bad and this entire line but require doesnt work for this
-package.path = package.path .. ";" .. arrayRequire.addRequirePath
-
-local arrayModule = require(arrayRequire.requireString)
 local layerBuildModule = {
 	dense,
 	averagePooling1D,
@@ -747,9 +743,15 @@ layerbuild.convolutionalDepthwiseSeparable2D = layerbuild.convolutional3D
 ]]--
 
 function layerBuildModule.flatten(args)
+	local outputShape = 1
+
+	for a = 1, #args.inputShape do
+		outputShape = outputShape * args.inputShape[a]
+	end
+
 	return {
 		inputShape = args.inputShape,
-		outputShape = {arrayModule.math.product(args.inputShape)}
+		outputShape = {outputShape}
 	}
 end
 

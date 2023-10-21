@@ -1,6 +1,6 @@
 --[[
 	https://github.com/x-xxoa/synapsea
-	core/callBacks.lua
+	core/layersError.lua
 
 	Synapsea, a machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
@@ -19,12 +19,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local callBacksModule = {
-	earlyStop,
-	saveCheckpoint,
-	progressLog,
-	reduceLROnPlateau,
-	stopOnNaN
-}
+local layersErrorModule = {}
 
-return callBacksModule
+return layersErrorModule

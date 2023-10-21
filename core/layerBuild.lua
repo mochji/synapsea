@@ -1,6 +1,6 @@
 --[[
 	https://github.com/x-xxoa/synapsea
-	core/layerbuild.lua
+	core/layerBuild.lua
 
 	Synapsea, a machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa

@@ -19,14 +19,12 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local arrayDataModule = require("core.array.core.data")
 local layerBuildModule = require("core.layerBuild")
 local initializersModule = require("core.initializers")
 local layersModule = require("core.layers")
 local modelModule = {
 	addLayer,
 	removeLayer,
-	export,
 	initialize,
 	forwardPass,
 	fit,
@@ -186,6 +184,20 @@ function modelModule.export(model, fileName, format)
 end
 
 function modelModule.import(fileName)
+	local model = dofle(fileName)
+
+	model.removeLayer = modelModule.removeLayer
+	model.initialize = modelModule.initialize
+	model.export = modelModule.export
+
+	if model.parameterBuild then
+		model.addLayer = modelModule.addLayer
+	else
+		model.forwardPass = modelModule.forwardPass
+		model.fit = modelModule.fit
+	end
+
+	return model
 end
 
 return modelModule

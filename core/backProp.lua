@@ -19,6 +19,51 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local backPropModule = {}
+--[[
+	notes >w<!
+
+	ewwow backpwopagation
+	error = (output - expected) * activation'(output)  | output
+	error = (weight_k * error_j) * activation'(output) | hidden
+
+	weight update
+	weight = weight - lr * error * input
+
+	bias update
+	figuwe out latew -w-
+]]--
+
+local activationsModule = require("core.activations")
+local backPropModule = {
+	layersError = require("core.layersError"),
+	layersGradient = require("core.layersGradient"),
+	outputError,
+	stochasticGradientDescent,
+	batchGradientDescent
+}
+
+-- do layers later!
+
+function backPropModule.outputError(output, expectedOutput, activation, alpha)
+	local outputError = {}
+
+	local activation = activationsModule[activation]
+
+	for a = 1, #output do
+		if type(output[a]) == "table" then
+			outputError[a] = backPropModule.outputError(output[a], expectedOutput[a], activation)
+		else
+			outputError[a] = (output[a] - expectedOutput[a]) * activation(output[a], true, alpha)
+		end
+	end
+
+	return outputError
+end
+
+function backPropModule.stochasticGradientDescent(gradient, weights, biases)
+end
+
+function backPropModule.batchGradientDescent(gradient, weights, biases, gradientDescentArgs)
+end
 
 return backPropModule

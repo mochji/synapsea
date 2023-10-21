@@ -1,7 +1,7 @@
 --[[
 	Synapsea v1.3.00-unstable
 
-	A Lua Neural Network library made in pure Lua.
+	A simple machine library made in pure Lua.
 
 	Read the README.md file for documentation and information, 
 
@@ -25,29 +25,17 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
--- import the core files
-
 local synapsea = {
-	math = require("core.math"),
 	activations = require("core.activations"),
 	losses = require("core.losses"),
+	math = require("core.math"),
 	initializers = require("core.initializers"),
-	optimizers = require("core.optimizers"),
+	optimizers = require("core.optimizers")
 	regularizers = require("core.regularizers"),
 	layers = require("core.layers"),
-	backProp = require("core.backProp"),
-	model = require("core.model"),
-	metrics = require("core.metrics"),
-	callBacks = require("core.callBacks"),
-	array = require("core.array.init"),
-	debug = require("core.debug")
+	backProp = require("core.backProp")
+	model = require("core.model")
 }
-
--- add lua math functions into synapsea.math
-
-for name, func in pairs(math) do
-	synapsea.math[name] = func
-end
 
 -- convert all layers to metatables
 
@@ -59,5 +47,7 @@ for name, func in pairs(synapsea.layers) do
 		{__call = func}
 	)
 end
+
+layerBuild = nil
 
 return synapsea

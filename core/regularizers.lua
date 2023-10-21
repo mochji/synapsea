@@ -19,15 +19,42 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local arrayMathModule = require("core.array.core.math")
 local regularizersModule = {
 	l1,
 	l2
 }
 
+local function absoluteSum(tbl)
+	local sum = 0
+
+	for a = 1, #tbl do
+		if type(tbl[a]) == "table" then
+			sum = sum + absoluteSum(tbl[a])
+		else
+			sum = sum + math.abs(tbl[a])
+		end
+	end
+
+	return sum
+end
+
+local function squaredSum(tbl)
+	local sum = 0
+
+	for a = 1, #tbl do
+		if type(tbl[a]) == "table" then
+			sum = sum + squaredSum(tbl[a])
+		else
+			sum = sum + tbl[a]^2
+		end
+	end
+
+	return sum
+end
+
 function regularizersModule.l1(args)
 	local function regularizerFunc(gradient, lambda, l1Norm)
-		l1Norm = l1Norm or arrayMathModule.absoluteSum(gradient)
+		l1Norm = l1Norm or absoluteSum(gradient)
 
 		for a = 1, #gradient do
 			if type(args.gradient[a]) == "table" then
@@ -51,7 +78,7 @@ end
 
 function regularizersModule.l2(args)
 	local function regularizerFunc(gradient, lambda, l2Norm)
-		l2Norm = l2Norm or arrayMathModule.exponentSum(gradient, 2)
+		l2Norm = l2Norm or squaredSum(gradient)
 
 		for a = 1, #gradient do
 			if type(args.gradient[a]) == "table" then

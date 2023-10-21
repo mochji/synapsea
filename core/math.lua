@@ -25,7 +25,9 @@ local mathModule = {
 		normal
 	},
 	sign,
-	root
+	root,
+	reciprocalGamma,
+	gamma
 }
 
 function mathModule.random.uniform(lowerLimit, upperLimit)
@@ -54,6 +56,32 @@ end
 
 function mathModule.root(x, root)
 	return x^(1 / root)
+end
+
+function mathModule.reciprocalGamma(x)
+	return x + 0.577215664901 * x^2 + -0.65587807152056 * x^3 + -0.042002635033944 * x^4 + 0.16653861138228 * x^5 + -0.042197734555571 * x^6
+end
+
+function mathModule.gamma(x)
+	if x * 10 % 10 == 0 then
+		local output = 1
+
+		for a = 2, x do
+			output = output * a
+		end
+
+		return output
+	end
+
+	if math.abs(x) <= 0.5 then
+		return 1 / mathModule.reciprocalGamma(x)
+	end
+
+	return (x - 1) * mathModule.gamma(x - 1)
+end
+
+for a = 1, 10 do
+	print(a/10, mathModule.gamma(a/10))
 end
 
 return mathModule

@@ -1,6 +1,6 @@
 --[[
 	https://github.com/x-xxoa/synapsea
-	core/metrics.lua
+	core/layersGradient.lua
 
 	Synapsea, a machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
@@ -19,23 +19,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local metricsModule = {
-	accuracy,
-	falsePositives,
-	falseNegatives,
-	truePositives,
-	trueNegatives,
-	meanSquaredError,
-	meanAbsoluteError,
-	sumOfSquaredError,
-	rootOfMeanSquaredError,
-	crossEntropy,
-	binaryCrossEntropy,
-	hinge,
-	huber,
-	klDivergence
-}
+local layersGradientModule = {}
 
-
-
-return metricsModule
+return layersGradientModule

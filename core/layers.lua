@@ -19,8 +19,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local arrayMathModule = require("core.array.core.math")
-local arrayTransformationModule = require("core.array.core.arrayTransformation")
 local activationsModule = require("core.activations")
 local mathModule = require("core.math")
 local layersModule = {
@@ -98,8 +96,6 @@ local layersModule = {
 	divide2D,
 	divide3D,
 	dropOut,
-	uniformNoise,
-	normalNoise,
 	softmax,
 	activate
 }
@@ -413,21 +409,56 @@ function layersModule.sumPooling3D(args)
 end
 
 function layersModule.averageGlobalPooling1D(args)
-	return {arrayMathModule.sum(args.input) / #args.input}
+	local sum = 0
+
+	local input = args.input
+
+	for a = 1, #input do
+		sum = sum + input[a]
+	end
+
+	return {sum / #input}
 end
 
 function layersModule.averageGlobalPooling2D(args)
 	local output = {}
+
 	local input = args.input
 
 	for a = 1, #input do
-		output[a] = arrayMathModule.sum(input[a]) / #input
+		output[a] = 0
+
+		for b = 1, #input[a] do
+			output[a] = output[a] + input[a][b]
+		end
+
+		output[a] = output[a] / #input[a]
 	end
 
 	return output
 end
 
-layersModule.averageGlobalPooling3D = layersModule.averageGlobalPooling2D -- syntable.sum() is recursive so doing this works
+function layersModule.averageGlobalPooling3D(args)
+	local output = {}
+
+	local input = args.input
+
+	for a = 1, #input do
+		output[a] = {}
+
+		for b = 1, #input[a] do
+			output[a][b] = 0
+
+			for c = 1, #input[a][b] do
+				output[a][b] = output[a][b] + input[a][b][c]
+			end
+
+			output[a][b] = output[a][b] / #input[a][b]
+		end
+	end
+
+	return output
+end
 
 function layersModule.maxGlobalPooling1D(args)
 	return {math.max(table.unpack(args.input))}
@@ -435,36 +466,83 @@ end
 
 function layersModule.maxGlobalPooling2D(args)
 	local output = {}
+
 	local input = args.input
 
 	for a = 1, #input do
-		output[a] = arrayMathModule.max(input[a])
+		output[a] = math.max(table.unpack(input[a]))
 	end
 
 	return output
 end
 
-layersModule.maxGlobalPooling3D = layersModule.maxGlobalPooling2D
+function layersModule.maxGlobalPooling3D(args)
+	local output = {}
+
+	local input = args.input
+
+	for a = 1, #input do
+		output[a] = {}
+
+		for b = 1, #input[a] do
+			output[a][b] = math.max(table.unpack(input[a][b]))
+		end
+	end
+
+	return output
+end
 
 function layersModule.sumGlobalPooling1D(args)
-	return {arrayMathModule.sum(args.input)}
+	local output = 0
+
+	local input = args.input
+
+	for a = 1, #input do
+		output = output + input[a]
+	end
+
+	return {output}
 end
 
 function layersModule.sumGlobalPooling2D(args)
 	local output = {}
+
 	local input = args.input
 
 	for a = 1, #input do
-		output[a] = arrayMathModule.sum(input[a])
+		output[a] = 0
+
+		for b = 1, #input[a] do
+			output[a] = output[a] + input[a][b]
+		end
+	end
+
+	return input
+end
+
+function layersModule.sumGlobalPooling3D(args)
+	local output = {}
+
+	local input = args.input
+
+	for a = 1, #input do
+		output[a] = {}
+
+		for b = 1, #input[a] do
+			output[a][b] = 0
+
+			for c = 1, #input[a][b] do
+				output[a][b] = output[a][b] + input[a][b][c]
+			end
+		end
 	end
 
 	return output
 end
 
-layersModule.sumGlobalPooling3D = layersModule.sumGlobalPooling2D
-
 function layersModule.upSample1D(args)
 	local output = {}
+
 	local input, kernel = args.input, args.kernel
 
 	for a = 1, #input * kernel[1] do
@@ -940,16 +1018,24 @@ end
 ]]--
 
 function layersModule.flatten(args)
-	return arrayTransformationModule.flatten(args.input)
+	local output = {}
+
+	local a = 1 -- ok, so ive been doing a lot of programming in c recently and i thought, huh, maybe having a variable a is faster than #output + 1 so i did that but i typed unsigned long a = 1; and i tried to comment stating that but i typed // instead of -- lol
+
+	for _, v in next, args.input do
+		output[a] = v
+	end
+
+	return output
 end
 
 function layersModule.reshape(args)
-	return arrayTransformationModule.reshape(args.input, args.shape)
 end
 
 function layersModule.minMaxNormalize1D(args)
-	local max, min = arrayMathModule.max(args.input), arrayMathModule.min(args.input)
+	local max, min = math.max(table.unpack(args.input)), math.min(table.unpack(args.input))
 	local maxMinusMin = max - min
+
 	local input = args.input
 
 	for a = 1, #args.input do
@@ -960,9 +1046,14 @@ function layersModule.minMaxNormalize1D(args)
 end
 
 function layersModule.minMaxNormalize2D(args)
-	local max, min = arrayMathModule.max(args.input), arrayMathModule.min(args.input)
-	local maxMinusMin = max - min
+	local max, min = math.max(table.unpack(args.input[1])), math.min(table.unpack(args.input[1]))
 	local input = args.input
+
+	for a = 2, #input do
+		max, min = math.max(max, table.unpack(args.input[a])), math.min(min, table.unpack(args.input[a]))
+	end
+
+	local maxMinusMin = max - min
 
 	for a = 1, #input do
 		for b = 1, #input[a] do
@@ -974,9 +1065,16 @@ function layersModule.minMaxNormalize2D(args)
 end
 
 function layersModule.minMaxNormalize3D(args)
-	local max, min = arrayMathModule.max(args.input), arrayMathModule.min(args.input)
-	local maxMinusMin = max - min
+	local max, min = math.max(table.unpack(args.input[1])), math.min(table.unpack(args.input[1]))
 	local input = args.input
+
+	for a = 1, #input do
+		for b = 1, #input do
+			max, min = math.max(table.unpack(args.input[1])), math.min(table.unpack(args.input[1]))
+		end
+	end
+
+	local maxMinusMin = max - min
 
 	for a = 1, #input do
 		for b = 1, #input[a] do
@@ -1279,52 +1377,6 @@ end
 
 function layersModule.dropOut(args)
 	return args.input -- dropout is only applied during training, hence why were just returning the input
-end
-
-function layersModule.uniformNoise(args)
-	if args.backPropOnly then
-		return
-	end
-
-	local input, lowerLimit, upperLimit = args.input, args.lowerLimit, args.upperLimit
-
-	for a = 1, #input do
-		if type(input[a]) == "table" then
-			input[a] = layersModule.uniformNoise{
-				input = input[a],
-				lowerLimit = lowerLimit,
-				upperLimit = upperLimit,
-				backPropOnly = false
-			}
-		else
-			input[a] = input[a] + mathModule.random.uniform(lowerLimit, upperLimit)
-		end
-	end
-
-	return input
-end
-
-function layersModule.normalNoise(args)
-	if args.backPropOnly then
-		return
-	end
-
-	local input, sd, mean = args.input, args.sd, args.mean
-
-	for a = 1, #args.input do
-		if type(args.input[a]) == "table" then
-			args.input[a] = layersModule.uniformNoise{
-				input = input,
-				sd = sd,
-				mean = mean,
-				backPropOnly = false
-			}
-		else
-			input[a] = input[a] + mathModule.random.normal(sd, mean)
-		end
-	end
-
-	return args.input
 end
 
 function layersModule.softmax(args)

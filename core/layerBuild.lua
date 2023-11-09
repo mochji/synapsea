@@ -2,7 +2,7 @@
 	https://github.com/x-xxoa/synapsea
 	core/layerBuild.lua
 
-	Synapsea, a machine learning library made in pure Lua.
+	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
 																		   
 	This program is free software: you can redistribute it and/or modify
@@ -100,7 +100,7 @@ local layerBuildModule = {
 }
 
 function layerBuildModule.dense(args)
-	-- default values
+	-- Default values
 
 	args.activation = args.activation or "linear"
 
@@ -122,7 +122,7 @@ function layerBuildModule.dense(args)
 		layer.usePrelu = true
 	end
 
-	-- initializers
+	-- Initializers
 
 	if args.weightsInitializer then
 		layer.initializer.weights = {
@@ -138,7 +138,7 @@ function layerBuildModule.dense(args)
 		}
 	end
 
-	-- trainable
+	-- Trainable
 
 	if args.weightsTrainable then
 		layer.trainable.weights = true
@@ -148,7 +148,7 @@ function layerBuildModule.dense(args)
 		layer.trainable.bias = true
 	end
 
-	-- parameters
+	-- Parameters
 
 	parameterBuild.weights = {
 		shape = {args.inputShape[1], args.outputSize}
@@ -218,7 +218,7 @@ function layerBuildModule.averagePooling3D(args)
 	return layer
 end
 
-layerBuildModule.maxPooling1D = layerBuildModule.averagePooling1D -- they do the same stuff so we can just do this
+layerBuildModule.maxPooling1D = layerBuildModule.averagePooling1D -- They do the same stuff so we can just do this
 
 layerBuildModule.maxPooling2D = layerBuildModule.averagePooling2D
 
@@ -334,7 +334,7 @@ layerBuildModule.crop2D = layerBuildModule.crop1D
 layerBuildModule.crop3D = layerBuildModule.crop1D
 
 function layerBuildModule.convolutional1D(args)
-	-- default values
+	-- Default values
 
 	args.stride = args.stride or {1}
 	args.dilation = args.dilation or {1}
@@ -357,7 +357,7 @@ function layerBuildModule.convolutional1D(args)
 		}
 	}, {}
 
-	-- initializers
+	-- Initializers
 
 	if args.filterInitializer then
 		layer.initializer.filter = {
@@ -373,7 +373,7 @@ function layerBuildModule.convolutional1D(args)
 		}
 	end
 
-	-- trainable
+	-- Trainable
 
 	if args.filterTrainable then
 		layer.trainable.filter = true
@@ -383,7 +383,7 @@ function layerBuildModule.convolutional1D(args)
 		layer.trainable.biases = true
 	end
 
-	-- parameters
+	-- Parameters
 
 	parameterBuild.filter = {
 		shape = {args.filters, args.kernel[1]}
@@ -399,7 +399,7 @@ function layerBuildModule.convolutional1D(args)
 end
 
 function layerBuildModule.convolutional2D(args)
-	-- default values
+	-- Default values
 
 	args.stride = args.stride or {1, 1}
 	args.dilation = args.dilation or {1, 1}
@@ -422,7 +422,7 @@ function layerBuildModule.convolutional2D(args)
 		}
 	}, {}
 
-	-- initializers
+	-- Initializers
 
 	if args.filterInitializer then
 		layer.initializer.filter = {
@@ -438,7 +438,7 @@ function layerBuildModule.convolutional2D(args)
 		}
 	end
 
-	-- trainable
+	-- Trainable
 
 	if args.filterTrainable then
 		layer.trainable.filter = true
@@ -448,7 +448,7 @@ function layerBuildModule.convolutional2D(args)
 		layer.trainable.biases = true
 	end
 
-	-- parameters
+	-- Parameters
 
 	parameterBuild.filter = {
 		shape = {args.filters, args.kernel[1], args.kernel[2]}
@@ -464,7 +464,7 @@ function layerBuildModule.convolutional2D(args)
 end
 
 function layerBuildModule.convolutional3D(args)
-	-- default values
+	-- Default values
 
 	args.stride = args.stride or {1, 1, 1}
 	args.dilation = args.dilation or {1, 1, 1}
@@ -487,7 +487,7 @@ function layerBuildModule.convolutional3D(args)
 		}
 	}, {}
 
-	-- initializers
+	-- Initializers
 
 	if args.filterInitializer then
 		layer.initializer.filter = {
@@ -503,7 +503,7 @@ function layerBuildModule.convolutional3D(args)
 		}
 	end
 
-	-- trainable
+	-- Trainable
 
 	if args.filterTrainable then
 		layer.trainable.filter = true
@@ -513,7 +513,7 @@ function layerBuildModule.convolutional3D(args)
 		layer.trainable.biases = true
 	end
 
-	-- parameters
+	-- Parameters
 
 	parameterBuild.filter = {
 		shape = {args.filters, args.kernel[1], args.kernel[2], args.kernel[3]}
@@ -529,7 +529,7 @@ function layerBuildModule.convolutional3D(args)
 end
 
 function layerBuildModule.convolutionalTranspose1D(args)
-	-- default values
+	-- Default values
 
 	args.stride = args.stride or {1}
 	args.dilation = args.dilation or {1}
@@ -553,7 +553,7 @@ function layerBuildModule.convolutionalTranspose1D(args)
 		}
 	}, {}
 
-	-- initializers
+	-- Initializers
 
 	if args.filterInitializer then
 		layer.initializer.filter = {
@@ -569,7 +569,7 @@ function layerBuildModule.convolutionalTranspose1D(args)
 		}
 	end
 
-	-- trainable
+	-- Trainable
 
 	if args.filterTrainable then
 		layer.trainable.filter = true
@@ -579,7 +579,7 @@ function layerBuildModule.convolutionalTranspose1D(args)
 		layer.trainable.biases = true
 	end
 
-	-- parameters
+	-- Parameters
 
 	parameterBuild.filter = {
 		shape = {args.filters, args.kernel[1]}
@@ -595,7 +595,7 @@ function layerBuildModule.convolutionalTranspose1D(args)
 end
 
 function layerBuildModule.convolutionalTranspose2D(args)
-	-- default values
+	-- Default values
 
 	args.stride = args.stride or {1, 1}
 	args.dilation = args.dilation or {1, 1}
@@ -619,7 +619,7 @@ function layerBuildModule.convolutionalTranspose2D(args)
 		}
 	}, {}
 
-	-- initializers
+	-- Initializers
 
 	if args.filterInitializer then
 		layer.initializer.filter = {
@@ -635,7 +635,7 @@ function layerBuildModule.convolutionalTranspose2D(args)
 		}
 	end
 
-	-- trainable
+	-- Trainable
 
 	if args.filterTrainable then
 		layer.trainable.filter = true
@@ -645,7 +645,7 @@ function layerBuildModule.convolutionalTranspose2D(args)
 		layer.trainable.biases = true
 	end
 
-	-- parameters
+	-- Parameters
 
 	parameterBuild.filter = {
 		shape = {args.filters, args.kernel[1], args.kernel[2]}
@@ -661,7 +661,7 @@ function layerBuildModule.convolutionalTranspose2D(args)
 end
 
 function layerBuildModule.convolutionalTranspose3D(args)
-	-- default values
+	-- Default values
 
 	args.stride = args.stride or {1, 1, 1}
 	args.dilation = args.dilation or {1, 1, 1}
@@ -685,7 +685,7 @@ function layerBuildModule.convolutionalTranspose3D(args)
 		}
 	}, {}
 
-	-- initializers
+	-- Initializers
 
 	if args.filterInitializer then
 		layer.initializer.filter = {
@@ -701,7 +701,7 @@ function layerBuildModule.convolutionalTranspose3D(args)
 		}
 	end
 
-	-- trainable
+	-- Trainable
 
 	if args.filterTrainable then
 		layer.trainable.filter = true
@@ -711,7 +711,7 @@ function layerBuildModule.convolutionalTranspose3D(args)
 		layer.trainable.biases = true
 	end
 
-	-- parameters
+	-- Parameters
 
 	parameterBuild.filter = {
 		shape = {args.filters or 1, args.kernel[1], args.kernel[2], args.kernel[3]}
@@ -774,7 +774,7 @@ function layerBuildModule.vectorAdd1D(args)
 		parameters = {}
 	}, {}
 
-	-- initialization
+	-- Initializers
 
 	if args.biasesInitializer then
 		layer.initializer.biases = {
@@ -783,7 +783,7 @@ function layerBuildModule.vectorAdd1D(args)
 		}
 	end
 
-	-- parameters
+	-- Parameters
 
 	parameterBuild.biases = {
 		shape = args.inputShape
@@ -810,7 +810,7 @@ function layerBuildModule.dot1D(args)
 		parameters = {}
 	}, {}
 
-	-- initialization
+	-- Initializers
 
 	if args.weightsInitializer then
 		layer.initializer.weights = {
@@ -819,7 +819,7 @@ function layerBuildModule.dot1D(args)
 		}
 	end
 
-	-- parameters
+	-- Parameters
 
 	parameterBuild.weights = {
 		shape = args.inputShape
@@ -849,13 +849,13 @@ function layerBuildModule.add1D(args)
 		}
 	}
 
-	-- trainable
+	-- Trainable
 
 	if args.biasTrainable then
 		layer.trainable.bias = true
 	end
 
-	-- initialization
+	-- Initializers
 
 	if args.biasInitializer then
 		layer.initializer.bias = {
@@ -888,13 +888,13 @@ function layerBuildModule.multiply1D(args)
 		}
 	}
 
-	-- trainable
+	-- Trainable
 
 	if args.weightTrainable then
 		layer.trainable.weight = true
 	end
 
-	-- initialization
+	-- Initializers
 
 	if args.weightInitializer then
 		layer.initializer.weight = {
@@ -958,7 +958,7 @@ function layerBuildModule.softmax(args)
 end
 
 function layerBuildModule.activate(args)
-	-- default values
+	-- Default values
 
 	activation = activation or "linear"
 

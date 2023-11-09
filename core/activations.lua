@@ -2,7 +2,7 @@
 	https://github.com/x-xxoa/synapsea
 	core/activations.lua
 
-	Synapsea, a machine learning library made in pure Lua.
+	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
 																		   
 	This program is free software: you can redistribute it and/or modify
@@ -154,7 +154,7 @@ end
 function activationsModule.softSign(x, derivative)
 	if derivative then
 		if x == 0 then
-			return 1 -- at x = 0 this is undefined so this is a fix
+			return 1 -- At x = 0 this is undefined
 		end
 
 		return x / (x * (1 + math.abs(x)^2))

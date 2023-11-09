@@ -2,7 +2,7 @@
 	https://github.com/x-xxoa/synapsea
 	core/model.lua
 
-	Synapsea, a machine learning library made in pure Lua.
+	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
 																		   
 	This program is free software: you can redistribute it and/or modify
@@ -19,9 +19,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local layerBuildModule = require("core.layerBuild")
-local initializersModule = require("core.initializers")
-local layersModule = require("core.layers")
 local modelModule = {
 	addLayer,
 	removeLayer,
@@ -39,7 +36,7 @@ function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
 	local layer
 
 	if layerBuildModule[layerType] then
-		-- get last layer output shape
+		-- Get last layer output shape
 
 		if layerNumber == 1 then
 			buildParameters.inputShape = model.inputShape
@@ -83,7 +80,7 @@ function modelModule.summary()
 end
 
 function modelModule.initialize(model, optimizer, optimizerParameters, regularizer, regularizerParameters)
-	-- create parameters in layers and initialize
+	-- Create parameters in layers and initialize
 
 	for a = 1, #model.parameterBuild do
 		local layer = model.layerConfig[a]
@@ -99,7 +96,7 @@ function modelModule.initialize(model, optimizer, optimizerParameters, regulariz
 		end
 	end
 
-	-- create training parameters
+	-- Create training parameters
 
 	if optimizer then
 		model.trainingConfig.optimizer = {
@@ -163,7 +160,7 @@ function modelModule.new(inputShape, metaData)
 
 	model.metaData.synapseaVersion = "v1.3.00-development"
 
-	-- model functions
+	-- Model functions
 
 	model.addLayer = modelModule.addLayer
 	model.removeLayer = modelModule.removeLayer

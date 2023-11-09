@@ -2,7 +2,7 @@
 	https://github.com/x-xxoa/synapsea
 	core/math.lua
 
-	Synapsea, a machine learning library made in pure Lua.
+	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
 																		   
 	This program is free software: you can redistribute it and/or modify
@@ -31,11 +31,11 @@ local mathModule = {
 }
 
 function mathModule.random.uniform(lowerLimit, upperLimit)
-	return lowerLimit + math.random() * (upperLimit - lowerLimit) -- random float between upperLimit and lowerLimit
+	return lowerLimit + math.random() * (upperLimit - lowerLimit) -- Random float between upperLimit and lowerLimit
 end
 
 function mathModule.random.normal(mean, sd)
-	return mean + math.sqrt(-2 * math.log(math.random())) * math.cos(2 * math.pi * math.random()) * sd -- https://forum.cheatengine.org/viewtopic.php?p=5724230 old forums have pretty much everything lol
+	return mean + math.sqrt(-2 * math.log(math.random())) * math.cos(2 * math.pi * math.random()) * sd -- https://forum.cheatengine.org/viewtopic.php?p=5724230 omg cheatengine
 end
 
 function mathModule.round(x)
@@ -78,10 +78,6 @@ function mathModule.gamma(x)
 	end
 
 	return (x - 1) * mathModule.gamma(x - 1)
-end
-
-for a = 1, 10 do
-	print(a/10, mathModule.gamma(a/10))
 end
 
 return mathModule

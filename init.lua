@@ -1,14 +1,14 @@
 --[[
-	Synapsea v1.3.00-unstable
+	Synapsea v2.0.00-unstable
 
-	A simple machine library made in pure Lua.
+	A simple yet powerful machine learning library made in pure Lua.
 
 	Read the README.md file for documentation and information, 
 
 	https://github.com/x-xxoa/synapsea
 	init.lua
 
-	Synapsea, a machine learning library made in pure Lua.
+	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
 																		   
 	This program is free software: you can redistribute it and/or modify
@@ -25,29 +25,32 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
+-- Require the libraries to avoid importing them in the core files over and over again
+local mathModule = require("core.math")
+local activationsModule = require("core.activations")
+local layerBuildModule = require("core.layerBuild")
+local initializersModule = require("core.initializers")
+local layersModule = require("core.layers")
+
 local synapsea = {
+	version = "v2.0.00-unstable",
 	activations = require("core.activations"),
 	losses = require("core.losses"),
 	math = require("core.math"),
 	initializers = require("core.initializers"),
-	optimizers = require("core.optimizers")
+	optimizers = require("core.optimizers"),
 	regularizers = require("core.regularizers"),
 	layers = require("core.layers"),
-	backProp = require("core.backProp")
+	backProp = require("core.backProp"),
 	model = require("core.model")
 }
 
--- convert all layers to metatables
-
-local layerBuild = require("core.layerBuild")
-
+-- Convert all layers to metatables
 for name, func in pairs(synapsea.layers) do
 	synapsea.layers[name] = setmetatable(
-		{build = layerBuild[name]},
+		{build = layerBuildModule[name]},
 		{__call = func}
 	)
 end
-
-layerBuild = nil
 
 return synapsea

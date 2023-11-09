@@ -2,7 +2,7 @@
 	https://github.com/x-xxoa/synapsea
 	core/initializers.lua
 
-	Synapsea, a machine learning library made in pure Lua.
+	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
 																		   
 	This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local mathModule = require("core.math")
 local initializersModule = {
 	uniformRandom,
 	normalRandom,
@@ -30,149 +29,193 @@ local initializersModule = {
 	constant
 }
 
-function initializersModule.uniformRandom(args)
-	if type(args.input) ~= "table" then
-		return mathModule.random.uniform(args.lowerLimit, args.upperLimit)
-	end
+function initializersModule.uniformRandom(args, index)
+	index = index or 1
+	local lowerLimit, upperLimit = args.lowerLimit, args.upperLimit
+	local shape = args.shape
 
-	for a = 1, #args.input do
-		if type(args.input[a]) == "table" then
-			args.input[a] = initializersModule.uniformRandom{
-				input = args.input[a],
-				lowerLimit = args.lowerLimit,
-				upperLimit = args.upperLimit
-			}
-		else
-			args.input[a] = mathModule.random.uniform(args.lowerLimit, args.upperLimit)
+	local output = {}
+
+	if index == #args.shape then
+		for a = 1, args.shape[index] do
+			output[a] = mathModule.random.uniform(lowerLimit, upperLimit)
+		end
+	else
+		for a = 1, args.shape[index] do
+			output[a] = initializersModule.uniformRandom(
+				{
+					shape = args.shape,
+					lowerLimit = lowerLimit,
+					upperLimit = upperLimit
+				},
+				index + 1
+			)
 		end
 	end
 
-	return args.input
+	return output
 end
 
-function initializersModule.normalRandom(args)
-	if type(args.input) ~= "table" then
-		return mathModule.random.normal(args.mean, args.sd)
-	end
+function initializersModule.normalRandom(args, index)
+	index = index or 1
+	local mean, sd = args.mean, args.sd
+	local shape = args.shape
 
-	for a = 1, #args.input do
-		if type(args.input[a]) == "table" then
-			args.input[a] = initializersModule.normalRandom{
-				input = args.input[a],
-				mean = args.mean,
-				sd = args.sd
-			}
-		else
-			args.input[a] = mathModule.random.normal(args.mean, args.sd)
+	local output = {}
+
+	if index == #shape then
+		for a = 1, shape[index] do
+			output[a] = mathModule.random.normal(mean, asd)
+		end
+	else
+		for a = 1, shape[index] do
+			output[a] = initializersModule.normalRandom(
+				{
+					shape = shape,
+					mean = mean,
+					sd = sd
+				},
+				index + 1
+			)
 		end
 	end
 
-	return args.input
+	return output
 end
 
-function initializersModule.uniformXavier(args)
-	local limit = math.sqrt(6 / (args.inputs + args.outputs))
+function initializersModule.uniformXavier(args, index)
+	index = index or 1
+	local inputs, outputs = args.inputs, args.outputs
 
-	if type(args.input) ~= "table" then
-		return mathModule.random.uniform(-limit, limit)
-	end
+	local output = {}
 
-	for a = 1, #args.input do
-		if type(args.input[a]) == "table" then
-			args.input[a] = initializersModule.uniformXavier{
-				input = args.input[a],
-				inputs = args.inputs,
-				outputs = args.outputs
-			}
-		else
-			args.input[a] = mathModule.random.uniform(-limit, limit)
+	local limit = math.sqrt(6 / (inputs + outputs))
+
+	if index == #shape then
+		for a = 1, shape[index] do
+			output[a] = mathModule.random.uniform(-limit, limit)
+		end
+	else
+		for a = 1, shape[index] do
+			output[a] = initializersModule.uniformXavier(
+				{
+					shape = shape,
+					inputs = inputs,
+					outputs = outputs
+				},
+				index + 1
+			)
 		end
 	end
 
-	return args.input
+	return output
 end
 
-function initializersModule.normalXavier(args)
-	local sd = math.sqrt(6 / (args.inputs + args.outputs))
+function initializersModule.normalXavier(args, index)
+	index = index or 1
+	local inputs, outputs = args.inputs, args.outputs
 
-	if type(args.input) ~= "table" then
-		return mathModule.random.normal(0, sd)
-	end
+	local output = {}
 
-	for a = 1, #args.input do
-		if type(args.input[a]) == "table" then
-			args.input[a] = initializersModule.normalXavier{
-				input = args.input[a],
-				inputs = args.inputs,
-				outputs = args.outputs
-			}
-		else
-			args.input[a] = mathModule.random.normal(0, sd)
+	local sd = math.sqrt(6 / (inputs + outputs))
+
+	if index == #shape then
+		for a = 1, shape[index] do
+			output[a] = mathModule.random.normal(0, sd)
+		end
+	else
+		for a = 1, shape[index] do
+			output[a] = initializersModule.normalXavier(
+				{
+					shape = shape,
+					inputs = inputs,
+					outputs = outputs
+				},
+				index + 1
+			)
 		end
 	end
 
-	return args.input
+	return output
 end
 
-function initializersModule.uniformHe(args)
-	local limit = math.sqrt(2 / args.inputs)
+function initializersModule.uniformHe(args, index)
+	index = index or 1
+	local inputs = args.inputs
 
-	if type(args.input) ~= "table" then
-		return mathModule.random.uniform(-limit, limit)
-	end
+	local output = {}
 
-	for a = 1, #args.input do
-		if type(args.input[a]) == "table" then
-			args.input[a] = initializersModule.uniformHe{
-				input = args.input[a],
-				inputs = args.inputs
-			}
-		else
-			args.input[a] = mathModule.random.uniform(-limit, limit)
+	local limit = math.sqrt(2 / inputs)
+
+	if index == #shape then
+		for a = 1, shape[index] do
+			output[a] = mathModule.random.uniform(-limit, limit)
+		end
+	else
+		for a = 1, shape[index] do
+			output[a] = initializersModule.uniformHe(
+				{
+					shape = shape,
+					inputs = inputs
+				},
+				index + 1
+			)
 		end
 	end
 
-	return args.input
+	return output
 end
 
 function initializersModule.normalHe(args)
-	local sd = math.sqrt(2 / args.inputs)
+	index = index or 1
+	local inputs = args.inputs
 
-	if type(args.input) ~= "table" then
-		return mathModule.random.normal(0, sd)
-	end
+	local output = {}
 
-	for a = 1, #args.input do
-		if type(args.input[a]) == "table" then
-			args.input[a] = initializersModule.normalHe{
-				input = args.input[a],
-				inputs = args.inputs
-			}
-		else
-			args.input[a] = mathModule.random.normal(0, sd)
+	local sd = math.sqrt(2 / inputs)
+
+	if index == #shape then
+		for a = 1, shape[index] do
+			output[a] = mathModule.random.normal(0, sd)
+		end
+	else
+		for a = 1, shape[index] do
+			output[a] = initializersModule.normalHe(
+				{
+					shape = shape,
+					inputs = inputs
+				},
+				index + 1
+			)
 		end
 	end
 
-	return args.input
+	return output
 end
 
 function initializersModule.constant(args)
-	if type(args.input) ~= "table" then
-		return args.value
-	end
+	index = index or 1
+	local value = args.value
 
-	for a = 1, #args.input do
-		if type(args.input[a]) == "table" then
-			args.input[a] = initializersModule.constant{
-				input = args.input[a],
-				value = args.value
-			}
-		else
-			args.input[a] = args.value
+	local output = {}
+
+	if index == #shape then
+		for a = 1, shape[index] do
+			output[a] = value
+		end
+	else
+		for a = 1, shape[index] do
+			output[a] = initializersModule.constant(
+				{
+					shape = shape,
+					value = value
+				},
+				index + 1
+			)
 		end
 	end
 
-	return args.input
+	return output
 end
 
 return initializersModule

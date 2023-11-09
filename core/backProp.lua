@@ -2,7 +2,7 @@
 	https://github.com/x-xxoa/synapsea
 	core/backProp.lua
 
-	Synapsea, a machine learning library made in pure Lua.
+	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
 																		   
 	This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,6 @@
 	figuwe out latew -w-
 ]]--
 
-local activationsModule = require("core.activations")
 local backPropModule = {
 	layersError = require("core.layersError"),
 	layersGradient = require("core.layersGradient"),
@@ -41,8 +40,6 @@ local backPropModule = {
 	stochasticGradientDescent,
 	batchGradientDescent
 }
-
--- do layers later!
 
 function backPropModule.outputError(output, expectedOutput, activation, alpha)
 	local outputError = {}

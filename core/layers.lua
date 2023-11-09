@@ -2,7 +2,7 @@
 	https://github.com/x-xxoa/synapsea
 	core/layers.lua
 
-	Synapsea, a machine learning library made in pure Lua.
+	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
 																		   
 	This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local activationsModule = require("core.activations")
-local mathModule = require("core.math")
 local layersModule = {
 	dense,
 	averagePooling1D,
@@ -121,7 +119,7 @@ function layersModule.dense(args)
 end
 
 function layersModule.averagePooling1D(args)
-	local output, startIndex = {}, 0 -- even though its named startIndex its actually startIndex - 1 but startIndexMinusOne isnt a good variable name and idrk what else to call it :/
+	local output, startIndex = {}, 0
 	local outputSize = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1
 
 	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
@@ -144,7 +142,7 @@ function layersModule.averagePooling1D(args)
 end
 
 function layersModule.averagePooling2D(args)
-	local output, startIndexA, kernelProduct = {}, 0, syntable.product(args.kernel) -- were getting the product of the kernel so we dont perform the same calculation every output node
+	local output, startIndexA, kernelProduct = {}, 0, syntable.product(args.kernel)
 	local outputHeight, outputWidth = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1
 
 	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
@@ -225,7 +223,7 @@ function layersModule.maxPooling1D(args)
 	for a = 1, outputSize do
 		local max = input[startIndex + 1]
 
-		for b = 1, #kernel[1] do -- yes i know we're comparing the first one against itself in the first iteration of this loop but its not really that much and 1 per output node is probably fine
+		for b = 1, #kernel[1] do
 			if b % dilation[1] == 0 then
 				max = math.max(max, input[startIndex + b])
 			end
@@ -601,7 +599,7 @@ end
 function layersModule.zeroPad2D(args)
 	local input, paddingAmount = args.input, args.paddingAmount
 
-	-- pad the tops and bottoms
+	-- Pad the tops and bottoms
 
 	for a = 1, paddingAmount[1] do
 		table.insert(input, 1, {})
@@ -613,7 +611,7 @@ function layersModule.zeroPad2D(args)
 		input[#input + 1] = input[1]
 	end
 
-	-- pad the sides
+	-- Pad the sides
 
 	for a = 1, #input do
 		for b = 1, paddingAmount[2] do
@@ -1020,7 +1018,7 @@ end
 function layersModule.flatten(args)
 	local output = {}
 
-	local a = 1 -- ok, so ive been doing a lot of programming in c recently and i thought, huh, maybe having a variable a is faster than #output + 1 so i did that but i typed unsigned long a = 1; and i tried to comment stating that but i typed // instead of -- lol
+	local a = 1
 
 	for _, v in next, args.input do
 		output[a] = v
@@ -1376,7 +1374,7 @@ function layersModule.divide3D(args)
 end
 
 function layersModule.dropOut(args)
-	return args.input -- dropout is only applied during training, hence why were just returning the input
+	return args.input -- Dropout is only applied during training, hence why were just returning the input
 end
 
 function layersModule.softmax(args)

@@ -2,7 +2,7 @@
 	https://github.com/x-xxoa/synapsea
 	core/losses.lua
 
-	Synapsea, a machine learning library made in pure Lua.
+	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 x-xxoa
 																		   
 	This program is free software: you can redistribute it and/or modify
@@ -109,7 +109,7 @@ end
 
 function lossesModule.rootOfMeanSquaredError(output, expectedOutput)
 	if type(output) == "number" then
-		return expectedOutput - output -- sqrt(anything^2) = anything
+		return expectedOutput - output
 	end
 
 	local function lossFunc(output, expectedOutput)

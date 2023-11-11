@@ -29,9 +29,9 @@
 _SYNAPSEA_PATH = debug.getinfo(1).short_src:gsub("/", "."):gsub("\\", ".")
 
 -- Remove file extension and file name
-_SYNAPSEA_PATH:match("(.*%.)")
-_SYNAPSEA_PATH:sub(1, #_SYNAPSEA_PATH - 1)
-_SYNAPSEA_PATH:match("(.*%.)")
+_SYNAPSEA_PATH = _SYNAPSEA_PATH:match("(.*%.)")
+_SYNAPSEA_PATH = _SYNAPSEA_PATH:sub(1, #_SYNAPSEA_PATH - 1)
+_SYNAPSEA_PATH = _SYNAPSEA_PATH:match("(.*%.)")
 
 -- Avoid concatenating nil
 _SYNAPSEA_PATH = _SYNAPSEA_PATH or ""

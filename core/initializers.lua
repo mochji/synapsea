@@ -19,7 +19,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local mathModule = require("core.math")
+local mathModule = require(_SYNAPSEA_PATH .. "core.math")
 local initializersModule = {
 	zeros,
 	uniformRandom,

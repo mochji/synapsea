@@ -34,8 +34,8 @@
 ]]--
 
 local backPropModule = {
-	error = require("core.layersError"),
-	gradient = require("core.layersGradient"),
+	error = require(_SYNAPSEA_PATH .. "core.layersError"),
+	gradient = require(_SYNAPSEA_PATH .. "core.layersGradient"),
 	outputError,
 	stochasticGradientDescent,
 	batchGradientDescent

@@ -19,7 +19,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local activationsModule = require("core.activations")
+local activationsModule = require(_SYNAPSEA_PATH .. "core.activations")
 local layersModule = {
 	dense,
 	averagePooling1D,

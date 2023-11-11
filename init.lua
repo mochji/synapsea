@@ -25,23 +25,33 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
+-- Get the path of the required file
+_SYNAPSEA_PATH = debug.getinfo(1).short_src:gsub("/", "."):gsub("\\", ".")
+
+-- Remove file extension and file name
+_SYNAPSEA_PATH = _SYNAPSEA_PATH:match("(.*%.)")
+_SYNAPSEA_PATH = _SYNAPSEA_PATH:sub(1, #_SYNAPSEA_PATH - 1)
+_SYNAPSEA_PATH = _SYNAPSEA_PATH:match("(.*%.)")
+
+-- Avoid concatenating nil
+_SYNAPSEA_PATH = _SYNAPSEA_PATH or ""
+
 local synapsea = {
 	version = "v2.0.00-unstable",
-	activations = require("core.activations"),
-	losses = require("core.losses"),
-	math = require("core.math"),
-	initializers = require("core.initializers"),
-	optimizers = require("core.optimizers"),
-	regularizers = require("core.regularizers"),
-	layers = require("core.layers"),
-	backProp = require("core.backProp"),
-	model = require("core.model"),
-	data = require("core.data")
+	activations = require(_SYNAPSEA_PATH .. "core.activations"),
+	losses = require(_SYNAPSEA_PATH .. "core.losses"),
+	math = require(_SYNAPSEA_PATH .. "core.math"),
+	initializers = require(_SYNAPSEA_PATH .. "core.initializers"),
+	optimizers = require(_SYNAPSEA_PATH .. "core.optimizers"),
+	regularizers = require(_SYNAPSEA_PATH .. "core.regularizers"),
+	layers = require(_SYNAPSEA_PATH .. "core.layers"),
+	backProp = require(_SYNAPSEA_PATH .. "core.backProp"),
+	model = require(_SYNAPSEA_PATH .. "core.model")
 }
 
 -- Convert all layers to metatables
 
-local layerBuildModule = require("core.layerBuild")
+local layerBuildModule = require(_SYNAPSEA_PATH .. "core.layerBuild")
 
 for name, func in pairs(synapsea.layers) do
 	synapsea.layers[name] = setmetatable(

@@ -21,10 +21,12 @@
 
 local layerBuildModule = require(_SYNAPSEA_PATH .. "core.layerBuild")
 local initializersModule = require(_SYNAPSEA_PATH .. "core.initializers")
+local layersModule = require(_SYNAPSEA_PATH .. "core.layers")
 local modelModule = {
 	layerToParameters,
 	addLayer,
 	removeLayer,
+	summary,
 	initialize,
 	forwardPass,
 	fit,
@@ -82,16 +84,7 @@ function modelModule.removeLayer(model, layerNumber)
 	return model
 end
 
-function modelModule.export(model, fileName, autoInitialize)
-	local f, err, code = io.open(fileName, "w")
-
-	assert(f, string.format("Couldn't open %s for writing, %s (%s).", fileName, err, code))
-
-	f:write("return " .. "not work yet")
-	f:close()
-end
-
-function modelModule.summary()
+function modelModule.summary(model, toString)
 end
 
 function modelModule.initialize(model, optimizer, optimizerParameters, regularizer, regularizerParameters)
@@ -101,9 +94,10 @@ function modelModule.initialize(model, optimizer, optimizerParameters, regulariz
 		local layer = model.layerConfig[a]
 
 		for parameterName, parameter in pairs(model.parameterBuild[a]) do
-			layer.initializer[parameterName].parameters.shape = model.parameterBuild[a][parameterName].shape
-			layer.parameters[parameterName] = initializersModule[layer.initializer[parameterName].initializer](layer.initializer[parameterName].parameters)
-			layer.initializer[parameterName].parameters.shape = nil
+			layer.parameters[parameterName] = initializersModule[layer.initializer[parameterName].initializer](
+				model.parameterBuild[a][parameterName].shape,
+				layer.initializer[parameterName].parameters
+			)
 		end
 	end
 
@@ -157,7 +151,7 @@ function modelModule.new(inputShape, metaData)
 		trainingConfig = {}
 	}
 
-	model.metaData.synapseaVersion = "v1.3.00-development"
+	model.metaData.synapseaVersion = _SYNAPSEA_VERSION
 
 	-- Model functions
 
@@ -170,17 +164,17 @@ function modelModule.new(inputShape, metaData)
 	return model
 end
 
-function modelModule.export(model, fileName, format)
+function modelModule.export(model, fileName)
 	local f, err, code = io.open(fileName, "w")
 
 	assert(f, string.format("Couldn't open %s for writing, %s (%s).", fileName, err, code))
 
-	f:write("return " .. arrayDataModule.tableToString(model, format))
+	f:write("return ")
 	f:close()
 end
 
 function modelModule.import(fileName)
-	local model = dofle(fileName)
+	local model = dofile(fileName)
 
 	model.removeLayer = modelModule.removeLayer
 	model.initialize = modelModule.initialize

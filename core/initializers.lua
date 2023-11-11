@@ -31,9 +31,8 @@ local initializersModule = {
 	constant
 }
 
-function initializersModule.zeros(args, index)
+function initializersModule.zeros(shape, args, index)
 	index = index or 1
-	local shape = args.shape
 
 	local output = {}
 
@@ -55,10 +54,9 @@ function initializersModule.zeros(args, index)
 	return output
 end
 
-function initializersModule.uniformRandom(args, index)
+function initializersModule.uniformRandom(shape, args, index)
 	index = index or 1
 	local lowerLimit, upperLimit = args.lowerLimit, args.upperLimit
-	local shape = args.shape
 
 	local output = {}
 
@@ -82,10 +80,9 @@ function initializersModule.uniformRandom(args, index)
 	return output
 end
 
-function initializersModule.normalRandom(args, index)
+function initializersModule.normalRandom(shape, args, index)
 	index = index or 1
 	local mean, sd = args.mean, args.sd
-	local shape = args.shape
 
 	local output = {}
 
@@ -109,7 +106,7 @@ function initializersModule.normalRandom(args, index)
 	return output
 end
 
-function initializersModule.uniformXavier(args, index)
+function initializersModule.uniformXavier(shape, args, index)
 	index = index or 1
 	local inputs, outputs = args.inputs, args.outputs
 
@@ -137,7 +134,7 @@ function initializersModule.uniformXavier(args, index)
 	return output
 end
 
-function initializersModule.normalXavier(args, index)
+function initializersModule.normalXavier(shape, args, index)
 	index = index or 1
 	local inputs, outputs = args.inputs, args.outputs
 
@@ -165,7 +162,7 @@ function initializersModule.normalXavier(args, index)
 	return output
 end
 
-function initializersModule.uniformHe(args, index)
+function initializersModule.uniformHe(shape, args, index)
 	index = index or 1
 	local inputs = args.inputs
 
@@ -192,7 +189,7 @@ function initializersModule.uniformHe(args, index)
 	return output
 end
 
-function initializersModule.normalHe(args)
+function initializersModule.normalHe(shape, args)
 	index = index or 1
 	local inputs = args.inputs
 
@@ -219,7 +216,7 @@ function initializersModule.normalHe(args)
 	return output
 end
 
-function initializersModule.constant(args)
+function initializersModule.constant(shape, args, index)
 	index = index or 1
 	local value = args.value
 

@@ -1,9 +1,9 @@
 --[[
-	https://github.com/x-xxoa/synapsea
+	https://github.com/mochji/synapsea
 	core/layerBuild.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
-	Copyright (C) 2023 x-xxoa
+	Copyright (C) 2023 mochji
 																		   
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -162,58 +162,58 @@ function layerBuildModule.dense(args)
 end
 
 function layerBuildModule.averagePooling1D(args)
+	-- Default values
+
+	args.stride = args.stride or {1}
+	args.dilation = args.dilation or {1, 1, 1}
+
 	local layer = {
 		config = {
 			kernel = args.kernel,
-			stride = args.stride
+			stride = args.stride,
+			dilation = args.dilation
 		},
 		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
 	}
 
-	if not args.dilation then
-		layer.config.dilation = {1}
-	else
-		layer.config.dilation = args.dilation
-	end
-
 	return layer
 end
 
 function layerBuildModule.averagePooling2D(args)
+	-- Default values
+
+	args.stride = args.stride or {1, 1}
+	args.dilation = args.dilation or {1, 1, 1}
+
 	local layer = {
 		config = {
 			kernel = args.kernel,
-			stride = args.stride
+			stride = args.stride,
+			dilation = args.dilation
 		},
 		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1}
 	}
 
-	if not args.dilation then
-		layer.config.dilation = {1, 1}
-	else
-		layer.config.dilation = args.dilation
-	end
-
 	return layer
 end
 
 function layerBuildModule.averagePooling3D(args)
+	-- Default values
+
+	args.stride = args.stride or {1, 1, 1}
+	args.dilation = args.dilation or {1, 1, 1}
+
 	local layer = {
 		config = {
 			kernel = args.kernel,
-			stride = args.stride
+			stride = args.stride,
+			dilation = args.dilation
 		},
 		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1}
 	}
-
-	if not args.dilation then
-		layer.config.dilation = {1, 1, 1}
-	else
-		layer.config.dilation = args.dilation
-	end
 
 	return layer
 end

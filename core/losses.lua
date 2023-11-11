@@ -1,9 +1,9 @@
 --[[
-	https://github.com/x-xxoa/synapsea
+	https://github.com/mochji/synapsea
 	core/losses.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
-	Copyright (C) 2023 x-xxoa
+	Copyright (C) 2023 mochji
 																		   
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by

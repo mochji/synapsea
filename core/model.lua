@@ -1,9 +1,9 @@
 --[[
-	https://github.com/x-xxoa/synapsea
+	https://github.com/mochji/synapsea
 	core/model.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
-	Copyright (C) 2023 x-xxoa
+	Copyright (C) 2023 mochji
 																		   
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -19,7 +19,10 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
+local layerBuildModule = require("core.layerBuild")
+local initializersModule = require("core.initializers")
 local modelModule = {
+	layerToParameters,
 	addLayer,
 	removeLayer,
 	initialize,
@@ -29,6 +32,18 @@ local modelModule = {
 	export,
 	import
 }
+
+function modelModule.layerToParameters(layer)
+	local parameters = {}
+
+	if layer.parameters then
+		for parameter, _ in pairs(layer.parameters) do
+			parameters[parameter] = layer.parameters[config]
+		end
+	end
+
+	return parameters
+end
 
 function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
 	buildParameters, layerNumber = buildParameters or {}, layerNumber or #model.layerConfig + 1
@@ -85,14 +100,10 @@ function modelModule.initialize(model, optimizer, optimizerParameters, regulariz
 	for a = 1, #model.parameterBuild do
 		local layer = model.layerConfig[a]
 
-		for parameterName, parameter in pairs(model.layerBuild[a]) do
-			layer.parameters[parameterName] = array.tableFromShape(parameter.shape, 0)
-
-			if layer.initialize[parameterName] then
-				layer.initializer[parameterName].parameters.input = layer.parameters[parameterName]
-				layer.parameters[parameterName] = initialize[layer.initializer[parameterName].initializer](layer.initializer[parameterName].parameters)
-				layer.initializer[parameterName].parameters.input = nil
-			end
+		for parameterName, parameter in pairs(model.parameterBuild[a]) do
+			layer.initializer[parameterName].parameters.shape = model.parameterBuild[a][parameterName].shape
+			layer.parameters[parameterName] = initializersModule[layer.initializer[parameterName].initializer](layer.initializer[parameterName].parameters)
+			layer.initializer[parameterName].parameters.shape = nil
 		end
 	end
 
@@ -119,18 +130,6 @@ function modelModule.initialize(model, optimizer, optimizerParameters, regulariz
 	model.forwardPass = model.forwardPass
 
 	return model
-end
-
-function modelModule.layerToParameters(layer)
-	local parameters = {}
-
-	if layer.parameters then
-		for parameter, _ in pairs(layer.parameters) do
-			parameters[parameter] = layer.parameters[config]
-		end
-	end
-
-	return parameters
 end
 
 function modelModule.forwardPass(model, input)

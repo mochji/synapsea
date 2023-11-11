@@ -1,9 +1,9 @@
 --[[
-	https://github.com/x-xxoa/synapsea
+	https://github.com/mochji/synapsea
 	core/initializers.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
-	Copyright (C) 2023 x-xxoa
+	Copyright (C) 2023 mochji
 																		   
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -19,7 +19,9 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
+local mathModule = require("core.math")
 local initializersModule = {
+	zeros,
 	uniformRandom,
 	normalRandom,
 	uniformXavier,
@@ -28,6 +30,30 @@ local initializersModule = {
 	normalHe,
 	constant
 }
+
+function initializersModule.zeros(args, index)
+	index = index or 1
+	local shape = args.shape
+
+	local output = {}
+
+	if index == #args.shape then
+		for a = 1, args.shape[index] do
+			output[a] = 0
+		end
+	else
+		for a = 1, args.shape[index] do
+			output[a] = initializersModule.zeros(
+				{
+					shape = args.shape
+				},
+				index + 1
+			)
+		end
+	end
+
+	return output
+end
 
 function initializersModule.uniformRandom(args, index)
 	index = index or 1
@@ -65,7 +91,7 @@ function initializersModule.normalRandom(args, index)
 
 	if index == #shape then
 		for a = 1, shape[index] do
-			output[a] = mathModule.random.normal(mean, asd)
+			output[a] = mathModule.random.normal(mean, sd)
 		end
 	else
 		for a = 1, shape[index] do

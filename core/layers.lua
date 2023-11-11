@@ -1,9 +1,9 @@
 --[[
-	https://github.com/x-xxoa/synapsea
+	https://github.com/mochji/synapsea
 	core/layers.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
-	Copyright (C) 2023 x-xxoa
+	Copyright (C) 2023 mochji
 																		   
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
+local activationsModule = require("core.activations")
 local layersModule = {
 	dense,
 	averagePooling1D,
@@ -820,7 +821,7 @@ end
 
 function layersModule.convolutionalTranspose1D(args)
 	return layersModule.convolutional1D{
-		input = layesModuler.zeroPad1D(args.input, args.paddingAmount),
+		input = layersModule.zeroPad1D(args.input, args.paddingAmount),
 		filter = args.filter,
 		biases = args.biases,
 		stride = args.stride,

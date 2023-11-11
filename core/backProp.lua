@@ -1,9 +1,9 @@
 --[[
-	https://github.com/x-xxoa/synapsea
+	https://github.com/mochji/synapsea
 	core/backProp.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
-	Copyright (C) 2023 x-xxoa
+	Copyright (C) 2023 mochji
 																		   
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -30,12 +30,12 @@
 	weight = weight - lr * error * input
 
 	bias update
-	figuwe out latew -w-
+	bias = bias - lr * error_sum -- temporary! (prob not lol)
 ]]--
 
 local backPropModule = {
-	layersError = require("core.layersError"),
-	layersGradient = require("core.layersGradient"),
+	error = require("core.layersError"),
+	gradient = require("core.layersGradient"),
 	outputError,
 	stochasticGradientDescent,
 	batchGradientDescent
@@ -57,10 +57,28 @@ function backPropModule.outputError(output, expectedOutput, activation, alpha)
 	return outputError
 end
 
-function backPropModule.stochasticGradientDescent(gradient, weights, biases)
+function backPropModule.stochasticGradientDescent(model, input, gradientDescentArgs)
+	-- Error calculation
+
+	local errors = {backPropModule.outputError, modelModule.forwardPass(model, input)}
+
+	for a = #model.layerConfig, 1, -1 do
+		errors[a] = backPropModule.error[model.layerConfig[a].type](modelModule.layerToParameters(layerConfig[a]))
+	end
+
+	-- Gradient calculation
+
+	local gradient = {}
+
+	for a = #errors, 1, -1 do
+		gradient[a] = backPropModule.gradient[model.layerConfig[a].type](modelModule.layerToParameters(layerConfig[a]))
+	end
+
+	-- Update parameters
+
 end
 
-function backPropModule.batchGradientDescent(gradient, weights, biases, gradientDescentArgs)
+function backPropModule.batchGradientDescent(model, input, gradientDescentArgs)
 end
 
 return backPropModule

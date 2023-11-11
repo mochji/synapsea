@@ -1,9 +1,9 @@
 --[[
-	https://github.com/x-xxoa/synapsea
+	https://github.com/mochji/synapsea
 	core/optimizers.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
-	Copyright (C) 2023 x-xxoa
+	Copyright (C) 2023 mochji
 																		   
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ local optimizersModule = {
 
 function optimizersModule.momentum(args)
 	local change = 0
+
 	local function optimizerFunc(gradient, momentum, stepSize, change)
 		for a, _ in pairs(gradient) do
 			if type(gradient[a]) == "table" then

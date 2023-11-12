@@ -70,7 +70,7 @@ local buildModule = {
 	dropOut
 }
 
-function layerBuildModule.dense(args)
+function buildModule.dense(args)
 	local layer, parameterBuild = {
 		config = {
 			activation = args.activation or "linear",
@@ -88,14 +88,14 @@ function layerBuildModule.dense(args)
 	-- Initializers
 
 	layer.initializer.weights = {
-		layer.initializer = args.weightsInitializer or "constant",
-		layer.parameters = args.weightsInitParameters or {value = 0}
+		initializer = args.weightsInitializer or "constant",
+		parameters = args.weightsInitParameters or {value = 0}
 	}
 
 	if args.useBias then
 		layer.initializer.bias = {
-			layer.initializer = args.biasInitializer or "constant",
-			layer.parameters = args.biasInitParameters or {value = 0}
+			initializer = args.biasInitializer or "constant",
+			parameters = args.biasInitParameters or {value = 0}
 		}
 	end
 
@@ -122,7 +122,7 @@ function layerBuildModule.dense(args)
 	return layer, parameterBuild
 end
 
-function layerBuildModule.averagePooling1D(args)
+function buildModule.averagePooling1D(args)
 	local layer = {
 		config = {
 			kernel = args.kernel,
@@ -136,7 +136,7 @@ function layerBuildModule.averagePooling1D(args)
 	return layer
 end
 
-function layerBuildModule.averagePooling2D(args)
+function buildModule.averagePooling2D(args)
 	local layer = {
 		config = {
 			kernel = args.kernel,
@@ -150,7 +150,7 @@ function layerBuildModule.averagePooling2D(args)
 	return layer
 end
 
-function layerBuildModule.averagePooling3D(args)
+function buildModule.averagePooling3D(args)
 	local layer = {
 		config = {
 			kernel = args.kernel,
@@ -164,47 +164,47 @@ function layerBuildModule.averagePooling3D(args)
 	return layer
 end
 
-layerBuildModule.maxPooling1D = layerBuildModule.averagePooling1D
+buildModule.maxPooling1D = buildModule.averagePooling1D
 
-layerBuildModule.maxPooling2D = layerBuildModule.averagePooling2D
+buildModule.maxPooling2D = buildModule.averagePooling2D
 
-layerBuildModule.maxPooling3D = layerBuildModule.averagePooling3D
+buildModule.maxPooling3D = buildModule.averagePooling3D
 
-layerBuildModule.sumPooling1D = layerBuildModule.averagePooling1D
+buildModule.sumPooling1D = buildModule.averagePooling1D
 
-layerBuildModule.sumPooling2D = layerBuildModule.averagePooling2D
+buildModule.sumPooling2D = buildModule.averagePooling2D
 
-layerBuildModule.sumPooling3D = layerBuildModule.averagePooling3D
+buildModule.sumPooling3D = buildModule.averagePooling3D
 
-function layerBuildModule.averageGlobalPooling1D(args)
+function buildModule.averageGlobalPooling1D(args)
 	return {
 		inputShape = args.inputShape,
 		outputShape = {1}
 	}
 end
 
-function layerBuildModule.averageGlobalPooling2D(args)
+function buildModule.averageGlobalPooling2D(args)
 	return {
 		inputShape = args.inputShape,
 		outputShape = {args.inputShape[1]}
 	}
 end
 
-layerBuildModule.averageGlobalPooling3D = layerBuildModule.averageGlobalPooling2D
+buildModule.averageGlobalPooling3D = buildModule.averageGlobalPooling2D
 
-layerBuildModule.maxGlobalPooling1D = layerBuildModule.averageGlobalPooling1D
+buildModule.maxGlobalPooling1D = buildModule.averageGlobalPooling1D
 
-layerBuildModule.maxGlobalPooling2D = layerBuildModule.averageGlobalPooling2D
+buildModule.maxGlobalPooling2D = buildModule.averageGlobalPooling2D
 
-layerBuildModule.maxGlobalPooling3D = layerBuildModule.averageGlobalPooling3D
+buildModule.maxGlobalPooling3D = buildModule.averageGlobalPooling3D
 
-layerBuildModule.sumGlobalPooling1D = layerBuildModule.averageGlobalPooling1D
+buildModule.sumGlobalPooling1D = buildModule.averageGlobalPooling1D
 
-layerBuildModule.sumGlobalPooling2D = layerBuildModule.averageGlobalPooling2D
+buildModule.sumGlobalPooling2D = buildModule.averageGlobalPooling2D
 
-layerBuildModule.sumGlobalPooling3D = layerBuildModule.averageGlobalPooling3D
+buildModule.sumGlobalPooling3D = buildModule.averageGlobalPooling3D
 
-function layerBuildModule.upSample1D(args)
+function buildModule.upSample1D(args)
 	return {
 		config = {
 			kernel = args.kernel
@@ -214,7 +214,7 @@ function layerBuildModule.upSample1D(args)
 	}
 end
 
-function layerBuildModule.upSample2D(args)
+function buildModule.upSample2D(args)
 	return {
 		config = {
 			kernel = args.kernel
@@ -224,7 +224,7 @@ function layerBuildModule.upSample2D(args)
 	}
 end
 
-function layerBuildModule.upSample3D(args)
+function buildModule.upSample3D(args)
 	return {
 		config = {
 			kernel = args.kernel
@@ -234,7 +234,7 @@ function layerBuildModule.upSample3D(args)
 	}
 end
 
-function layerBuildModule.zeroPad1D(args)
+function buildModule.zeroPad1D(args)
 	return {
 		config = {
 			paddingAmount = args.paddingAmount
@@ -244,7 +244,7 @@ function layerBuildModule.zeroPad1D(args)
 	}
 end
 
-function layerBuildModule.zeroPad2D(args)
+function buildModule.zeroPad2D(args)
 	return {
 		config = {
 			paddingAmount = args.paddingAmount
@@ -254,7 +254,7 @@ function layerBuildModule.zeroPad2D(args)
 	}
 end
 
-function layerBuildModule.zeroPad3D(args)
+function buildModule.zeroPad3D(args)
 	return {
 		config = {
 			paddingAmount = args.paddingAmount
@@ -264,7 +264,7 @@ function layerBuildModule.zeroPad3D(args)
 	}
 end
 
-function layerBuildModule.crop1D(args)
+function buildModule.crop1D(args)
 	return {
 		config = {
 			start = args.start,
@@ -275,11 +275,11 @@ function layerBuildModule.crop1D(args)
 	}
 end
 
-layerBuildModule.crop2D = layerBuildModule.crop1D
+buildModule.crop2D = buildModule.crop1D
 
-layerBuildModule.crop3D = layerBuildModule.crop1D
+buildModule.crop3D = buildModule.crop1D
 
-function layerBuildModule.convolutional1D(args)
+function buildModule.convolutional1D(args)
 	local layer, parameterBuild = {
 		config = {
 			activation = args.activation or "linear",
@@ -335,7 +335,7 @@ function layerBuildModule.convolutional1D(args)
 	return layer, parameterBuild
 end
 
-function layerBuildModule.convolutional2D(args)
+function buildModule.convolutional2D(args)
 	local layer, parameterBuild = {
 		config = {
 			activation = args.activation or "linear",
@@ -391,7 +391,7 @@ function layerBuildModule.convolutional2D(args)
 	return layer, parameterBuild
 end
 
-function layerBuildModule.convolutional3D(args)
+function buildModule.convolutional3D(args)
 	local layer, parameterBuild = {
 		config = {
 			activation = args.activation or "linear",
@@ -447,7 +447,7 @@ function layerBuildModule.convolutional3D(args)
 	return layer, parameterBuild
 end
 
-function layerBuildModule.flatten(args)
+function buildModule.flatten(args)
 	local outputShape = 1
 
 	for a = 1, #args.inputShape do
@@ -460,7 +460,7 @@ function layerBuildModule.flatten(args)
 	}
 end
 
-function layerBuildModule.add1D(args)
+function buildModule.add1D(args)
 	local layer, parameterBuild = {
 		parameters = {},
 		trainable = {},
@@ -491,17 +491,17 @@ function layerBuildModule.add1D(args)
 	return layer, parameterBuild
 end
 
-layerBuildModule.add2D = layerBuildModule.add1D
+buildModule.add2D = buildModule.add1D
 
-layerBuildModule.add3D = layerBuildModule.add1D
+buildModule.add3D = buildModule.add1D
 
-layerBuildModule.subtract1D = layerBuildModule.add1D
+buildModule.subtract1D = buildModule.add1D
 
-layerBuildModule.subtract2D = layerBuildModule.add1D
+buildModule.subtract2D = buildModule.add1D
 
-layerBuildModule.subtract3D = layerBuildModule.add1D
+buildModule.subtract3D = buildModule.add1D
 
-function layerBuildModule.multiply1D(args)
+function buildModule.multiply1D(args)
 	local layer, parameterBuild = {
 		parameters = {},
 		trainable = {},
@@ -532,24 +532,24 @@ function layerBuildModule.multiply1D(args)
 	return layer, parameterBuild
 end
 
-layerBuildModule.multiply2D = layerBuildModule.multiply1D
+buildModule.multiply2D = buildModule.multiply1D
 
-layerBuildModule.multiply3D = layerBuildModule.multiply1D
+buildModule.multiply3D = buildModule.multiply1D
 
-layerBuildModule.vectorDivide1D = layerBuildModule.multiply1D
+buildModule.vectorDivide1D = buildModule.multiply1D
 
-layerBuildModule.divide2D = layerBuildModule.multiply1D
+buildModule.divide2D = buildModule.multiply1D
 
-layerBuildModule.divide3D = layerBuildModule.multiply1D
+buildModule.divide3D = buildModule.multiply1D
 
-function layerBuildModule.softmax(args)
+function buildModule.softmax(args)
 	return {
 		inputShape = args.inputShape,
 		outputShape = args.inputShape
 	}
 end
 
-function layerBuildModule.activate(args)
+function buildModule.activate(args)
 	return {
 		config = {
 			activation = args.activation,
@@ -564,7 +564,7 @@ function layerBuildModule.activate(args)
 end
 
 
-function layerBuildModule.dropOut(args)
+function buildModule.dropOut(args)
 	return {
 		config = {
 			rate = args.rate
@@ -574,7 +574,7 @@ function layerBuildModule.dropOut(args)
 	}
 end
 
-function layerBuildModule.uniformNoise(args)
+function buildModule.uniformNoise(args)
 	return {
 		config = {
 			lowerLimit = args.lowerLimit,
@@ -585,7 +585,7 @@ function layerBuildModule.uniformNoise(args)
 	}
 end
 
-function layerBuildModule.normalNoise(args)
+function buildModule.normalNoise(args)
 	return {
 		config = {
 			mean = args.mean,
@@ -596,4 +596,4 @@ function layerBuildModule.normalNoise(args)
 	}
 end
 
-return layerBuildModule
+return buildModule

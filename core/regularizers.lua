@@ -24,35 +24,21 @@ local regularizersModule = {
 	l2
 }
 
-local function absoluteSum(tbl)
-	local sum = 0
-
-	for a = 1, #tbl do
-		if type(tbl[a]) == "table" then
-			sum = sum + absoluteSum(tbl[a])
-		else
-			sum = sum + math.abs(tbl[a])
-		end
-	end
-
-	return sum
-end
-
-local function squaredSum(tbl)
-	local sum = 0
-
-	for a = 1, #tbl do
-		if type(tbl[a]) == "table" then
-			sum = sum + squaredSum(tbl[a])
-		else
-			sum = sum + tbl[a]^2
-		end
-	end
-
-	return sum
-end
-
 function regularizersModule.l1(args)
+	local function absoluteSum(tbl)
+		local sum = 0
+
+		for a = 1, #tbl do
+			if type(tbl[a]) == "table" then
+				sum = sum + absoluteSum(tbl[a])
+			else
+				sum = sum + math.abs(tbl[a])
+			end
+		end
+
+		return sum
+	end
+
 	local function regularizerFunc(gradient, lambda, l1Norm)
 		l1Norm = l1Norm or absoluteSum(gradient)
 
@@ -77,6 +63,20 @@ function regularizersModule.l1(args)
 end
 
 function regularizersModule.l2(args)
+	local function squaredSum(tbl)
+		local sum = 0
+
+		for a = 1, #tbl do
+			if type(tbl[a]) == "table" then
+				sum = sum + squaredSum(tbl[a])
+			else
+				sum = sum + tbl[a]^2
+			end
+		end
+
+		return sum
+	end
+
 	local function regularizerFunc(gradient, lambda, l2Norm)
 		l2Norm = l2Norm or squaredSum(gradient)
 

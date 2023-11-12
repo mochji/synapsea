@@ -53,7 +53,7 @@ function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
 
 	local layer
 
-	if layerBuildModule[layerType] then
+	if buildModule[layerType] then
 		-- Get last layer output shape
 
 		if layerNumber == 1 then
@@ -62,7 +62,7 @@ function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
 			buildParameters.inputShape = model.layerConfig[layerNumber - 1].outputShape
 		end
 
-		layer, parameterBuild = layerBuildModule[layerType](buildParameters)
+		layer, parameterBuild = buildModule[layerType](buildParameters)
 		table.insert(model.parameterBuild, layerNumber, parameterBuild or {})
 	else
 		layer = buildParameters
@@ -91,14 +91,16 @@ end
 function modelModule.initialize(model, optimizer, optimizerParameters, regularizer, regularizerParameters)
 	-- Create parameters in layers and initialize
 
-	for a = 1, #model.parameterBuild do
-		local layer = model.layerConfig[a]
+	if model.parameterBuild then
+		for a = 1, #model.parameterBuild do
+			local layer = model.layerConfig[a]
 
-		for parameterName, parameter in pairs(model.parameterBuild[a]) do
-			layer.parameters[parameterName] = initializersModule[layer.initializer[parameterName].initializer](
-				model.parameterBuild[a][parameterName].shape,
-				layer.initializer[parameterName].parameters
-			)
+			for parameterName, parameter in pairs(model.parameterBuild[a]) do
+				layer.parameters[parameterName] = initializersModule[layer.initializer[parameterName].initializer](
+					model.parameterBuild[a][parameterName].shape,
+					layer.initializer[parameterName].parameters
+				)
+			end
 		end
 	end
 
@@ -118,11 +120,15 @@ function modelModule.initialize(model, optimizer, optimizerParameters, regulariz
 		}
 	end
 
-	model.addLayer, model.parameterBuild, model.initialize = nil, nil, nil
-	model.outputShape = model.layerConfig[#model.layerConfig].outputShape
-	model.layers = #model.layerConfig
+	if not model.layerConfig[#model.layerConfig] then
+		model.outputShape = model.inputShape
+	else
+		model.outputShape = model.layerConfig[#model.layerConfig].outputShape
+	end
 
-	model.forwardPass = model.forwardPass
+	model.addLayer, model.parameterBuild = nil, nil
+	model.layers = #model.layerConfig
+	model.forwardPass = modelModule.forwardPass
 
 	return model
 end
@@ -131,10 +137,10 @@ function modelModule.forwardPass(model, input)
 	local lastOutput = input
 
 	for a = 1, #model.layerConfig do
-		local parameters = model.layerToParameters(model.layerConfig[a])
+		local parameters = modelModule.layerToParameters(model.layerConfig[a])
 		parameters.input = lastOutput
 
-		lastOutput = layer[model.layerConfig[a].type](parameters)
+		lastOutput = layersModule[model.layerConfig[a].type](parameters)
 	end
 
 	return lastOutput
@@ -170,7 +176,7 @@ function modelModule.export(model, fileName)
 
 	assert(f, string.format("Couldn't open %s for writing, %s (%s).", fileName, err, code))
 
-	f:write("return ")
+	f:write("return 'im so sorry but say goodbye to your model, this isn't done yet :('")
 	f:close()
 end
 

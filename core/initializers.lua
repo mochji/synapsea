@@ -19,10 +19,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local mathModule = require(_SYNAPSEA_PATH .. "core.math")
-
 local initializersModule = {
-	zeros,
 	uniformRandom,
 	normalRandom,
 	uniformXavier,
@@ -32,214 +29,174 @@ local initializersModule = {
 	constant
 }
 
-function initializersModule.zeros(shape, args, index)
-	index = index or 1
+function initializersModule.uniformRandom(shape, args)
+	local function initializerFunc(shape, lowerLimit, upperLimit, index)
+		local output = {}
 
-	local output = {}
+		if index == #shape then
+			for a = 1, shape[index] do
+				output[a] = lowerLimit + math.random() * (upperLimit - lowerLimit)
+			end
+		else
+			for a = 1, shape[index] do
+				output[a] = initializerFunc(
+					shape,
+					lowerLimit,
+					upperLimit,
+					index + 1
+				)
+			end
+		end
 
-	if index == #args.shape then
-		for a = 1, args.shape[index] do
-			output[a] = 0
-		end
-	else
-		for a = 1, args.shape[index] do
-			output[a] = initializersModule.zeros(
-				{
-					shape = args.shape
-				},
-				index + 1
-			)
-		end
+		return output
 	end
 
-	return output
+	return initializerFunc(shape, args.lowerLimit, args.upperLimit, 1)
 end
 
-function initializersModule.uniformRandom(shape, args, index)
-	index = index or 1
-	local lowerLimit, upperLimit = args.lowerLimit, args.upperLimit
+function initializersModule.normalRandom(shape, args)
+	local function initializerFunc(shape, mean, sd, index)
+		local output = {}
 
-	local output = {}
+		if index == #shape then
+			for a = 1, shape[index] do
+				output[a] = mean + math.sqrt(-2 * math.log(math.random())) * math.cos(2 * math.pi * math.random()) * sd
+			end
+		else
+			for a = 1, shape[index] do
+				output[a] = initializerFunc(
+					shape,
+					mean,
+					sd,
+					index + 1
+				)
+			end
+		end
 
-	if index == #args.shape then
-		for a = 1, args.shape[index] do
-			output[a] = mathModule.random.uniform(lowerLimit, upperLimit)
-		end
-	else
-		for a = 1, args.shape[index] do
-			output[a] = initializersModule.uniformRandom(
-				{
-					shape = args.shape,
-					lowerLimit = lowerLimit,
-					upperLimit = upperLimit
-				},
-				index + 1
-			)
-		end
+		return output
 	end
 
-	return output
+	return initializerFunc(shape, args.mean, args.sd, 1)
 end
 
-function initializersModule.normalRandom(shape, args, index)
-	index = index or 1
-	local mean, sd = args.mean, args.sd
+function initializersModule.uniformXavier(shape, args)
+	local function initializerFunc(shape, limit, index)
+		local output = {}
 
-	local output = {}
+		if index == #shape then
+			for a = 1, shape[index] do
+				output[a] = -limit + math.random() * (limit + limit)
+			end
+		else
+			for a = 1, shape[index] do
+				output[a] = initializerFunc(
+					shape,
+					limit,
+					index + 1
+				)
+			end
+		end
 
-	if index == #shape then
-		for a = 1, shape[index] do
-			output[a] = mathModule.random.normal(mean, sd)
-		end
-	else
-		for a = 1, shape[index] do
-			output[a] = initializersModule.normalRandom(
-				{
-					shape = shape,
-					mean = mean,
-					sd = sd
-				},
-				index + 1
-			)
-		end
+		return output
 	end
 
-	return output
+	return initializerFunc(shape, math.sqrt(6 / (args.inputs + args.outputs)), 1)
 end
 
-function initializersModule.uniformXavier(shape, args, index)
-	index = index or 1
-	local inputs, outputs = args.inputs, args.outputs
+function initializersModule.normalXavier(shape, args)
+	local function initializerFunc(shape, sd, index)
+		local output = {}
 
-	local output = {}
-
-	local limit = math.sqrt(6 / (inputs + outputs))
-
-	if index == #shape then
-		for a = 1, shape[index] do
-			output[a] = mathModule.random.uniform(-limit, limit)
+		if index == #shape then
+			for a = 1, shape[index] do
+				output[a] = math.sqrt(-2 * math.log(math.random())) * math.cos(2 * math.pi * math.random()) * sd
+			end
+		else
+			for a = 1, shape[index] do
+				output[a] = initializerFunc(
+					shape,
+					sd,
+					index + 1
+				)
+			end
 		end
-	else
-		for a = 1, shape[index] do
-			output[a] = initializersModule.uniformXavier(
-				{
-					shape = shape,
-					inputs = inputs,
-					outputs = outputs
-				},
-				index + 1
-			)
-		end
+
+		return output
 	end
 
-	return output
+	return initializerFunc(shape, math.sqrt(6 / (args.inputs + args.outputs)), 1)
 end
 
-function initializersModule.normalXavier(shape, args, index)
-	index = index or 1
-	local inputs, outputs = args.inputs, args.outputs
+function initializersModule.uniformHe(shape, args)
+	local function initializerFunc(shape, limit, index)
+		local output = {}
 
-	local output = {}
-
-	local sd = math.sqrt(6 / (inputs + outputs))
-
-	if index == #shape then
-		for a = 1, shape[index] do
-			output[a] = mathModule.random.normal(0, sd)
+		if index == #shape then
+			for a = 1, shape[index] do
+				output[a] = -limit + math.random() * (limit + limit)
+			end
+		else
+			for a = 1, shape[index] do
+				output[a] = initializersModule.uniformHe(
+					shape,
+					limit,
+					index + 1
+				)
+			end
 		end
-	else
-		for a = 1, shape[index] do
-			output[a] = initializersModule.normalXavier(
-				{
-					shape = shape,
-					inputs = inputs,
-					outputs = outputs
-				},
-				index + 1
-			)
-		end
+
+		return output
 	end
 
-	return output
-end
-
-function initializersModule.uniformHe(shape, args, index)
-	index = index or 1
-	local inputs = args.inputs
-
-	local output = {}
-
-	local limit = math.sqrt(2 / inputs)
-
-	if index == #shape then
-		for a = 1, shape[index] do
-			output[a] = mathModule.random.uniform(-limit, limit)
-		end
-	else
-		for a = 1, shape[index] do
-			output[a] = initializersModule.uniformHe(
-				{
-					shape = shape,
-					inputs = inputs
-				},
-				index + 1
-			)
-		end
-	end
-
-	return output
+	return initializerFunc(shape, math.sqrt(2 / args.inputs), 1)
 end
 
 function initializersModule.normalHe(shape, args)
-	index = index or 1
-	local inputs = args.inputs
+	local function initializerFunc(shape, sd, index)
+		local output = {}
 
-	local output = {}
-
-	local sd = math.sqrt(2 / inputs)
-
-	if index == #shape then
-		for a = 1, shape[index] do
-			output[a] = mathModule.random.normal(0, sd)
+		if index == #shape then
+			for a = 1, shape[index] do
+				output[a] = math.sqrt(-2 * math.log(math.random())) * math.cos(2 * math.pi * math.random()) * sd
+			end
+		else
+			for a = 1, shape[index] do
+				output[a] = initializerFunc(
+					shape,
+					sd,
+					index + 1
+				)
+			end
 		end
-	else
-		for a = 1, shape[index] do
-			output[a] = initializersModule.normalHe(
-				{
-					shape = shape,
-					inputs = inputs
-				},
-				index + 1
-			)
-		end
+
+		return output
 	end
 
-	return output
+	return initializerFunc(shape, math.sqrt(2 / args.inputs), 1)
 end
 
 function initializersModule.constant(shape, args, index)
-	index = index or 1
-	local value = args.value
+	local function initializerFunc(shape, value, index)
+		local output = {}
 
-	local output = {}
+		if index == #shape then
+			for a = 1, shape[index] do
+				output[a] = value
+			end
+		else
+			for a = 1, shape[index] do
+				output[a] = initializerFunc(
+					shape,
+					value,
+					index + 1
+				)
+			end
+		end
 
-	if index == #shape then
-		for a = 1, shape[index] do
-			output[a] = value
-		end
-	else
-		for a = 1, shape[index] do
-			output[a] = initializersModule.constant(
-				{
-					shape = shape,
-					value = value
-				},
-				index + 1
-			)
-		end
+		return output
 	end
 
-	return output
+	return initializerFunc(shape, args.value, 1)
 end
 
 return initializersModule

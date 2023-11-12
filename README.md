@@ -1,4 +1,6 @@
-# logo
+<p align="center">
+    <img src="https://github.com/mochji/synapsea/assets/117334318/abec23f1-06ee-47cc-8685-70589b3ba7d1">
+</p>
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Lua](https://img.shields.io/badge/Lua-5.4%2B-blueviolet)](https://www.lua.org/)
@@ -112,7 +114,7 @@ model:initialize(
     "l1",       -- Regularizer
     {           -- Regularizer parameters
         lambda = 0.1 -- tbh idrk what this should be lol
-    },
+    }
 )
 ```
 

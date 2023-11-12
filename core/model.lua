@@ -19,9 +19,10 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local layerBuildModule = require(_SYNAPSEA_PATH .. "core.layerBuild")
+local buildModule = require(_SYNAPSEA_PATH .. "core.layers.build")
+local layersModule = require(_SYNAPSEA_PATH .. "core.layers.layers")
 local initializersModule = require(_SYNAPSEA_PATH .. "core.initializers")
-local layersModule = require(_SYNAPSEA_PATH .. "core.layers")
+
 local modelModule = {
 	layerToParameters,
 	addLayer,

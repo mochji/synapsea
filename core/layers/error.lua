@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/layersGradient.lua
+	core/layers/error.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 mochji
@@ -17,8 +17,12 @@
 																		   
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+	ewwow backpwopagation
+	error = (output - expected) * activation'(output)  | output
+	error = (weight_k * error_j) * activation'(output) | hidden
 ]]--
 
-local layersGradientModule = {}
+local errorModule = {}
 
-return layersGradientModule
+return errorModule

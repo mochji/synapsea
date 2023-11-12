@@ -20,6 +20,7 @@
 ]]--
 
 local mathModule = require(_SYNAPSEA_PATH .. "core.math")
+
 local initializersModule = {
 	zeros,
 	uniformRandom,

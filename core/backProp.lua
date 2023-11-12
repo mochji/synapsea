@@ -19,23 +19,10 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
---[[
-	notes >w<!
-
-	ewwow backpwopagation
-	error = (output - expected) * activation'(output)  | output
-	error = (weight_k * error_j) * activation'(output) | hidden
-
-	weight update
-	weight = weight - lr * error * input
-
-	bias update
-	bias = bias - lr * error_sum -- temporary! (prob not lol)
-]]--
+local errorModule = require(_SYNAPSEA_PATH .. "core.layers.error")
+local gradientModule = require(_SYNAPSEA_PATH .. "core.layers.gradient")
 
 local backPropModule = {
-	error = require(_SYNAPSEA_PATH .. "core.layersError"),
-	gradient = require(_SYNAPSEA_PATH .. "core.layersGradient"),
 	outputError,
 	stochasticGradientDescent,
 	batchGradientDescent
@@ -63,7 +50,7 @@ function backPropModule.stochasticGradientDescent(model, input, gradientDescentA
 	local errors = {backPropModule.outputError, modelModule.forwardPass(model, input)}
 
 	for a = #model.layerConfig, 1, -1 do
-		errors[a] = backPropModule.error[model.layerConfig[a].type](modelModule.layerToParameters(layerConfig[a]))
+		errors[a] = errorModule[model.layerConfig[a].type](modelModule.layerToParameters(layerConfig[a]))
 	end
 
 	-- Gradient calculation
@@ -71,11 +58,10 @@ function backPropModule.stochasticGradientDescent(model, input, gradientDescentA
 	local gradient = {}
 
 	for a = #errors, 1, -1 do
-		gradient[a] = backPropModule.gradient[model.layerConfig[a].type](modelModule.layerToParameters(layerConfig[a]))
+		gradient[a] = gradientModule[model.layerConfig[a].type](modelModule.layerToParameters(layerConfig[a]))
 	end
 
 	-- Update parameters
-
 end
 
 function backPropModule.batchGradientDescent(model, input, gradientDescentArgs)

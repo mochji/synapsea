@@ -26,37 +26,37 @@
 ]]--
 
 -- Get the path of the required file
-_SYNAPSEA_PATH = debug.getinfo(1).short_src:gsub("/", "."):gsub("\\", ".")
+_SYNAPSEA_PATH = debug.getinfo(1).short_src
 
 -- Remove file extension and file name
-_SYNAPSEA_PATH = _SYNAPSEA_PATH:match("(.*%.)")
-_SYNAPSEA_PATH = _SYNAPSEA_PATH:sub(1, #_SYNAPSEA_PATH - 1)
-_SYNAPSEA_PATH = _SYNAPSEA_PATH:match("(.*%.)")
-
--- Avoid concatenating nil
-_SYNAPSEA_PATH = _SYNAPSEA_PATH or ""
-
-_SYNAPSEA_VERSION = "v2.0.00-unstable"
+_SYNAPSEA_PATH = _SYNAPSEA_PATH:match("(.*[/\\])") or ""
 
 local synapsea = {
+	version = "v2.0.00-unstable",
 	activations = require(_SYNAPSEA_PATH .. "core.activations"),
 	losses = require(_SYNAPSEA_PATH .. "core.losses"),
 	math = require(_SYNAPSEA_PATH .. "core.math"),
 	initializers = require(_SYNAPSEA_PATH .. "core.initializers"),
 	optimizers = require(_SYNAPSEA_PATH .. "core.optimizers"),
 	regularizers = require(_SYNAPSEA_PATH .. "core.regularizers"),
-	layers = require(_SYNAPSEA_PATH .. "core.layers"),
+	layers = require(_SYNAPSEA_PATH .. "core.layers.layers"),
 	backProp = require(_SYNAPSEA_PATH .. "core.backProp"),
 	model = require(_SYNAPSEA_PATH .. "core.model")
 }
 
--- Add the layer build call to the layer functions by converting the layers to a metatable
+-- Convert layers to metatables
 
-local layerBuildModule = require(_SYNAPSEA_PATH .. "core.layerBuild")
+local buildModule = require(_SYNAPSEA_PATH .. "core.layers.build")
+local errorModule = require(_SYNAPSEA_PATH .. "core.layers.error")
+local gradientModule = require(_SYNAPSEA_PATH .. "core.layers.gradient")
 
 for name, func in pairs(synapsea.layers) do
 	synapsea.layers[name] = setmetatable(
-		{build = layerBuildModule[name]},
+		{
+			build = buildModule[name],
+			error = errorModule[name],
+			gradient = gradientModule[name]
+		},
 		{__call = func}
 	)
 end

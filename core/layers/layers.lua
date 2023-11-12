@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/layers.lua
+	core/layers/layers.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 mochji
@@ -52,36 +52,8 @@ local layersModule = {
 	convolutional1D,
 	convolutional2D,
 	convolutional3D,
-	convolutionalTranspose1D,
-	convolutionalTranspose2D,
-	convolutionalTranspose3D,
-	convolutionalDepthwise1D,
-	convolutionalDepthwise2D,
-	convolutionalSeparable1D,
-	convolutionalSeparable2D,
-	convolutionalSeparable3D,
-	convolutionalDepthwiseSeparable1D,
-	convolutionalDepthwiseSeparable2D,
-	locallyConnected1D,
-	locallyConnected2D,
-	locallyConnected3D,
 	flatten,
 	reshape,
-	minMaxNormalize1D,
-	minMaxNormalize2D,
-	minMaxNormalize3D,
-	vectorAdd1D,
-	vectorAdd2D,
-	vectorAdd3D,
-	vectorSubtract1D,
-	vectorSubtract2D,
-	vectorSubtract3D,
-	dot1D,
-	dot2D,
-	dot3D,
-	vectorDivide1D,
-	vectorDivide2D,
-	vectorDivide3D,
 	add1D,
 	add2D,
 	add3D,
@@ -94,9 +66,9 @@ local layersModule = {
 	divide1D,
 	divide2D,
 	divide3D,
-	dropOut,
 	softmax,
-	activate
+	activate,
+	dropOut
 }
 
 function layersModule.dense(args)
@@ -703,318 +675,190 @@ function layersModule.crop3D(args)
 end
 
 function layersModule.convolutional1D(args)
-	local output, startIndex = {}, 0
+	local output = {}
 	local outputSize = math.floor((#args.input - #args.filter[1]) / args.stride[1]) + 1
 
 	local activation = activationsModule[args.activation]
 	local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 
-	for a = 1, outputSize do
-		local sum = 0
+	-- Check whether to do a normal 1D convolution or do a 2D convolution (depth from filters)
 
-		for b = 1, #filter do
-			for c = 1, #filter[b] do
-				if c % dilation[1] == 0 then
-					sum = sum + input[startIndex + c] * filter[b][c]
+	if type(input[1]) == "table" then
+		for a = 1, #input do
+			output[a] = layersModule.convolutional1D{
+				input = input[a],
+				filter = filter,
+				stride = stride,
+				dilation = dilation,
+				biases = biases,
+				activation = activation,
+				alpha = alpha
+			}
+		end
+	else
+		for a = 1, #filter do
+			local startIndex = 0
+			output[a] = {}
+
+			for b = 1, outputSize do
+				local sum = 0
+
+				for c = 1, #filter[a] do
+					if c % dilation[1] == 0 then
+						sum = sum + input[startIndex + c] * filter[a][c]
+					end
+				end
+
+				startIndex = startIndex + stride[1]
+
+				if biases then
+					output[a][b] = activation(sum + biases[b], false, alpha)
+				else
+					output[a][b] = activation(sum, false, alpha)
 				end
 			end
 		end
+	end
 
-		startIndex = startIndex + stride[1]
-
-		if args.biases then
-			output[a] = activation(sum + biases[a], false, alpha)
-		else
-			output[a] = activation(sum, false, alpha)
-		end
+	if #filter == 1 then
+		return output[1]
 	end
 
 	return output
 end
 
 function layersModule.convolutional2D(args)
-	local output, startIndexA = {}, 0
-	local outputHeight, outputWidth = math.floor((#args.input - #args.filter[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - #args.filter[1][1]) / args.stride[2]) + 1
+	local output = {}
+	local outputShape = {math.floor((#args.input - #args.filter[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - #args.filter[1][1]) / args.stride[2]) + 1}
 
 	local activation = activationsModule[args.activation]
 	local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 
-	for a = 1, outputHeight do
-		output[a] = {}
-		local startIndexB = 0
+	-- Check whether to do a normal 2D convolution or do a 3D convolution (depth from filters)
 
-		for b = 1,outputWidth do
-			local sum = 0
+	if type(input[1][1]) == "table" then
+		for a = 1, #input do
+			output[a] = layersModule.convolutional2D{
+				input = input[a],
+				filter = filter,
+				stride = stride,
+				dilation = dilation,
+				biases = biases,
+				activation = activation,
+				alpha = alpha
+			}
+		end
+	else
+		for a = 1, #filter do
+			local startIndexA = 0
+			output[a] = {}
 
-			for c = 1, #filter do
-				for d = 1, #filter[c] do
-					for e = 1, #filter[c][d] do
-						if d % dilation[1] == 0 and e % dilation[2] == 0 then
-							sum = sum + input[startIndexA + d][startIndexB + e] * filter[c][d][e]
+			for b = 1, outputShape[1] do
+				local startIndexB = 0
+				output[a][b] = {}
+
+				for c = 1, outputShape[2] do
+					local sum = 0
+
+					for d = 1, #filter[a] do
+						for e = 1, #filter[a][d] do
+							if d % dilation[1] == 0 and e % dilation[2] == 0 then
+								sum = sum + input[startIndexA + d][startIndexB + e] * filter[a][d][e]
+							end
 						end
 					end
+
+					startIndexB = startIndexB + stride[2]
+
+					if biases then
+						output[a][b][c] = activation(sum + biases[b][c], false, alpha)
+					else
+						output[a][b][c] = activation(sum, false, alpha)
+					end
 				end
-			end
 
-			startIndexB = startIndexB + stride[2]
-
-			if args.biases then
-				output[a][b] = activation(sum + biases[a][b], false, alpha)
-			else
-				output[a][b] = activation(sum, false, alpha)
+				startIndexA = startIndexA + 1
 			end
 		end
+	end
 
-		startIndexA = startIndexA + stride[1]
+	if #filter == 1 then
+		return output[1]
 	end
 
 	return output
 end
 
 function layersModule.convolutional3D(args)
-	local output, startIndexA = {}, 0
-	local outputDepth, outputHeight, outputWidth = math.floor((#args.input - #args.filter[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - #args.filter[1][1]) / args.stride[2]) + 1, math.floor((#args.input[1][1] - #args.filter[1][1][1]) / args.stride[3]) + 1
+	local output = {}
+	local outputShape = {math.floor((#args.input - #args.filter[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - #args.filter[1][1]) / args.stride[2]) + 1, math.floor((#args.input - #args.filter[1][1][1]) / args.stride[3]) + 1}
 
 	local activation = activationsModule[args.activation]
 	local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 
-	for a = 1, outputDepth do
-		output[a] = {}
-		local startIndexB = 0
+	-- Check whether to do a normal 3D convolution or do a 4D convolution (depth from filters)
 
-		for b = 1, outputHeight do
-			output[a][b] = {}
-			local startIndexC = 0
+	if type(input[1][1][1]) == "table" then
+		for a = 1, #input do
+			output[a] = layersModule.convolutional3D{
+				input = input[a],
+				filter = filter,
+				stride = stride,
+				dilation = dilation,
+				biases = biases,
+				activation = activation,
+				alpha = alpha
+			}
+		end
+	else
+		for a = 1, #filter do
+			local startIndexA = 0
+			output[a] = {}
 
-			for c = 1, outputWidth do
-				local sum = 0
+			for b = 1, outputShape[1] do
+				local startIndexB = 0
+				output[a][b] = {}
 
-				for d = 1, #filter do
-					for e = 1, #filter[d] do
-						for f = 1, #filter[d][e] do
-							for g = 1, #filter[d][e][f] do
-								if e % dilation[1] == 0 and f % dilation[2] == 0 and g % dilation[3] == 0 then
-									sum = sum + input[startIndexA + e][startIndexB + f][startIndexC + g] * filter[d][e][f][g]
+				for c = 1, outputShape[2] do
+					local startIndexC = 0
+					output[a][b][c] = {}
+
+					for d = 1, outputShape[3] do
+						local sum = 0
+
+						for e = 1, #filter[a] do
+							for f = 1, #filter[a][e] do
+								for g = 1, #filter[a][e][f] do
+									if e % dilation[1] == 0 and f % dilation[2] == 0 and g % dilation[3] == 0 then
+										sum = sum + input[startIndexA + e][startIndexB + f][startIndexC + g] * filter[a][e][f][g]
+									end
 								end
 							end
 						end
+
+						startIndexC = startIndexC + stride[3]
+
+						if biases then
+							output[a][b][c][d] = activation(sum + biases[b][c][d], false, alpha)
+						else
+							output[a][b][c][d] = activation(sum, false, alpha)
+						end
 					end
+
+					startIndexB = startIndexB + 1
 				end
 
-				startIndexC = startIndexC + stride[3]
-
-				if args.biases then
-					output[a][b][c] = activation(sum + biases[a][b][c], false, alpha)
-				else
-					output[a][b][c] = activation(sum, false, alpha)
-				end
+				startIndexA = startIndexA + 1
 			end
-
-			startIndexB = startIndexB + stride[2]
 		end
+	end
 
-		startIndexA = startIndexA + stride[1]
+	if #filter == 1 then
+		return output[1]
 	end
 
 	return output
 end
-
-function layersModule.convolutionalTranspose1D(args)
-	return layersModule.convolutional1D{
-		input = layersModule.zeroPad1D(args.input, args.paddingAmount),
-		filter = args.filter,
-		biases = args.biases,
-		stride = args.stride,
-		dilation = args.dilation,
-		activation = args.activation,
-		alpha = args.alpha
-	}
-end
-
-function layersModule.convolutionalTranspose2D(args)
-	return layersModule.convolutional2D{
-		input = layersModule.zeroPad2D(args.input, args.paddingAmount),
-		filter = args.filter,
-		biases = args.biases,
-		stride = args.stride,
-		dilation = args.dilation,
-		activation = args.activation,
-		alpha = args.alpha
-	}
-end
-
-function layersModule.convolutionalTranspose3D(args)
-	return layersModule.convolutional3D{
-		input = layersModule.zeroPad3D(args.input, args.paddingAmount),
-		filter = args.filter,
-		biases = args.biases,
-		stride = args.stride,
-		dilation = args.dilation,
-		activation = args.activation,
-		alpha = args.alpha
-	}
-end
-
-function layersModule.convolutionalDepthwise1D(args)
-	local output = {}
-	local input, filter, biases, stride, dilation, activation, alpha = args.input, args.filter, args.biases, args.stride, args.dilation, args.activation, args.alpha
-
-	for a = 1, #args.input do
-		local tempArgs = {
-			input = input[a],
-			filter = filter[a],
-			stride = stride,
-			dilation = dilation,
-			activation = activation,
-			alpha = alpha
-		}
-
-		if args.biases then
-			tempArgs.biases = biases[a]
-		end
-
-		output[a] = layersModule.convolutional1D(tempArgs)
-	end
-
-	return output
-end
-
-function layersModule.convolutionalDepthwise2D(args)
-	local output = {}
-	local input, filter, biases, stride, dilation, activation, alpha = args.input, args.filter, args.biases, args.stride, args.dilation, args.activation, args.alpha
-
-	for a = 1, #args.input do
-		local tempArgs = {
-			input = input[a],
-			filter = filter[a],
-			stride = stride,
-			dilation = dilation,
-			activation = activation,
-			alpha = alpha
-		}
-
-		if args.biases then
-			tempArgs.biases = biases[a]
-		end
-
-		output[a] = layersModule.convolutional2D(tempArgs)
-	end
-
-	return output
-end
-
---[[
-function layer.convolutionalSeparable1D(args)
-	local output = {}
-
-	for a = 1, #args.filter do
-		local tempArgs = {
-			input = args.input,
-			filter = args.filter[a],
-			stride = args.stride,
-			dilation = args.dilation,
-			activation = args.activation,
-			alpha = args.alpha
-		}
-
-		if args.biases then
-			tempArgs.biases = args.biases[a]
-		end
-
-		output[a] = layer.convolutional1D(tempArgs)
-	end
-
-	return output
-end
-
-function layer.convolutionalSeparable2D(args)
-	local output = {}
-
-	for a = 1, #args.filter do
-		local tempArgs = {
-			input = args.input,
-			filter = args.filter[a],
-			dilation = args.dilation,
-			activation = args.activation,
-			alpha = args.alpha
-		}
-
-		if args.biases then
-			tempArgs.biases = args.biases[a]
-		end
-
-		output[a] = layer.convolutional2D(tempArgs)
-	end
-
-	return output
-end
-
-function layer.convolutionalSeparable3D(args)
-	local output = {}
-
-	for a = 1, #args.filter do
-		local tempArgs = {
-			input = args.input,
-			filter = args.filter[a],
-			dilation = args.dilation,
-			activation = args.activation,
-			alpha = args.alpha
-		}
-
-		if args.biases then
-			tempArgs.biases = args.biases[a]
-		end
-
-		output[a] = layer.convolutional3D(tempArgs)
-	end
-
-	return output
-end
-
-function layer.convolutionalDepthwiseSeparable1D(args)
-	local output = {}
-
-	for a = 1, #args.filter do
-		local tempArgs = {
-			input = args.input,
-			filter = args.filter[a],
-			dilation = args.dilation,
-			activation = args.activation,
-			alpha = args.alpha
-		}
-
-		if args.biases then
-			tempArgs.biases = args.biases[a]
-		end
-
-		output[a] = layer.convolutionalDepthwise1D(tempArgs)
-	end
-
-	return output
-end
-
-function layer.convolutionalDepthwiseSeparable2D(args)
-	local output = {}
-
-	for a = 1, #args.filter do
-		local tempArgs = {
-			input = args.input,
-			filter = args.filter[a],
-			dilation = args.dilation,
-			activation = args.activation,
-			alpha = args.alpha
-		}
-
-		if args.biases then
-			tempArgs.biases = args.biases[a]
-		end
-
-		output[a] = layer.convolutionalDepthwise2D(tempArgs)
-	end
-
-	return output
-end
-]]--
 
 function layersModule.flatten(args)
 	local output = {}
@@ -1031,62 +875,7 @@ end
 function layersModule.reshape(args)
 end
 
-function layersModule.minMaxNormalize1D(args)
-	local max, min = math.max(table.unpack(args.input)), math.min(table.unpack(args.input))
-	local maxMinusMin = max - min
-
-	local input = args.input
-
-	for a = 1, #args.input do
-		input[a] = input[a] - min / maxMinusMin
-	end
-
-	return input
-end
-
-function layersModule.minMaxNormalize2D(args)
-	local max, min = math.max(table.unpack(args.input[1])), math.min(table.unpack(args.input[1]))
-	local input = args.input
-
-	for a = 2, #input do
-		max, min = math.max(max, table.unpack(args.input[a])), math.min(min, table.unpack(args.input[a]))
-	end
-
-	local maxMinusMin = max - min
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			input[a][b] = input[a][b] - min / maxMinusMin
-		end
-	end
-
-	return args.input
-end
-
-function layersModule.minMaxNormalize3D(args)
-	local max, min = math.max(table.unpack(args.input[1])), math.min(table.unpack(args.input[1]))
-	local input = args.input
-
-	for a = 1, #input do
-		for b = 1, #input do
-			max, min = math.max(table.unpack(args.input[1])), math.min(table.unpack(args.input[1]))
-		end
-	end
-
-	local maxMinusMin = max - min
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			for c = 1, #input[a][b] do
-				input[a][b][c] = input[a][b][c] - min / maxMinusMin
-			end
-		end
-	end
-
-	return input
-end
-
-function layersModule.vectorAdd1D(args)
+function layersModule.add1D(args)
 	local input, biases = args.input, args.biases
 
 	for a = 1, #input do
@@ -1096,7 +885,7 @@ function layersModule.vectorAdd1D(args)
 	return input
 end
 
-function layersModule.vectorAdd2D(args)
+function layersModule.add2D(args)
 	local input, biases = args.input, args.biases
 
 	for a = 1, #input do
@@ -1108,7 +897,7 @@ function layersModule.vectorAdd2D(args)
 	return input
 end
 
-function layersModule.vectorAdd3D(args)
+function layersModule.add3D(args)
 	local input, biases = args.input, args.biases
 
 	for a = 1, #input do
@@ -1122,7 +911,7 @@ function layersModule.vectorAdd3D(args)
 	return args.input
 end
 
-function layersModule.vectorSubtract1D(args)
+function layersModule.subtract1D(args)
 	local input, biases = args.input, args.biases
 
 	for a = 1, #input do
@@ -1132,7 +921,7 @@ function layersModule.vectorSubtract1D(args)
 	return input
 end
 
-function layersModule.vectorSubtract2D(args)
+function layersModule.subtract2D(args)
 	local input, biases = args.input, args.biases
 
 	for a = 1, #input do
@@ -1144,7 +933,7 @@ function layersModule.vectorSubtract2D(args)
 	return input
 end
 
-function layersModule.vectorSubtract3D(args)
+function layersModule.subtract3D(args)
 	local input, biases = args.input, args.biases
 
 	for a = 1, #input do
@@ -1158,7 +947,7 @@ function layersModule.vectorSubtract3D(args)
 	return input
 end
 
-function layersModule.dot1D(args)
+function layersModule.multiply1D(args)
 	local input, weights = args.input, args.weights
 
 	for a = 1, #input do
@@ -1168,7 +957,7 @@ function layersModule.dot1D(args)
 	return input
 end
 
-function layersModule.dot2D(args)
+function layersModule.multiply2D(args)
 	local input, weights = args.input, args.weights
 
 	for a = 1, #input do
@@ -1180,7 +969,7 @@ function layersModule.dot2D(args)
 	return input
 end
 
-function layersModule.dot3D(args)
+function layersModule.multiply3D(args)
 	local input, weights = args.input, args.weights
 
 	for a = 1, #input do
@@ -1194,7 +983,7 @@ function layersModule.dot3D(args)
 	return args.input
 end
 
-function layersModule.vectorDivide1D(args)
+function layersModule.divide1D(args)
 	local input, weights = args.input, args.weights
 
 	for a = 1, #input do
@@ -1204,7 +993,7 @@ function layersModule.vectorDivide1D(args)
 	return input
 end
 
-function layersModule.vectorDivide2D(args)
+function layersModule.divide2D(args)
 	local input, weights = args.input, args.weights
 
 	for a = 1, #input do
@@ -1216,7 +1005,7 @@ function layersModule.vectorDivide2D(args)
 	return input
 end
 
-function layersModule.vectorDivide3D(args)
+function layersModule.divide3D(args)
 	local input, weights = args.input, args.weights
 
 	for a = 1, #input do
@@ -1228,154 +1017,6 @@ function layersModule.vectorDivide3D(args)
 	end
 
 	return args.input
-end
-
-function layersModule.add1D(args)
-	local input, bias = args.input, args.bias
-
-	for a = 1, #input do
-		input[a] = input[a] + bias
-	end
-
-	return input
-end
-
-function layersModule.add2D(args)
-	local input, bias = args.input, args.bias
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			input[a][b] = input[a][b] + bias
-		end
-	end
-
-	return input
-end
-
-function layersModule.add3D(args)
-	local input, bias = args.input, args.bias
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			for c = 1, #input[a][b] do
-				input[a][b][c] = input[a][b][c] + bias
-			end
-		end
-	end
-
-	return input
-end
-
-function layersModule.subtract1D(args)
-	local input, bias = args.input, args.bias
-
-	for a = 1, #input do
-		input[a] = input[a] - bias
-	end
-
-	return input
-end
-
-function layersModule.subtract2D(args)
-	local input, bias = args.input, args.bias
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			input[a][b] = input[a][b] - bias
-		end
-	end
-
-	return input
-end
-
-function layersModule.subtract3D(args)
-	local input, bias = args.input, args.bias
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			for c = 1, #input[a][b] do
-				input[a][b][c] = input[a][b][c] - bias
-			end
-		end
-	end
-
-	return input
-end
-
-function layersModule.multiply1D(args)
-	local input, weight = args.input, args.bias
-
-	for a = 1, #input do
-		input[a] = input[a] * weight
-	end
-
-	return input
-end
-
-function layersModule.multiply2D(args)
-	local input, weight = args.input, args.bias
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			input[a][b] = input[a][b] * weight
-		end
-	end
-
-	return input
-end
-
-function layersModule.multiply3D(args)
-	local input, weight = args.input, args.bias
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			for c = 1, #input[a][b] do
-				input[a][b][c] = input[a][b][c] * weight
-			end
-		end
-	end
-
-	return input
-end
-
-function layersModule.divide1D(args)
-	local input, weight = args.input, args.bias
-
-	for a = 1, #input do
-		input[a] = input[a] / weight
-	end
-
-	return input
-end
-
-function layersModule.divide2D(args)
-	local input, weight = args.input, args.bias
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			input[a][b] = input[a][b] / weight
-		end
-	end
-
-	return input
-end
-
-function layersModule.divide3D(args)
-	local input, weight = args.input, args.bias
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			for c = 1, #input[a][b] do
-				input[a][b][c] = input[a][b][c] / weight
-			end
-		end
-	end
-
-	return input
-end
-
-function layersModule.dropOut(args)
-	return args.input -- Dropout is only applied during training, hence why were just returning the input
 end
 
 function layersModule.softmax(args)
@@ -1401,6 +1042,10 @@ function layersModule.activate(args)
 	end
 
 	return input
+end
+
+function layersModule.dropOut(args)
+	return args.input
 end
 
 return layersModule

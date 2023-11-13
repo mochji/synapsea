@@ -30,15 +30,6 @@ local buildModule = {
 	sumPooling1D,
 	sumPooling2D,
 	sumPooling3D,
-	averageGlobalPooling1D,
-	averageGlobalPooling2D,
-	averageGlobalPooling3D,
-	maxGlobalPooling1D,
-	maxGlobalPooling2D,
-	maxGlobalPooling3D,
-	sumGlobalPooling1D,
-	sumGlobalPooling2D,
-	sumGlobalPooling3D,
 	upSample1D,
 	upSample2D,
 	upSample3D,
@@ -175,34 +166,6 @@ buildModule.sumPooling1D = buildModule.averagePooling1D
 buildModule.sumPooling2D = buildModule.averagePooling2D
 
 buildModule.sumPooling3D = buildModule.averagePooling3D
-
-function buildModule.averageGlobalPooling1D(args)
-	return {
-		inputShape = args.inputShape,
-		outputShape = {1}
-	}
-end
-
-function buildModule.averageGlobalPooling2D(args)
-	return {
-		inputShape = args.inputShape,
-		outputShape = {args.inputShape[1]}
-	}
-end
-
-buildModule.averageGlobalPooling3D = buildModule.averageGlobalPooling2D
-
-buildModule.maxGlobalPooling1D = buildModule.averageGlobalPooling1D
-
-buildModule.maxGlobalPooling2D = buildModule.averageGlobalPooling2D
-
-buildModule.maxGlobalPooling3D = buildModule.averageGlobalPooling3D
-
-buildModule.sumGlobalPooling1D = buildModule.averageGlobalPooling1D
-
-buildModule.sumGlobalPooling2D = buildModule.averageGlobalPooling2D
-
-buildModule.sumGlobalPooling3D = buildModule.averageGlobalPooling3D
 
 function buildModule.upSample1D(args)
 	return {

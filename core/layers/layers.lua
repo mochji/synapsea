@@ -31,15 +31,6 @@ local layersModule = {
 	sumPooling1D,
 	sumPooling2D,
 	sumPooling3D,
-	averageGlobalPooling1D,
-	averageGlobalPooling2D,
-	averageGlobalPooling3D,
-	maxGlobalPooling1D,
-	maxGlobalPooling2D,
-	maxGlobalPooling3D,
-	sumGlobalPooling1D,
-	sumGlobalPooling2D,
-	sumGlobalPooling3D,
 	upSample1D,
 	upSample2D,
 	upSample3D,
@@ -72,11 +63,10 @@ local layersModule = {
 }
 
 function layersModule.dense(args)
-	local output = {}
-
 	local activation = activationsModule[args.activation]
-	local input, weights, bias, alpha = args.input, args.weights, args.bias, args.alpha
-	bias = bias or 0
+	local input, weights, bias, alpha = args.input, args.weights, args.bias or 0, args.alpha
+
+	local output = {}
 
 	for a = 1, args.outputSize do
 		local sum = 0
@@ -92,610 +82,755 @@ function layersModule.dense(args)
 end
 
 function layersModule.averagePooling1D(args)
-	local output, startIndex = {}, 0
-	local outputSize = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1
+	local function poolingFunc(input, kernel, stride, dilation)
+		local outputSize = math.floor((#input - kernel[1]) / stride[1]) + 1
+		local startIndex = 0
 
-	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+		local output = {}
 
-	for a = 1, outputSize do
-		local sum = 0
+		for a = 1, outputSize do
+			local sum = 0
 
-		for b = 1, #kernel[1] do
-			if b % dilation[1] == 0 then
-				sum = sum + input[startIndex + b]
+			for b = 1, #kernel[1] do
+				if b % dilation[1] == 0 then
+					sum = sum + input[startIndex + b]
+				end
 			end
+
+			startIndex = startIndex + stride[1]
+
+			output[a] = sum / kernel[1]
 		end
 
-		startIndex = startIndex + stride[1]
-
-		output[a] = sum / kernel[1]
+		return output
 	end
 
-	return output
+	if type(args.input[1]) == "table" then
+		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+		end
+
+		return output
+	end
+
+	return poolingFunc(args.input, args.kernel, args.stride, args.dilation)
 end
 
 function layersModule.averagePooling2D(args)
-	local output, startIndexA, kernelProduct = {}, 0, syntable.product(args.kernel)
-	local outputHeight, outputWidth = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1
+	local function poolingFunc(input, kernel, stride, dilation)
+		local kernelProduct = kernel[1] * kernel[2]
+		local outputSize = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1}
+		local startIndexA = 0
 
-	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+		local output = {}
 
-	for a = 1, outputHeight do
-		output[a] = {}
-		local startIndexB = 0
+		for a = 1, outputSize[1] do
+			local startIndexB = 0
+			output[a] = {}
 
-		for b = 1, outputWidth do
-			local sum = 0
+			for b = 1, outputSize[2] do
+				local sum = 0
 
-			for c = 1, kernel[1] do
-				for d = 1, kernel[2] do
-					if c % dilation[1] == 0 and d % dilation[2] == 1 then
-						sum = sum + input[startIndexA + c][startIndexB + d]
+				for c = 1, kernel[1] do
+					for d = 1, kernel[2] do
+						if c % dilation[1] == 0 and d % dilation[2] == 1 then
+							sum = sum + input[startIndexA + c][startIndexB + d]
+						end
 					end
 				end
+
+				startIndexB = startIndexB + stride[2]
+
+				output[a][b] = sum / kernelProduct
 			end
 
-			startIndexB = startIndexB + stride[2]
-
-			output[a][b] = sum / kernelProduct
+			startIndexA = startIndexA + stride[1]
 		end
 
-		startIndexA = startIndexA + stride[1]
+		return output
 	end
 
-	return output
+	if type(args.input[1][1]) == "table" then
+		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+		end
+
+		return output
+	end
+
+	return poolingFunc(args.input, args.kernel, args.stride, args.dilation)
 end
 
 function layersModule.averagePooling3D(args)
-	local output, startIndexA, kernelProduct = {}, 0, syntable.product(args.kernel)
-	local outputDepth, outputHeight, outputWidth = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1, math.floor((#args.input[1][1] - args.kernel[3]) / args.stride[3]) + 1
+	local function poolingFunc(input, kernel, stride, dilation)
+		local kernelProduct = kernel[1] * kernel[2] * kernel[3]
+		local outputSize = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1, math.floor((#input[1][1] - kernel[3]) / stride[3]) + 1}
+		local startIndexA = 0
 
-	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+		local output = {}
 
-	for a = 1, outputDepth do
-		output[a] = {}
-		local startIndexB = 0
+		for a = 1, outputDepth do
+			output[a] = {}
+			local startIndexB = 0
 
-		for b = 1, outputHeight do
-			output[a][b] = {}
-			local startIndexC = 0
+			for b = 1, outputHeight do
+				output[a][b] = {}
+				local startIndexC = 0
 
-			for c = 1, outputWidth do
-				local sum = 0
+				for c = 1, outputWidth do
+					local sum = 0
 
-				for d = 1, kernel[1] do
-					for e = 1, kernel[2] do
-						for f = 1, kernel[3] do
-							if d % dilation[1] == 0 and e % dilation[2] == 0 and f % dilation[3] == 0 then
-								sum = sum + input[startIndexA + d][startIndexB + e][startIndexC + f]
+					for d = 1, kernel[1] do
+						for e = 1, kernel[2] do
+							for f = 1, kernel[3] do
+								if d % dilation[1] == 0 and e % dilation[2] == 0 and f % dilation[3] == 0 then
+									sum = sum + input[startIndexA + d][startIndexB + e][startIndexC + f]
+								end
 							end
 						end
 					end
+
+					startIndexC = startIndexC + stride[3]
+
+					output[a][b][c] = sum / kernelProduct
 				end
 
-				startIndexC = startIndexC + stride[3]
-
-				output[a][b][c] = sum / kernelProduct
+				startIndexB = startIndexB + stride[2]
 			end
 
-			startIndexB = startIndexB + stride[2]
+			startIndexA = startIndexA + stride[1]
 		end
 
-		startIndexA = startIndexA + stride[1]
+		return output
 	end
 
-	return output
+	if type(args.input[1][1][1]) == "table" then
+		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+		end
+
+		return output
+	end
+
+	return poolingFunc(args.input, args.kernel, args.stride, args.dilation)
 end
 
 function layersModule.maxPooling1D(args)
-	local output, startIndex = {}, 0
-	local outputSize = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1
+	local function poolingFunc(input, kernel, stride, dilation)
+		local outputSize = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1
+		local startIndex = 0
 
-	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+		local output = {}
 
-	for a = 1, outputSize do
-		local max = input[startIndex + 1]
+		for a = 1, outputSize do
+			local max = input[startIndex + 1]
 
-		for b = 1, #kernel[1] do
-			if b % dilation[1] == 0 then
-				max = math.max(max, input[startIndex + b])
+			for b = 1, #kernel[1] do
+				if b % dilation[1] == 0 then
+					max = math.max(max, input[startIndex + b])
+				end
 			end
+
+			start = start + stride[1]
+
+			output[a] = max
 		end
 
-		start = start + stride[1]
-
-		output[a] = max
+		return output
 	end
 
-	return output
+	if type(args.input[1]) == "table" then
+		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+		end
+
+		return output
+	end
+
+	return poolingFunc(args.input, args.kernel, args.stride, args.dilation)
 end
 
 function layersModule.maxPooling2D(args)
-	local output, startIndexA = {}, 0
-	local outputHeight, outputWidth = math.floor((#args.filter - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.filter[1] - args.kernel[2]) / args.stride[2]) + 1
+	local function poolingFunc(input, kernel, stride, dilation)
+		local outputShape = {math.floor((#args.filter - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.filter[1] - args.kernel[2]) / args.stride[2]) + 1}
+		local startIndexA = 0
 
-	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+		local output = {}
 
-	for a = 1, outputHeight do
-		output[a] = {}
-		local startIndexB = 0
+		for a = 1, outputHeight do
+			output[a] = {}
+			local startIndexB = 0
 
-		for b = 1, outputWidth do
-			local max = input[startIndexA + 1][startIndexB + 1]
+			for b = 1, outputWidth do
+				local max = input[startIndexA + 1][startIndexB + 1]
 
-			for c = 1, kernel[1] do
-				for d = 1, kernel[2] do
-					if c % dilation[1] == 0 and d % dilation[2] == 0 then
-						max = math.max(max, input[startIndexA + c][startIndexB + d])
+				for c = 1, kernel[1] do
+					for d = 1, kernel[2] do
+						if c % dilation[1] == 0 and d % dilation[2] == 0 then
+							max = math.max(max, input[startIndexA + c][startIndexB + d])
+						end
 					end
 				end
+
+				startIndexB = startIndexB + stride[2]
+
+				output[a][b] = max
 			end
 
-			startIndexB = startIndexB + stride[2]
-
-			output[a][b] = max
+			startIndexA = startIndexA + stride[1]
 		end
 
-		startIndexA = startIndexA + stride[1]
+		return output
 	end
 
-	return output
+	if type(args.input[1][1]) == "table" then
+		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+		end
+
+		return output
+	end
+
+	return poolingFunc(args.input, args.kernel, args.stride, args.dilation)
 end
 
 function layersModule.maxPooling3D(args)
-	local output, startIndexA = {}, 0
-	local outputDepth, outputHeight, outputWidth = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1, math.floor((#args.input[1][1] - args.kernel[3]) / args.stride[3]) + 1
+	local function poolingFunc(input, kernel, stride, dilation)
+		local outputSize = {math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1, math.floor((#args.input[1][1] - args.kernel[3]) / args.stride[3]) + 1}
+		local startIndexA = 0
 
-	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+		local output = {}
 
-	for a = 1, outputDepth do
-		output[a] = {}
-		local startIndexB = 0
+		for a = 1, outputDepth do
+			output[a] = {}
+			local startIndexB = 0
 
-		for b = 1, outputHeight do
-			output[a][b] = {}
-			local startIndexC = 0
+			for b = 1, outputHeight do
+				output[a][b] = {}
+				local startIndexC = 0
 
-			for c = 1, outputWidth do
-				local max = input[startIndexA + 1][startIndexB + 1][startIndexC + 1]
+				for c = 1, outputWidth do
+					local max = input[startIndexA + 1][startIndexB + 1][startIndexC + 1]
 
-				for d = 1, kernel[1] do
-					for e = 1, kernel[2] do
-						for f = 1, kernel[3] do
-							if d % dilation[1] == 0 and e % dilation[2] == 0 and f % dilation[3] == 0 then
-								max = math.max(max, input[startIndexA + d][startIndexB + e][startIndexC + f])
+					for d = 1, kernel[1] do
+						for e = 1, kernel[2] do
+							for f = 1, kernel[3] do
+								if d % dilation[1] == 0 and e % dilation[2] == 0 and f % dilation[3] == 0 then
+									max = math.max(max, input[startIndexA + d][startIndexB + e][startIndexC + f])
+								end
 							end
 						end
 					end
+
+					startIndexC = startIndexC + stride[3]
+
+					output[a][b][c] = max
 				end
 
-				startIndexC = startIndexC + stride[3]
-
-				output[a][b][c] = max
+				startIndexB = startIndexB + stride[2]
 			end
 
-			startIndexB = startIndexB + stride[2]
+			startIndexA = startIndexA + stride[1]
 		end
 
-		startIndexA = startIndexA + stride[1]
+		return output
 	end
 
-	return output
+	if type(args.input[1][1][1]) == "table" then
+		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+		end
+
+		return output
+	end
+
+	return poolingFunc(args.input, args.kernel, args.stride, args.dilation)
 end
 
 function layersModule.sumPooling1D(args)
-	local output, startIndex = {}, 0
-	local outputSize = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1
+	local function poolingFunc(input, kernel, stride, dilation)
+		local outputSize = math.floor((#input - kernel[1]) / stride[1]) + 1
+		local startIndex = 0
 
-	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+		local output = {}
 
-	for a = 1, outputSize do
-		local sum = 0
-
-		for b = 1, #kernel[1] do
-			if b % dilation[1] == 0 then
-				sum = sum + input[startIndex + b]
-			end
-		end
-
-		start = start + stride[1]
-
-		output[a] = sum
-	end
-
-	return output
-end
-
-function layersModule.sumPooling2D(args)
-	local output, startIndexA = {}, 0
-	local outputHeight, outputWidth = math.floor((#args.filter - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.filter[1] - args.kernel[2]) / args.stride[2]) + 1
-
-	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
-
-	for a = 1, outputHeight do
-		output[a] = {}
-		local startIndexB = 0
-
-		for b = 1, outputWidth do
+		for a = 1, outputSize do
 			local sum = 0
 
-			for c = 1, kernel[1] do
-				for d = 1, kernel[2] do
-					if c % dilation[1] == 0 and d % dilation[2] == 1 then
-						sum = sum + input[startIndexA + c][startIndexB + d]
-					end
+			for b = 1, #kernel[1] do
+				if b % dilation[1] == 0 then
+					sum = sum + input[startIndex + b]
 				end
 			end
 
-			startIndexB = startIndexB + stride[2]
+			startIndex = startIndex + stride[1]
 
-			output[a][b] = sum
+			output[a] = sum
 		end
 
-		startIndexA = startIndexA + stride[1]
+		return output
 	end
 
-	return output
+	if type(args.input[1]) == "table" then
+		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+		end
+
+		return output
+	end
+
+	return poolingFunc(args.input, args.kernel, args.stride, args.dilation)
 end
 
-function layersModule.sumPooling3D(args)
-	local output, startIndexA = {}, 0
-	local outputDepth, outputHeight, outputWidth = math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1, math.floor((#args.input[1][1] - args.kernel[3]) / args.stride[3]) + 1
+function layersModule.sumPooling2D(args)
+	local function poolingFunc(input, kernel, stride, dilation)
+		local outputSize = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1}
+		local startIndexA = 0
 
-	local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
+		local output = {}
 
-	for a = 1, outputDepth do
-		output[a] = {}
-		local startIndexB = 0
+		for a = 1, outputSize[1] do
+			local startIndexB = 0
+			output[a] = {}
 
-		for b = 1, outputHeight do
-			output[a][b] = {}
-			local startIndexC = 0
-
-			for c = 1, outputWidth do
+			for b = 1, outputSize[2] do
 				local sum = 0
 
-				for d = 1, kernel[1] do
-					for e = 1, kernel[2] do
-						for f = 1, kernel[3] do
-							if d % dilation[1] == 0 and e % dilation[2] == 0 and f % dilation[3] == 0 then
-								sum = sum + input[startIndexA + d][startIndexB + e][startIndexC + f]
-							end
+				for c = 1, kernel[1] do
+					for d = 1, kernel[2] do
+						if c % dilation[1] == 0 and d % dilation[2] == 1 then
+							sum = sum + input[startIndexA + c][startIndexB + d]
 						end
 					end
 				end
 
-				startIndexC = startIndexC + stride[3]
+				startIndexB = startIndexB + stride[2]
 
-				output[a][b][c] = sum
+				output[a][b] = sum
 			end
 
-			startIndexB = startIndexB + stride[2]
+			startIndexA = startIndexA + stride[1]
 		end
 
-		startIndexA = startIndexA + stride[1]
+		return output
 	end
 
-	return output
-end
+	if type(args.input[1][1]) == "table" then
+		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
-function layersModule.averageGlobalPooling1D(args)
-	local sum = 0
+		local output = {}
 
-	local input = args.input
-
-	for a = 1, #input do
-		sum = sum + input[a]
-	end
-
-	return {sum / #input}
-end
-
-function layersModule.averageGlobalPooling2D(args)
-	local output = {}
-
-	local input = args.input
-
-	for a = 1, #input do
-		output[a] = 0
-
-		for b = 1, #input[a] do
-			output[a] = output[a] + input[a][b]
+		for a = 1, #input do
+			output[a] = poolingFunc(input[a], kernel, stride, dilation)
 		end
 
-		output[a] = output[a] / #input[a]
+		return output
 	end
 
-	return output
+	return poolingFunc(args.input, args.kernel, args.stride, args.dilation)
 end
 
-function layersModule.averageGlobalPooling3D(args)
-	local output = {}
+function layersModule.sumPooling3D(args)
+	local function poolingFunc(input, kernel, stride, dilation)
+		local outputSize = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1, math.floor((#input[1][1] - kernel[3]) / stride[3]) + 1}
+		local startIndexA = 0
 
-	local input = args.input
+		local output = {}
 
-	for a = 1, #input do
-		output[a] = {}
+		for a = 1, outputDepth do
+			output[a] = {}
+			local startIndexB = 0
 
-		for b = 1, #input[a] do
-			output[a][b] = 0
+			for b = 1, outputHeight do
+				output[a][b] = {}
+				local startIndexC = 0
 
-			for c = 1, #input[a][b] do
-				output[a][b] = output[a][b] + input[a][b][c]
+				for c = 1, outputWidth do
+					local sum = 0
+
+					for d = 1, kernel[1] do
+						for e = 1, kernel[2] do
+							for f = 1, kernel[3] do
+								if d % dilation[1] == 0 and e % dilation[2] == 0 and f % dilation[3] == 0 then
+									sum = sum + input[startIndexA + d][startIndexB + e][startIndexC + f]
+								end
+							end
+						end
+					end
+
+					startIndexC = startIndexC + stride[3]
+
+					output[a][b][c] = sum
+				end
+
+				startIndexB = startIndexB + stride[2]
 			end
 
-			output[a][b] = output[a][b] / #input[a][b]
+			startIndexA = startIndexA + stride[1]
 		end
+
+		return output
 	end
 
-	return output
-end
+	if type(args.input[1][1][1]) == "table" then
+		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
-function layersModule.maxGlobalPooling1D(args)
-	return {math.max(table.unpack(args.input))}
-end
+		local output = {}
 
-function layersModule.maxGlobalPooling2D(args)
-	local output = {}
-
-	local input = args.input
-
-	for a = 1, #input do
-		output[a] = math.max(table.unpack(input[a]))
-	end
-
-	return output
-end
-
-function layersModule.maxGlobalPooling3D(args)
-	local output = {}
-
-	local input = args.input
-
-	for a = 1, #input do
-		output[a] = {}
-
-		for b = 1, #input[a] do
-			output[a][b] = math.max(table.unpack(input[a][b]))
+		for a = 1, #input do
+			output[a] = poolingFunc(input[a], kernel, stride, dilation)
 		end
+
+		return output
 	end
 
-	return output
-end
-
-function layersModule.sumGlobalPooling1D(args)
-	local output = 0
-
-	local input = args.input
-
-	for a = 1, #input do
-		output = output + input[a]
-	end
-
-	return {output}
-end
-
-function layersModule.sumGlobalPooling2D(args)
-	local output = {}
-
-	local input = args.input
-
-	for a = 1, #input do
-		output[a] = 0
-
-		for b = 1, #input[a] do
-			output[a] = output[a] + input[a][b]
-		end
-	end
-
-	return input
-end
-
-function layersModule.sumGlobalPooling3D(args)
-	local output = {}
-
-	local input = args.input
-
-	for a = 1, #input do
-		output[a] = {}
-
-		for b = 1, #input[a] do
-			output[a][b] = 0
-
-			for c = 1, #input[a][b] do
-				output[a][b] = output[a][b] + input[a][b][c]
-			end
-		end
-	end
-
-	return output
+	return poolingFunc(args.input, args.kernel, args.stride, args.dilation)
 end
 
 function layersModule.upSample1D(args)
-	local output = {}
+	local function upSampleFunc(input, kernel)
+		local output = {}
 
-	local input, kernel = args.input, args.kernel
+		for a = 1, #input * kernel[1] do
+			output[a] = input[math.ceil(a / kernel[1])]
+		end
 
-	for a = 1, #input * kernel[1] do
-		output[a] = input[math.ceil(a / kernel[1])]
+		return output
 	end
 
-	return output
+	if type(args.input[1]) == "table" then
+		local input, kernel = args.input, args.kernel
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = upSampleFunc(input[a], kernel)
+		end
+
+		return output
+	end
+
+	return upSampleFunc(args.input, args.kernel)
 end
 
 function layersModule.upSample2D(args)
-	local output = {}
-	local input, kernel = args.input, args.kernel
+	local function upSampleFunc(input, kernel)
+		for a = 1, #input * kernel[1] do
+			output[a] = {}
 
-	for a = 1, #input * kernel[1] do
-		output[a] = {}
-
-		for b = 1, #input[1] * kernel[2] do
-			output[a][b] = input[math.ceil(a / kernel[1])][math.ceil(b / kernel[2])]
+			for b = 1, #input[1] * kernel[2] do
+				output[a][b] = input[math.ceil(a / kernel[1])][math.ceil(b / kernel[2])]
+			end
 		end
 	end
 
-	return output
+	if type(args.input[1][1]) == "table" then
+		local input, kernel = args.input, args.kernel
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = upSampleFunc(input, kernel)
+		end
+
+		return output
+	end
+
+	return upSampleFunc(args.input, args.kernel)
 end
 
 function layersModule.upSample3D(args)
-	local output = {}
-	local input, kernel = args.input, args.kernel
+	local function upSampleFunc(input, kernel)
+		for a = 1, #input * kernel[1] do
+			output[a] = {}
 
-	for a = 1, #input * kernel[1] do
-		output[a] = {}
+			for b = 1, #input * kernel[2] do
+				output[a][b] = {}
 
-		for b = 1, #input * kernel[2] do
-			output[a][b] = {}
-
-			for c = 1, #input * kernel[3] do
-				output[a][b][c] = input[math.ceil(a / kernel[1])][math.ceil(b / kernel[2])][math.ceil(c / kernel[3])]
+				for c = 1, #input * kernel[3] do
+					output[a][b][c] = input[math.ceil(a / kernel[1])][math.ceil(b / kernel[2])][math.ceil(c / kernel[3])]
+				end
 			end
 		end
 	end
 
-	return output
+	if type(args.input[1][1][1]) == "table" then
+		local input, kernel = args.input, args.kernel
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = upSampleFunc(input, kernel)
+		end
+
+		return output
+	end
+
+	return upSampleFunc(args.input, args.kernel)
 end
 
 function layersModule.zeroPad1D(args)
-	local input, paddingAmount = args.input, args.paddingAmount
+	local function zeroPadFunc(input, paddingAmount)
+		for a = 1, paddingAmount[1] do
+			table.insert(input, 1, 0)
 
-	for a = 1, paddingAmount[1] do
-		table.insert(input, 1, 0)
+			input[#input + 1] = 0
+		end
 
-		input[#input + 1] = 0
+		return input
 	end
 
-	return input
+	if type(args.input[1]) == "table" then
+		local input, paddingAmount = args.input, args.paddingAmount
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = zeroPadFunc(input, paddingAmount)
+		end
+	
+		return output
+	end
+
+	return zeroPadFunc(args.input, args.paddingAmount)
 end
 
 function layersModule.zeroPad2D(args)
-	local input, paddingAmount = args.input, args.paddingAmount
+	local function zeroPadFunc(input, paddingAmount)
+		-- Pad the tops and bottoms
 
-	-- Pad the tops and bottoms
+		for a = 1, paddingAmount[1] do
+			table.insert(input, 1, {})
 
-	for a = 1, paddingAmount[1] do
-		table.insert(input, 1, {})
+			for b = 1, #input[a + 1] do
+				input[1][b] = 0
+			end
 
-		for b = 1, #input[a + 1] do
-			input[1][b] = 0
+			input[#input + 1] = input[1]
 		end
 
-		input[#input + 1] = input[1]
-	end
+		-- Pad the sides
 
-	-- Pad the sides
+		for a = 1, #input do
+			for b = 1, paddingAmount[2] do
+				table.insert(input[a], 1, 0)
 
-	for a = 1, #input do
-		for b = 1, paddingAmount[2] do
-			table.insert(input[a], 1, 0)
-
-			input[a][#input[a] + 1] = 0
+				input[a][#input[a] + 1] = 0
+			end
 		end
+
+		return input
 	end
 
-	return input
+	if type(args.input[1][1]) == "table" then
+		local input, paddingAmount = args.input, args.paddingAmount
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = zeroPadFunc(input, paddingAmount)
+		end
+
+		return output
+	end
+
+	return zeroPadFunc(args.input, args.paddingAmount)
 end
 
 function layersModule.zeroPad3D(args)
-	local input, paddingAmount = args.input, args.paddingAmount
+	local function zeroPadFunc(input, paddingAmount)
+		-- Pad the tops and bottoms
 
-	for a = 1, #input do
-		input[a] = layer.zeroPad2D{
-			input = input[a],
-			paddingAmount = {paddingAmount[2], paddingAmount[3]}
-		}
-	end
+		for a = 1, paddingAmount[1] do
+			table.insert(input, 1, {})
 
-	for a = 1, paddingAmount[1] do
-		table.insert(input, 1, {})
+			for b = 1, #input[1] do
+				for c = 1, #input[1][b] do
+					input[1][b][c] = 0
+				end
+			end
 
-		for b = 1, #input[a + 1] do
-			input[1][b] = {}
-			for c = 1, #input[a + 1][b] do
-				input[1][b][c] = 0
+			input[#input + 1] = {}
+
+			for b = 1, #input[1] do
+				input[#input[b] = {}
+
+				for c = 1, #input[1][b] do
+					input[#input][b][c] = 0
+				end
 			end
 		end
 
-		input[#input + 1] = input[1]
+		-- Pad the sides
+
+		for a = 1, #input do
+			for b = 1, paddingAmount[2] do
+				for c = 1, #input[1][1] do
+					table.insert(input[a][1], 1, 0)
+					input[a][#input[1] + 1][c] = 0
+				end
+			end
+		end
+
+		-- Pad the front and back
+
+		for a = 1, #input do
+			for b = 1, #input[1] do
+				for c = 1, padingAmount[3] do
+					table.insert(input[a][b], 1, 0)
+					input[a][b][#input[1][1] + 1] = 0
+				end
+			end
+		end
+
+		return input
 	end
 
-	return input
+	if type(args.input[1][1][1]) == "table" then
+		local input, paddingAmount = args.input, args.paddingAmount
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = zeroPadFunc(input, paddingAmount)
+		end
+
+		return output
+	end
+
+	return zeroPadFunc(input, paddingAmount)
 end
 
 function layersModule.crop1D(args)
-	local output = {}
-	local input, start, outputShape = args.input, args.start, args.outputShape
+	local function cropFunc(input, start, outputShape)
+		local output = {}
 
-	for a = 1, start[1], outputShape[1] + start[1] do
-		output[#output + 1] = input[a]
+		for a = start[1], outputShape[1] + start[1] do
+			output[#output + 1] = input[a]
+		end
+
+		return output
 	end
 
-	return output
+	if type(args.input[1]) == "table" then
+		local input, start, outputShape = args.input, args.start, args.outputShape
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = cropFunc(input, start, outputShape)
+		end
+
+		return output
+	end
+
+	return cropFunc(args.input, args.start, args.outputShape)
 end
 
 function layersModule.crop2D(args)
-	local output = {}
-	local input, start, outputShape = args.input, args.start, args.outputShape
+	local function cropFunc(input, start, outputShape)
+		local output = {}
 
-	for a = 1, start[1], outputShape[1] + start[1] do
-		local row = {}
+		for a = start[1], outputShape[1] + start[1] do
+			local row = {}
 
-		for b = 1, start[2], outputShape[2] + start[2] do
-			row[#row + 1] = input[a][b]
+			for b = start[2], outputShape[2] + start[2] do
+				row[b] = input[a][b]
+			end
+
+			output[a] = row
 		end
 
-		output[#output + 1] = row
+		return output
 	end
 
-	return output
+	if type(args.input[1][1]) == "table" then
+		local input, start, outputShape = args.input, args.start, args.outputShape
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = cropFunc(input, start, outputShape)
+		end
+
+		return output
+	end
+
+	return cropFunc(args.input, args.start, args.outputShape)
 end
 
 function layersModule.crop3D(args)
-	local output = {}
-	local input, start, outputShape = args.input, args.start, args.outputShape
+	local function cropFunc(input, start, outputShape)
+		local output = {}
 
-	for a = 1, start[1], outputShape[1] + start[1] do
-		local crop = {}
+		for a = start[1], outputShape[1] + start[1] do
+			local crop = {}
 
-		for b = 1, start[2], outputShape[2] + start[2] do
-			local row = {}
+			for b = start[2], outputShape[2] + start[2] do
+				local row = {}
 
-			for c = 1, start[3], outputShape[3] + start[3] do
-				row[#row + 1] = input[a][b][c]
+				for c = start[3], outputShape[3] + start[3] do
+					row[c] = input[a][b][c]
+				end
+
+				crop[b] = row
 			end
 
-			crop[#crop + 1] = row
+			output[a] = row
 		end
 
-		output[#output + 1] = crop
+		return output
 	end
 
-	return output
+	if type(args.input[1][1]) == "table" then
+		local input, start, outputShape = args.input, args.start, args.outputShape
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = cropFunc(input, start, outputShape)
+		end
+
+		return output
+	end
+
+	return cropFunc(args.input, args.start, args.outputShape)
 end
 
 function layersModule.convolutional1D(args)
-	local output = {}
-	local outputSize = math.floor((#args.input - #args.filter[1]) / args.stride[1]) + 1
+	local function convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+		local outputSize = math.floor((#input - #filter[1]) / stride[1]) + 1
 
-	local activation = activationsModule[args.activation]
-	local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
+		local output = {}
 
-	-- Check whether to do a normal 1D convolution or do a 2D convolution (depth from filters)
-
-	if type(input[1]) == "table" then
-		for a = 1, #input do
-			output[a] = layersModule.convolutional1D{
-				input = input[a],
-				filter = filter,
-				stride = stride,
-				dilation = dilation,
-				biases = biases,
-				activation = activation,
-				alpha = alpha
-			}
-		end
-	else
 		for a = 1, #filter do
 			local startIndex = 0
 			output[a] = {}
@@ -718,37 +853,36 @@ function layersModule.convolutional1D(args)
 				end
 			end
 		end
+
+		if #output == 1 then
+			return output[1]
+		end
+
+		return output
 	end
 
-	if #filter == 1 then
-		return output[1]
+	if type(args.input[1]) == "table" then
+		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
+		local activation = activationsModule[args.activation]
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)
+		end
+
+		return output
 	end
 
-	return output
+	return convolutionalFunc(args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation])
 end
 
 function layersModule.convolutional2D(args)
-	local output = {}
-	local outputShape = {math.floor((#args.input - #args.filter[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - #args.filter[1][1]) / args.stride[2]) + 1}
+	local function convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+		local outputShape = {math.floor((#input - #filter[1]) / stride[1]) + 1, math.floor((#input[1] - #filter[1][1]) / stride[2]) + 1}
 
-	local activation = activationsModule[args.activation]
-	local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
+		local output = {}
 
-	-- Check whether to do a normal 2D convolution or do a 3D convolution (depth from filters)
-
-	if type(input[1][1]) == "table" then
-		for a = 1, #input do
-			output[a] = layersModule.convolutional2D{
-				input = input[a],
-				filter = filter,
-				stride = stride,
-				dilation = dilation,
-				biases = biases,
-				activation = activation,
-				alpha = alpha
-			}
-		end
-	else
 		for a = 1, #filter do
 			local startIndexA = 0
 			output[a] = {}
@@ -782,35 +916,27 @@ function layersModule.convolutional2D(args)
 		end
 	end
 
-	if #filter == 1 then
-		return output[1]
+	if type(args.input[1][1]) == "table" then
+		local input, filter, stride, dilation, biases, alpha, activation = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation]
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)
+		end
+
+		return output
 	end
 
-	return output
+	return convolutionalFunc(args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation])
 end
 
 function layersModule.convolutional3D(args)
-	local output = {}
-	local outputShape = {math.floor((#args.input - #args.filter[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - #args.filter[1][1]) / args.stride[2]) + 1, math.floor((#args.input - #args.filter[1][1][1]) / args.stride[3]) + 1}
+	local function convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+		local outputShape = {math.floor((#input - #filter[1]) / stride[1]) + 1, math.floor((#input[1] - #filter[1][1]) / stride[2]) + 1, math.floor((#input - #filter[1][1][1]) / stride[3]) + 1}
 
-	local activation = activationsModule[args.activation]
-	local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
+		local output = {}
 
-	-- Check whether to do a normal 3D convolution or do a 4D convolution (depth from filters)
-
-	if type(input[1][1][1]) == "table" then
-		for a = 1, #input do
-			output[a] = layersModule.convolutional3D{
-				input = input[a],
-				filter = filter,
-				stride = stride,
-				dilation = dilation,
-				biases = biases,
-				activation = activation,
-				alpha = alpha
-			}
-		end
-	else
 		for a = 1, #filter do
 			local startIndexA = 0
 			output[a] = {}
@@ -853,11 +979,19 @@ function layersModule.convolutional3D(args)
 		end
 	end
 
-	if #filter == 1 then
-		return output[1]
+	if type(args.input[1][1][1]) == "table" then
+		local input, filter, stride, dilation, biases, alpha, activation = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation]
+
+		local output = {}
+	
+		for a = 1, #input do
+			output[a] = convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+		end
+
+		return output
 	end
 
-	return output
+	return convolutionalFunc(args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation])
 end
 
 function layersModule.flatten(args)
@@ -876,147 +1010,315 @@ function layersModule.reshape(args)
 end
 
 function layersModule.add1D(args)
-	local input, biases = args.input, args.biases
+	local function addFunc(input, biases)
+		for a = 1, #input do
+			input[a] = input[a] + biases[a]
+		end
 
-	for a = 1, #input do
-		input[a] = input[a] + biases[a]
+		return input
 	end
 
-	return input
+	if type(args.input[1]) == "table" then
+		local input, biases = args.input, args.biases
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = addFunc(input, biases)
+		end
+
+		return output
+	end
+
+	return addFunc(args.input, args.biases)
 end
 
 function layersModule.add2D(args)
-	local input, biases = args.input, args.biases
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			input[a][b] = input[a][b] + biases[a][b]
+	local function addFunc(input, biases)
+		for a = 1, #input do
+			for b = 1, #input[a] do
+				input[a][b] = input[a][b] + biases[a][b]
+			end
 		end
+
+		return input
 	end
 
-	return input
+	if type(args.input[1][1]) == "table" then
+		local input, biases = args.input, args.biases
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = addFunc(input, biases)
+		end
+
+		return output
+	end
+
+	return addFunc(args.input, args.biases)
 end
 
 function layersModule.add3D(args)
-	local input, biases = args.input, args.biases
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			for c = 1, #input[a][b] do
-				input[a][b][c] = input[a][b][c] + biases[a][b][c]
+	local function addFunc(input, biases)
+		for a = 1, #input do
+			for b = 1, #input[a] do
+				for c = 1, #input[a][b] do
+					input[a][b][c] = input[a][b][c] + biases[a][b][c]
+				end
 			end
 		end
+
+		return input
 	end
 
-	return args.input
+	if type(args.input[1][1]) == "table" then
+		local input, biases = args.input, args.biases
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = addFunc(input, biases)
+		end
+
+		return output
+	end
+
+	return addFunc(args.input, args.biases)
 end
 
 function layersModule.subtract1D(args)
-	local input, biases = args.input, args.biases
+	local function subtractFunc(input, biases)
+		for a = 1, #input do
+			input[a] = input[a] - biases[a]
+		end
 
-	for a = 1, #input do
-		input[a] = input[a] - biases[a]
+		return input
 	end
 
-	return input
+	if type(args.input[1]) == "table" then
+		local input, biases = args.input, args.biases
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = subtractFunc(input, biases)
+		end
+
+		return output
+	end
+
+	return subtractFunc(args.input, args.biases)
 end
 
 function layersModule.subtract2D(args)
-	local input, biases = args.input, args.biases
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			input[a][b] = input[a][b] - biases[a][b]
+	local function subtractFunc(input, biases)
+		for a = 1, #input do
+			for b = 1, #input[a] do
+				input[a][b] = input[a][b] - biases[a][b]
+			end
 		end
+
+		return input
 	end
 
-	return input
+	if type(args.input[1][1]) == "table" then
+		local input, biases = args.input, args.biases
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = subtractFunc(input, biases)
+		end
+
+		return output
+	end
+
+	return subtractFunc(args.input, args.biases)
 end
 
 function layersModule.subtract3D(args)
-	local input, biases = args.input, args.biases
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			for c = 1, #input[a][b] do
-				input[a][b][c] = input[a][b][c] - biases[a][b][c]
+	local function subtractFunc(input, biases)
+		for a = 1, #input do
+			for b = 1, #input[a] do
+				for c = 1, #input[a][b] do
+					input[a][b][c] = input[a][b][c] - biases[a][b][c]
+				end
 			end
 		end
+
+		return input
 	end
 
-	return input
+	if type(args.input[1][1]) == "table" then
+		local input, biases = args.input, args.biases
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = subtractFunc(input, biases)
+		end
+
+		return output
+	end
+
+	return subtractFunc(args.input, args.biases)
 end
 
 function layersModule.multiply1D(args)
-	local input, weights = args.input, args.weights
+	local function multiplyFunc(input, weights)
+		for a = 1, #input do
+			input[a] = input[a] * weights[a]
+		end
 
-	for a = 1, #input do
-		input[a] = input[a] * weights[a]
+		return input
 	end
 
-	return input
+	if type(args.input[1]) == "table" then
+		local input, weights = args.input, args.weights
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = multiplyFunc(input, weights)
+		end
+
+		return output
+	end
+
+	return multiplyFunc(args.input, args.weights)
 end
 
 function layersModule.multiply2D(args)
-	local input, weights = args.input, args.weights
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			input[a][b] = input[a][b] * weights[a][b]
+	local function multiplyFunc(input, weights)
+		for a = 1, #input do
+			for b = 1, #input[a] do
+				input[a][b] = input[a][b] * weights[a][b]
+			end
 		end
+
+		return input
 	end
 
-	return input
+	if type(args.input[1][1]) == "table" then
+		local input, weights = args.input, args.weights
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = multiplyFunc(input, weights)
+		end
+
+		return output
+	end
+
+	return multiplyFunc(args.input, args.weights)
 end
 
 function layersModule.multiply3D(args)
-	local input, weights = args.input, args.weights
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			for c = 1, #input[a][b] do
-				input[a][b][c] = input[a][b][c] * weights[a][b][c]
+	local function multiplyFunc(input, weights)
+		for a = 1, #input do
+			for b = 1, #input[a] do
+				for c = 1, #input[a][b] do
+					input[a][b][c] = input[a][b][c] * weights[a][b][c]
+				end
 			end
 		end
+
+		return input
 	end
 
-	return args.input
+	if type(args.input[1][1]) == "table" then
+		local input, weights = args.input, args.weights
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = multiplyFunc(input, weights)
+		end
+
+		return output
+	end
+
+	return multiplyFunc(args.input, args.weights)
 end
 
 function layersModule.divide1D(args)
-	local input, weights = args.input, args.weights
+	local function divideFunc(input, weights)
+		for a = 1, #input do
+			input[a] = input[a] / weights[a]
+		end
 
-	for a = 1, #input do
-		input[a] = input[a] / weights[a]
+		return input
 	end
 
-	return input
+	if type(args.input[1]) == "table" then
+		local input, weights = args.input, args.weights
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = divideFunc(input, weights)
+		end
+
+		return output
+	end
+
+	return divideFunc(args.input, args.weights)
 end
 
 function layersModule.divide2D(args)
-	local input, weights = args.input, args.weights
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			input[a][b] = input[a][b] / weights[a][b]
+	local function divideFunc(input, weights)
+		for a = 1, #input do
+			for b = 1, #input[a] do
+				input[a][b] = input[a][b] / weights[a][b]
+			end
 		end
+
+		return input
 	end
 
-	return input
+	if type(args.input[1][1]) == "table" then
+		local input, weights = args.input, args.weights
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = divideFunc(input, weights)
+		end
+
+		return output
+	end
+
+	return divideFunc(args.input, args.weights)
 end
 
 function layersModule.divide3D(args)
-	local input, weights = args.input, args.weights
-
-	for a = 1, #input do
-		for b = 1, #input[a] do
-			for c = 1, #input[a][b] do
-				input[a][b][c] = input[a][b][c] / weights[a][b][c]
+	local function divideFunc(input, weights)
+		for a = 1, #input do
+			for b = 1, #input[a] do
+				for c = 1, #input[a][b] do
+					input[a][b][c] = input[a][b][c] / weights[a][b][c]
+				end
 			end
 		end
+
+		return input
 	end
 
-	return args.input
+	if type(args.input[1][1]) == "table" then
+		local input, weights = args.input, args.weights
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = divideFunc(input, weights)
+		end
+
+		return output
+	end
+
+	return divideFunc(args.input, args.weights)
 end
 
 function layersModule.softmax(args)

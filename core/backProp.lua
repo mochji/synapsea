@@ -58,10 +58,7 @@ function backPropModule.stochasticGradientDescent(model, input, gradientDescentA
 	local gradient = {}
 
 	for a = #errors, 1, -1 do
-		gradient[a] = gradientModule[model.layerConfig[a].type](modelModule.layerToParameters(layerConfig[a]))
 	end
-
-	-- Update parameters
 end
 
 function backPropModule.batchGradientDescent(model, input, gradientDescentArgs)

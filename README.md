@@ -70,7 +70,7 @@ For more complex examples, please see [Examples](https://sites.google.com/view/s
 
 ## Documentation
 
-For detailed documentation, including API documentation and usage, please see [Documentation](https://sites.google.com/view/synapsea/api).
+For detailed documentation, including API documentation and usage, please see [Documentation](https://sites.google.com/view/synapsea/api/documentation).
 
 ## Contributing
 

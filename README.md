@@ -43,82 +43,30 @@ local synapsea = require("synapsea")
 
 ## Examples
 
-Creating a simple CNN:
+Try the Synapsea API:
 
 ```lua
-local synapsea = require("synapsea")
-
-local model = synapsea.model.new(
-    {64, 64, 3}, -- Input shape (image height, image width, image color channels)
-    {            -- Model metadata
-        name = "Example CNN",
-        description = "An example CNN for the README.md file in the Synapsea Github repository.",
-        author = "mochji (Skye)",
-        version = 1
-    }
-)
-
-model:addLayer(
-    "maxPooling3D",
-    {
-        kernel = {2, 2}
-    }
-)
-
-model:addLayer(
-    "convolutional3D",
-    {
-        activation = "leakyRelu",
-        alpha = 0.1,
-        filters = 16,
-        kernel = {3, 3},
-        filterInitializer = "normalRandom",
-        filterInitParameters = {
-            mean = 0,
-            sd = 0.1
-        },
-        biasInitializer = "constant",
-        biasInitParameters = {
-            value = 0.1
-        },
-        filterTrainable = true,
-        biasTrainable = true,
-        useBias = true
-    }
-)
-
-model:addLayer("flatten")
-
-model:addLayer(
-    "dense",
-    {
-        activation = "sigmoid",
-        outputSize = 10,
-        weightsInitializer = "uniformRandom",
-        weightsInitParameters = {
-            lowerLimit = -0.1,
-            upperLimit = 0.1
-        },
-        weightsTrainable = true
-    }
-)
-
-model:summary()
-
-model:initialize(
-    "momentum", -- Optimizer
-    {           -- Optimizer parameters
-        momentum = 0.9,
-        stepSize = 0.1
-    },
-    "l1",       -- Regularizer
-    {           -- Regularizer parameters
-        lambda = 0.1 -- tbh idrk what this should be lol
-    }
-)
+> synapsea = require("synapsea")
+> synapsea.activations.sigmoid(tonumber(io.read()))
+2.9
+0.94784643692158
+> model = synapsea.model.new{3, 3}
+> model:addLayer("flatten")
+> model:initialize()
+> output = model:forwardPass{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
+> for a = 1, #output do print(a, output[a]) end
+1       1
+2       2
+3       3
+4       4
+5       5
+6       6
+7       7
+8       8
+9       9
 ```
 
-For more examples, please see [Examples](https://sites.google.com/view/synapsea/api/examples).
+For more complex examples, please see [Examples](https://sites.google.com/view/synapsea/api/examples).
 
 ## Documentation
 

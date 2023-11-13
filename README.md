@@ -18,7 +18,7 @@ Synapsea is built from the ground up to be simple, easy to understand and portab
  - [Usage](#usage)
  - [Examples](#examples)
  - [Documentation](#documentation)
- - [Contributing](#contribution)
+ - [Contributing](#contributing)
  - [License](#license)
 
 ## Installatation
@@ -126,7 +126,7 @@ For detailed documentation, including API documentation and usage, please see [D
 
 ## Contributing
 
-Contributions are welcome! If you find any issues or have suggestions, please open an issue or create a pull request. Please also make sure to follow the [Contribution Guidelines](https://sites.google.com/view/synapsea/contribution).
+Contributions are welcome! If you find any issues or have suggestions, please open an issue or create a pull request. Please also make sure to follow the [Contribution Guidelines](https://sites.google.com/view/synapsea/contributing).
 
 ## License
 

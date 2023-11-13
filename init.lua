@@ -25,36 +25,33 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
--- Get the path Synapsea was required from
-_SYNAPSEA_PATH = debug.getinfo(1).short_src:match("(.*[/\\])") or ""
+-- Global variable for where Synapsea is located
+SYNAPSEA_PATH = debug.getinfo(1).short_src:match("(.*[/\\])") or ""
 
--- Temporary function to make requiring modules cleaner
-local function getModule(module)
-	return require(_SYNAPSEA_PATH .. "core." .. module)
-end
+-- Global variable for the version of Synapsea
+SYNAPSEA_VERSION = "v2.0.00-unstable"
 
 -- Wrap the core modules into a table
 local synapsea = {
-	version =      "v2.0.00-unstable",
+	version =      SYNAPSEA_VERSION,
 
-	activations =  getModule("activations"),
-	losses =       getModule("losses"),
-	math =         getModule("math"),
-	initializers = getModule("initializers"),
-	optimizers =   getModule("optimizers"),
-	regularizers = getModule("regularizers"),
-	layers =       getModule("layers.layers"),
-	backProp =     getModule("backProp"),
-	model =        getModule("model")
+	activations =  require(SYNAPSEA_PATH .. "core.activations"),
+	losses =       require(SYNAPSEA_PATH .. "core.losses"),
+	math =         require(SYNAPSEA_PATH .. "core.math"),
+	initializers = require(SYNAPSEA_PATH .. "core.initializers"),
+	optimizers =   require(SYNAPSEA_PATH .. "core.optimizers"),
+	regularizers = require(SYNAPSEA_PATH .. "core.regularizers"),
+	layers =       require(SYNAPSEA_PATH .. "core.layers.layers"),
+	backProp =     require(SYNAPSEA_PATH .. "core.backProp"),
+	model =        require(SYNAPSEA_PATH .. "core.model")
 }
 
 
--- Convert layers to metatables for cleaner code
-
+-- Convert layers to metatables to sort extra layer functions inside of the layer itself
 do
-	local buildModule = require(_SYNAPSEA_PATH .. "core.layers.build")
-	local errorModule = require(_SYNAPSEA_PATH .. "core.layers.error")
-	local gradientModule = require(_SYNAPSEA_PATH .. "core.layers.gradient")
+	local buildModule = require(SYNAPSEA_PATH .. "core.layers.build")
+	local errorModule = require(SYNAPSEA_PATH .. "core.layers.error")
+	local gradientModule = require(SYNAPSEA_PATH .. "core.layers.gradient")
 
 	for name, func in pairs(synapsea.layers) do
 		synapsea.layers[name] = setmetatable(

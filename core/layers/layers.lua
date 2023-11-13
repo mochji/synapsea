@@ -19,7 +19,8 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local activationsModule = require(_SYNAPSEA_PATH .. "core.activations")
+local activationsModule = require(SYNAPSEA_PATH .. "core.activations")
+
 local layersModule = {
 	dense,
 	averagePooling1D,
@@ -681,7 +682,7 @@ function layersModule.zeroPad3D(args)
 			input[#input + 1] = {}
 
 			for b = 1, #input[1] do
-				input[#input[b] = {}
+				input[#input[b]] = {}
 
 				for c = 1, #input[1][b] do
 					input[#input][b][c] = 0

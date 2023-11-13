@@ -19,9 +19,9 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local buildModule = require(_SYNAPSEA_PATH .. "core.layers.build")
-local layersModule = require(_SYNAPSEA_PATH .. "core.layers.layers")
-local initializersModule = require(_SYNAPSEA_PATH .. "core.initializers")
+local buildModule = require(SYNAPSEA_PATH .. "core.layers.build")
+local layersModule = require(SYNAPSEA_PATH .. "core.layers.layers")
+local initializersModule = require(SYNAPSEA_PATH .. "core.initializers")
 
 local modelModule = {
 	layerToParameters,
@@ -158,7 +158,7 @@ function modelModule.new(inputShape, metaData)
 		trainingConfig = {}
 	}
 
-	model.metaData.synapseaVersion = _SYNAPSEA_VERSION
+	model.metaData.synapseaVersion = SYNAPSEA_VERSION
 
 	-- Model functions
 
@@ -172,9 +172,9 @@ function modelModule.new(inputShape, metaData)
 end
 
 function modelModule.export(model, fileName)
-	local f, err, code = io.open(fileName, "w")
+	local f, err = io.open(fileName, "w")
 
-	assert(f, string.format("Couldn't open %s for writing, %s (%s).", fileName, err, code))
+	assert(f, fileName .. ": " .. err)
 
 	f:write("return 'im so sorry but say goodbye to your model, this isn't done yet :('")
 	f:close()

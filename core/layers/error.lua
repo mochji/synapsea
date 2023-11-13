@@ -23,6 +23,8 @@
 	error = (weight_k * error_j) * activation'(output) | hidden
 ]]--
 
+local activationsModule = require(SYNAPSEA_PATH .. "core.activations")
+
 local errorModule = {
 	dense,
 	averagePooling1D,
@@ -64,5 +66,24 @@ local errorModule = {
 	activate,
 	dropOut
 }
+
+function errorModule.dense(args)
+	local activation = activationsModule[args.activation]
+	local layerOutput, weights, alpha, outputSize, forwardError = args.layerOutput, args.weights, args.alpha, args.outputSize, args.forwardError
+
+	local inputSize = #weights
+
+	local output = {}
+
+	for a = 1, outputSize do
+		output[a] = 0
+
+		for b = 1, inputSize do
+			output[a][b] = output[a][b] + weights[b][a] * forwardError[a] * activation(input[a], true, alpha)
+		end
+	end
+
+	return output
+end
 
 return errorModule

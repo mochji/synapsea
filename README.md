@@ -14,12 +14,12 @@ Synapsea is built from the ground up to be simple, easy to understand and portab
 
 ## Table of Contents
 
- - [Installation](example.com)
- - [Usage](example.com)
- - [Examples](example.com)
- - [Documentation](example.com)
- - [Contributing](example.com)
- - [License](example.com)
+ - [Installation](#installation)
+ - [Usage](#usage)
+ - [Examples](#examples)
+ - [Documentation](#documentation)
+ - [Contributing](#contribution)
+ - [License](#license)
 
 ## Installatation
 
@@ -118,16 +118,16 @@ model:initialize(
 )
 ```
 
-For more examples, please see [Examples](example.com).
+For more examples, please see [Examples](https://sites.google.com/view/synapsea/api/examples).
 
 ## Documentation
 
-For detailed documentation, including API documentation and usage, please see [Documentation](example,com).
+For detailed documentation, including API documentation and usage, please see [Documentation](https://sites.google.com/view/synapsea/api).
 
 ## Contributing
 
-Contributions are welcome! If you find any issues or have suggestions, please open an issue or create a pull request. Please also make sure to follow the [Contribution Guidelines](example.com).
+Contributions are welcome! If you find any issues or have suggestions, please open an issue or create a pull request. Please also make sure to follow the [Contribution Guidelines](https://sites.google.com/view/synapsea/contribution).
 
 ## License
 
-This library is licensed under the GNU GPL v3, see [License](example.com) for details.
+This library is licensed under the GNU GPL v3, see [License](https://www.gnu.org/licenses/gpl-3.0.en.html) for details.

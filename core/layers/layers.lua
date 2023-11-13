@@ -1327,24 +1327,26 @@ function layersModule.softmax(args)
 end
 
 function layersModule.activate(args)
-	local activation = activationsModule[args.activation]
+	local activateFunc
 
-	local input, activation, derivative, alpha = args.input, args.activation, args.derivative, args.alpha
-
-	for a = 1, #input do
-		if type(input[a]) == "table" then
-			input[a] = layersModule.activate{
-				input = input[a],
-				activation = activation,
-				derivative = derivative,
-				alpha = alpha
-			}
-		else
-			input[a] = activation(input[a], derivative, alpha)
+	activateFunc = function(input, activation, derivative, alpha)
+		for a = 1, #input do
+			if type(input[a]) == "table" then
+				input[a] = activateFunc(
+					input,
+					activation,
+					derivative,
+					alpha
+				)
+			else
+				input[a] = activation(input[a], derivative, alpha)
+			end
 		end
+
+		return input
 	end
 
-	return input
+	return activationFunc(args.input, activationsModule[args.activation], args.derivative, args.alpha)
 end
 
 function layersModule.dropOut(args)

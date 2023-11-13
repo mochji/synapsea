@@ -499,7 +499,7 @@ buildModule.multiply2D = buildModule.multiply1D
 
 buildModule.multiply3D = buildModule.multiply1D
 
-buildModule.vectorDivide1D = buildModule.multiply1D
+buildModule.divide1D = buildModule.multiply1D
 
 buildModule.divide2D = buildModule.multiply1D
 
@@ -531,28 +531,6 @@ function buildModule.dropOut(args)
 	return {
 		config = {
 			rate = args.rate
-		},
-		inputShape = args.inputShape,
-		outputShape = args.inputShape
-	}
-end
-
-function buildModule.uniformNoise(args)
-	return {
-		config = {
-			lowerLimit = args.lowerLimit,
-			upperLimit = args.upperLimit
-		},
-		inputShape = args.inputShape,
-		outputShape = args.inputShape
-	}
-end
-
-function buildModule.normalNoise(args)
-	return {
-		config = {
-			mean = args.mean,
-			sd = args.sd,
 		},
 		inputShape = args.inputShape,
 		outputShape = args.inputShape

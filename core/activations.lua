@@ -122,25 +122,55 @@ function activationsModule.binaryStep(x, derivative)
 end
 
 function activationsModule.softMax(x, derivative)
-	local expSum, output = 0, {}
+	local getExpSum, softMax, softMaxDerivative
 
-	for a = 1, #x do
-		expSum = expSum + math.exp(x[a])
+	getExpSum = function(x)
+		local expSum = 0
+
+		for a = 1, #x do
+			if type(x[a]) == "table" then
+				expSum = expSum + getExpSum(x[a])
+			else
+				expSum = expSum + math.exp(x[a])
+			end
+		end
+
+		return expSum
 	end
 
-	if derivative then
+	softMax = function(x, expSum)
+		local output = {}
+
 		for a = 1, #x do
-			output[a] = (math.exp(x[a]) / expSum) * (1 - (math.exp(x[a]) / expSum))
+			if type(x[a]) == "table" then
+				output[a] = softMax(x[a])
+			else
+				output[a] = math.exp(x[a]) / expSum
+			end
 		end
 
 		return output
 	end
 
-	for a = 1, #x do
-		output[a] = math.exp(x[a]) / expSum
+	softMaxDerivative = function(x, expSum)
+		local output = {}
+
+		for a = 1, #x do
+			if type(x[a]) == "table" then
+				output[a] = softMaxDerivative(x[a])
+			else
+				output[a] = (math.exp(x[a]) / expSum) * (1 - (math.exp(x[a]) / expSum))
+			end
+		end
+
+		return output
 	end
 
-	return output
+	if derivative then
+		return softMaxDerivative(x, getExpSum(x))
+	end
+
+	return softMax(x, getExpSum(x))
 end
 
 function activationsModule.softPlus(x, derivative)

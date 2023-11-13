@@ -174,7 +174,7 @@ end
 function modelModule.export(model, fileName)
 	local f, err = io.open(fileName, "w")
 
-	assert(f, fileName .. ": " .. err)
+	assert(f, fileName .. ": " .. err or "")
 
 	f:write("return 'im so sorry but say goodbye to your model, this isn't done yet :('")
 	f:close()

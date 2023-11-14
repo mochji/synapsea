@@ -29,7 +29,7 @@ local mathModule = {
 }
 
 function mathModule.random.uniform(lowerLimit, upperLimit)
-	return lowerLimit + math.random() * (upperLimit - lowerLimit) -- Random float between upperLimit and lowerLimit
+	return lowerLimit + math.random() * (upperLimit - lowerLimit)
 end
 
 function mathModule.random.normal(mean, sd)

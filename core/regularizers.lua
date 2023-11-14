@@ -51,11 +51,13 @@ function regularizersModule.l1(args)
 		end
 	end
 
+	local lambda = args.lambda
+
 	for _, parameter in pairs(args.trainableParameters) do
 		if type(parameter) == "number" then
-			parameter = parameter + args.lambda * math.abs(parameter)
+			parameter = parameter + lambda * math.abs(parameter)
 		else
-			parmaeter = regularizerFunc(parameter, args.lambda)
+			parmaeter = regularizerFunc(parameter, lambda)
 		end
 	end
 
@@ -89,11 +91,13 @@ function regularizersModule.l2(args)
 		end
 	end
 
+	local lambda = args.lambda
+
 	for _, parameter in pairs(args.trainableParameters) do
 		if type(parameter) == "number" then
-			parameter = parameter + args.lambda * parameter^2
+			parameter = parameter + lambda * parameter^2
 		else
-			parmaeter = regularizerFunc(parameter, args.lambda)
+			parmaeter = regularizerFunc(parameter)
 		end
 	end
 

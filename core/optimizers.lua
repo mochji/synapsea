@@ -24,8 +24,6 @@ local optimizersModule = {
 }
 
 function optimizersModule.momentum(args)
-	local change = 0
-
 	local function optimizerFunc(gradient, momentum, stepSize, change)
 		for a, _ in pairs(gradient) do
 			if type(gradient[a]) == "table" then
@@ -39,16 +37,20 @@ function optimizersModule.momentum(args)
 		return gradient, change
 	end
 
-	for _, parameter in pairs(args.trainableParameters) do
+	local momentum, stepSize = args.momentum, args.stepSize
+
+	local change = 0
+
+	for _, parameter in pairs(args.parameters) do
 		if type(parameter) == "number" then
 			change = args.stepSize * gradient[a] + momentum * change
 			parameter = parameter - change
 		else
-			parameter, change = optimizerFunc(parameter, args.momentum, args.stepSize)
+			parameter, change = optimizerFunc(parameter, momentum, stepSize)
 		end
 	end
 
-	return args.trainableParameters
+	return args.parameters
 end
 
 return optimizersModule

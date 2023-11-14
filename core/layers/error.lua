@@ -68,8 +68,8 @@ local errorModule = {
 }
 
 function errorModule.dense(args)
+	local layerOutput, weights, alpha, outputSize, forwardError = args.output, args.weights, args.alpha, args.outputSize, args.forwardError
 	local activation = activationsModule[args.activation]
-	local layerOutput, weights, alpha, outputSize, forwardError = args.layerOutput, args.weights, args.alpha, args.outputSize, args.forwardError
 
 	local inputSize = #weights
 
@@ -79,7 +79,7 @@ function errorModule.dense(args)
 		output[a] = 0
 
 		for b = 1, inputSize do
-			output[a][b] = output[a][b] + weights[b][a] * forwardError[a] * activation(input[a], true, alpha)
+			output[a][b] = output[a][b] + weights[b][a] * forwardError[a] * activation(layerOutput[a], true, alpha)
 		end
 	end
 

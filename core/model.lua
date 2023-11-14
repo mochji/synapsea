@@ -19,57 +19,67 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local buildModule = require(SYNAPSEA_PATH .. "core.layers.build")
-local layersModule = require(SYNAPSEA_PATH .. "core.layers.layers")
+local layerModule        = require(SYNAPSEA_PATH .. "core.layers.layers")
+local buildModule        = require(SYNAPSEA_PATH .. "core.layers.build")
 local initializersModule = require(SYNAPSEA_PATH .. "core.initializers")
+local backPropModule     = require(SYNAPSEA_PATH .. "core.backProp")
 
 local modelModule = {
 	layerToParameters,
 	addLayer,
 	removeLayer,
-	summary,
 	initialize,
-	forwardPass,
-	fit,
-	new,
+	summary,
 	export,
-	import
+	import,
+	fit,
+	forwardPass,
+	new
 }
 
 function modelModule.layerToParameters(layer)
 	local parameters = {}
 
 	if layer.parameters then
-		for parameter, _ in pairs(layer.parameters) do
-			parameters[parameter] = layer.parameters[config]
+		for parameterName, parameter in layer.parameters do
+			parameters[parameterName] = parameter
+		end
+	end
+
+	if layer.config then
+		for configName, config in layer.config do
+			parameters[configName] = config
 		end
 	end
 
 	return parameters
 end
 
-function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
-	buildParameters, layerNumber = buildParameters or {}, layerNumber or #model.layerConfig + 1
 
-	local layer
+function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
+	buildParameters = buildParameters or {}
+	layerNumber     = layerNumber or #model.layerConfig + 1
+
+	local layer, parameterBuild
+
+	assert(layerNumber <= 1, "attempt to add layer with an index less than 1")
 
 	if buildModule[layerType] then
-		-- Get last layer output shape
-
 		if layerNumber == 1 then
 			buildParameters.inputShape = model.inputShape
 		else
-			buildParameters.inputShape = model.layerConfig[layerNumber - 1].outputShape
+			buildParameters.inputShape = model.layerConfig[layerNumber = 1].outputShape
 		end
 
 		layer, parameterBuild = buildModule[layerType](buildParameters)
-		table.insert(model.parameterBuild, layerNumber, parameterBuild or {})
 	else
 		layer = buildParameters
 	end
 
 	layer.type = layerType
+
 	table.insert(model.layerConfig, layerNumber, layer)
+	table.insert(model.parameterBuild, layerNumber, parameterBuild or {})
 
 	return model
 end
@@ -77,34 +87,34 @@ end
 function modelModule.removeLayer(model, layerNumber)
 	layerNumber = layerNumber or #model.layerConfig
 
-	assert(model.layerConfig[layerNumber], string.format("Attempt to remove a non-existant layer (%d).", layerNumber))
+	assert(model.layerConfig[layerNumber], "attempt to remove a non-existant layer (" .. tostring(layerNumber) .. ")")
+
+	if layerNumber == 1 and model.layerConfig[layerNumber + 1] then
+		model.inputShape = model.layerConfig[layerNumber + 1].inputShape
+	end
 
 	table.remove(model.layerConfig[layerNumber])
-	table.remove(model.parameterBuild[layerNumber])
+
+	if model.parameterBuild then
+		table.remove(model.parameterBuild[layerNumber])
+	end
 
 	return model
 end
 
-function modelModule.summary(model, toString)
-end
-
-function modelModule.initialize(model, optimizer, optimizerParameters, regularizer, regularizerParameters)
-	-- Create parameters in layers and initialize
-
+function modelModule.initialize(model, learningRate, epochs, optimizer, optimizerParameters, regularizer, regularizerParameters)
 	if model.parameterBuild then
 		for a = 1, #model.parameterBuild do
 			local layer = model.layerConfig[a]
 
 			for parameterName, parameter in pairs(model.parameterBuild[a]) do
 				layer.parameters[parameterName] = initializersModule[layer.initializer[parameterName].initializer](
-					model.parameterBuild[a][parameterName].shape,
+					model.parameterBuild[a][parameterName.shape,
 					layer.initializer[parameterName].parameters
 				)
 			end
 		end
 	end
-
-	-- Create training parameters
 
 	if optimizer then
 		model.trainingConfig.optimizer = {
@@ -120,33 +130,62 @@ function modelModule.initialize(model, optimizer, optimizerParameters, regulariz
 		}
 	end
 
+	-- This is done this way to avoid overwriting training data when initializing after first initialization to reset parametera
+
+	if learningRate then
+		model.trainingConfig.learningRate = learningRate
+	end
+
+	if epochs then
+		model.trainingConfig.epochs = epochs
+	end
+
 	if not model.layerConfig[#model.layerConfig] then
 		model.outputShape = model.inputShape
 	else
 		model.outputShape = model.layerConfig[#model.layerConfig].outputShape
 	end
 
-	model.addLayer, model.parameterBuild = nil, nil
-	model.layers = #model.layerConfig
-	model.forwardPass = modelModule.forwardPass
+	model.parameterBuild = nil
+	model.addLayer       = nil
+
+	model.hiddenLayers   = #model.layerConfig
+	model.totalLayers    = model.hiddenLayers + 2
+
+	model.forwardPass    = modelModule.forwardPass
+	model.fit            = modelModule.fit
+
+	return model
+end
+
+function modelModule.summary(model, returnString)
+end
+
+function modelModule.export(model)
+end
+
+function modelModule.import(model)
+end
+
+function modelModule.fit(model, dataset, algorithm, epochs, learningRate, gradientDescentArgs)
+	for a = 1, epochs do
+		model = backPropModule.gradientDescent[algorithm](model, dataset.inputs[math.random(1, #dataset)], dataset.output[math.random(1, #dataset.outputs)], learningRate, gradientDescentArgs)
+	end
 
 	return model
 end
 
 function modelModule.forwardPass(model, input)
-	local lastOutput = input
+	local lastOutput, parameters = input
 
 	for a = 1, #model.layerConfig do
-		local parameters = modelModule.layerToParameters(model.layerConfig[a])
+		parameters = modelModule.layerToParameters(model.layerConfig[a])
 		parameters.input = lastOutput
 
-		lastOutput = layersModule[model.layerConfig[a].type](parameters)
+		lastOutput = layerModule[model.layerConfig[a].type](parameters)
 	end
 
 	return lastOutput
-end
-
-function modelModule.fit(model, dataset, epochs, callBacks)
 end
 
 function modelModule.new(inputShape, metaData)
@@ -160,39 +199,11 @@ function modelModule.new(inputShape, metaData)
 
 	model.metaData.synapseaVersion = SYNAPSEA_VERSION
 
-	-- Model functions
-
-	model.addLayer = modelModule.addLayer
+	model.addLayer    = modelModule.addLayer
 	model.removeLayer = modelModule.removeLayer
-	model.export = modelModule.export
-	model.summary = modelModule.summary
-	model.initialize = modelModule.initialize
-
-	return model
-end
-
-function modelModule.export(model, fileName)
-	local f, err = io.open(fileName, "w")
-
-	assert(f, fileName .. ": " .. err or "")
-
-	f:write("return 'im so sorry but say goodbye to your model, this isn't done yet :('")
-	f:close()
-end
-
-function modelModule.import(fileName)
-	local model = dofile(fileName)
-
-	model.removeLayer = modelModule.removeLayer
-	model.initialize = modelModule.initialize
-	model.export = modelModule.export
-
-	if model.parameterBuild then
-		model.addLayer = modelModule.addLayer
-	else
-		model.forwardPass = modelModule.forwardPass
-		model.fit = modelModule.fit
-	end
+	model.initialize  = modelModule.initialize
+	model.summary     = modelModule.summary
+	model.export      = modelModule.export
 
 	return model
 end

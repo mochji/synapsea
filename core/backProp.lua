@@ -21,12 +21,13 @@
 
 local errorModule = require(SYNAPSEA_PATH .. "core.layers.error")
 local gradientModule = require(SYNAPSEA_PATH .. "core.layers.gradient")
-local modelModule = require(SYNAPSEA_PATH .. "core.model")
 
 local backPropModule = {
 	outputError,
-	stochasticGradientDescent,
-	batchGradientDescent
+	gradientDescent = {
+		stochastic,
+		batch
+	}
 }
 
 function backPropModule.outputError(output, expectedOutput, activation, alpha)
@@ -45,10 +46,10 @@ function backPropModule.outputError(output, expectedOutput, activation, alpha)
 	return outputError
 end
 
-function backPropModule.stochasticGradientDescent(model, input, gradientDescentArgs)
+function backPropModule.gradientDescent.stochastic(model, input, expectedOutput, learningRate, gradientDescentArgs)
 end
 
-function backPropModule.batchGradientDescent(model, input, gradientDescentArgs)
+function backPropModule.gradientDescent.batch(model, input, expectedOutput, learningRate, gradientDescentArgs)
 end
 
 return backPropModule

@@ -109,7 +109,7 @@ function modelModule.initialize(model, learningRate, epochs, optimizer, optimize
 
 			for parameterName, parameter in pairs(model.parameterBuild[a]) do
 				layer.parameters[parameterName] = initializersModule[layer.initializer[parameterName].initializer](
-					model.parameterBuild[a][parameterName.shape,
+					model.parameterBuild[a][parameterName.shape],
 					layer.initializer[parameterName].parameters
 				)
 			end

@@ -44,6 +44,9 @@ local layersModule = {
 	convolutional1D,
 	convolutional2D,
 	convolutional3D,
+	convolutionalTranspose1D,
+	convolutionalTranspose2D,
+	convolutionalTranspose3D,
 	flatten,
 	reshape,
 	add1D,
@@ -986,13 +989,109 @@ function layersModule.convolutional3D(args)
 		local output = {}
 	
 		for a = 1, #input do
-			output[a] = convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+			output[a] = convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)
 		end
 
 		return output
 	end
 
 	return convolutionalFunc(args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation])
+end
+
+function layersModule.convolutionalTranspose1D(args)
+	local function convolutionalTransposeFunc(input, filter, stride, dilation, biases, alpha, activation, paddingAmount)
+		return layersModule.convolutional1D{
+			input = layersModule.zeroPad1D{
+				input = input,
+				paddingAmount = paddingAmount
+			},
+			filter = filter,
+			stride = stride,
+			dilation = dilation,
+			biases = biases,
+			alpha = alpha,
+			activation = activation
+		}
+	end
+
+	if type(args.input[1]) == "table" then
+		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
+		local activation = activationsModule[args.activation]
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)
+		end
+
+		return output
+	end
+
+	return convolutionalTransposeFunc(args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation], args.paddingAmount)
+end
+
+function layersModule.convolutionalTranspose2D(args)
+	local function convolutionalTransposeFunc(input, filter, stride, dilation, biases, alpha, activation, paddingAmount)
+		return layersModule.convolutional2D{
+			input = layersModule.zeroPad2D{
+				input = input,
+				paddingAmount = paddingAmount
+			},
+			filter = filter,
+			stride = stride,
+			dilation = dilation,
+			biases = biases,
+			alpha = alpha,
+			activation = activation
+		}
+	end
+
+	if type(args.input[1][1]) == "table" then
+		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
+		local activation = activationsModule[args.activation]
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)
+		end
+
+		return output
+	end
+
+	return convolutionalTransposeFunc(args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation], args.paddingAmount)
+end
+
+function layersModule.convolutionalTranspose3D(args)
+	local function convolutionalTransposeFunc(input, filter, stride, dilation, biases, alpha, activation, paddingAmount)
+		return layersModule.convolutional3D{
+			input = layersModule.zeroPad3D{
+				input = input,
+				paddingAmount = paddingAmount
+			},
+			filter = filter,
+			stride = stride,
+			dilation = dilation,
+			biases = biases,
+			alpha = alpha,
+			activation = activation
+		}
+	end
+
+	if type(args.input[1][1][1]) == "table" then
+		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
+		local activation = activationsModule[args.activation]
+
+		local output = {}
+
+		for a = 1, #input do
+			output[a] = convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)
+		end
+
+		return output
+	end
+
+	return convolutionalTransposeFunc(args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation], args.paddingAmount)
 end
 
 function layersModule.flatten(args)

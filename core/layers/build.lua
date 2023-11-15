@@ -42,6 +42,9 @@ local buildModule = {
 	convolutional1D,
 	convolutional2D,
 	convolutional3D,
+	convolutionalTranspose1D,
+	convolutionalTranspose2D,
+	convolutionalTranspose3D,
 	flatten,
 	reshape,
 	add1D,
@@ -406,6 +409,30 @@ function buildModule.convolutional3D(args)
 			shape = layer.outputShape
 		}
 	end
+
+	return layer, parameterBuild
+end
+
+function buildModule.convolutionalTranspose1D(args)
+	local layer, parameterBuild = buildModule.convolutional1D(args)
+
+	layer.config.paddingAmount = args.paddingAmount
+
+	return layer, parameterBuild
+end
+
+function buildModule.convolutionalTranspose2D(args)
+	local layer, parameterBuild = buildModule.convolutional2D(args)
+
+	layer.config.paddingAmount = args.paddingAmount
+
+	return layer, parameterBuild
+end
+
+function buildModule.convolutionalTranspose3D(args)
+	local layer, parameterBuild = buildModule.convolutional3D(args)
+
+	layer.config.paddingAmount = args.paddingAmount
 
 	return layer, parameterBuild
 end

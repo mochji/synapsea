@@ -46,10 +46,10 @@ function backPropModule.outputError(output, expectedOutput, activation, alpha)
 	return outputError
 end
 
-function backPropModule.gradientDescent.stochastic(model, input, expectedOutput, learningRate, gradientDescentArgs)
+function backPropModule.gradientDescent.stochastic(model, dataset, expectedOutput, learningRate, gradientDescentArgs)
 end
 
-function backPropModule.gradientDescent.batch(model, input, expectedOutput, learningRate, gradientDescentArgs)
+function backPropModule.gradientDescent.batch(model, dataset, expectedOutput, learningRate, gradientDescentArgs)
 end
 
 return backPropModule

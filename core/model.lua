@@ -161,18 +161,13 @@ end
 function modelModule.summary(model, returnString)
 end
 
-function modelModule.export(model)
+function modelModule.export(model, fileName)
 end
 
-function modelModule.import(model)
+function modelModule.import(fileName)
 end
 
 function modelModule.fit(model, dataset, algorithm, epochs, learningRate, gradientDescentArgs)
-	for a = 1, epochs do
-		model = backPropModule.gradientDescent[algorithm](model, dataset.inputs[math.random(1, #dataset)], dataset.output[math.random(1, #dataset.outputs)], learningRate, gradientDescentArgs)
-	end
-
-	return model
 end
 
 function modelModule.forwardPass(model, input)

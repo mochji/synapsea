@@ -68,7 +68,7 @@ function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
 		if layerNumber == 1 then
 			buildParameters.inputShape = model.inputShape
 		else
-			buildParameters.inputShape = model.layerConfig[layerNumber = 1].outputShape
+			buildParameters.inputShape = model.layerConfig[layerNumber + 1].outputShape
 		end
 
 		layer, parameterBuild = buildModule[layerType](buildParameters)

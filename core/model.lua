@@ -62,7 +62,7 @@ function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
 
 	local layer, parameterBuild
 
-	assert(layerNumber <= 1, "attempt to add layer with an index less than 1")
+	assert(layerNumber >= 1, "attempt to add layer with an index less than 1")
 
 	if buildModule[layerType] then
 		if layerNumber == 1 then

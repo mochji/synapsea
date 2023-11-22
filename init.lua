@@ -25,14 +25,16 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
+local synapseaPath    = debug.getinfo(1).short_src:match("(.*[/\\])") or ""
+local synapseaVersion = "v2.0.00-unstable"
+
+-- This is a really hacky fix but who cares tbh
+
 local tempBackup = {
 	SYNAPSEA_PATH    = SYNAPSEA_PATH,
 	SYNAPSEA_VERSION = SYNAPSEA_VERSION,
 	canindex         = canindex
 }
-
-local synapseaPath    = debug.getinfo(1).short_src:match("(.*[/\\])") or ""
-local synapseaVersion = "v2.0.00-unstable"
 
 SYNAPSEA_PATH    = synapseaPath
 SYNAPSEA_VERSION = synapseaVersion
@@ -67,6 +69,9 @@ do
 				gradient = gradientModule[layerName]
 			},
 			{
+				-- For some reason it sets the first parameter to self?
+				-- This is another hacky fix
+
 				__call = function(_, args)
 					return layerFunc(args)
 				end

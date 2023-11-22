@@ -37,6 +37,10 @@ local synapseaVersion = "v2.0.00-unstable"
 SYNAPSEA_PATH    = synapseaPath
 SYNAPSEA_VERSION = synapseaVersion
 
+function canindex(item)
+	return type(item) == "table" or (type(item) == "userdata" and getmetatable(item).__index)
+end
+
 local synapsea = {
 	version      = synapseaVersion,
 	activations  = require(synapseaPath .. "core.activations"),

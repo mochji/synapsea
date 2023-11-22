@@ -109,7 +109,7 @@ function layersModule.averagePooling1D(args)
 		return output
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
 		local output = {}
@@ -158,7 +158,7 @@ function layersModule.averagePooling2D(args)
 		return output
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
 		local output = {}
@@ -216,7 +216,7 @@ function layersModule.averagePooling3D(args)
 		return output
 	end
 
-	if type(args.input[1][1][1]) == "table" then
+	if canindex(args.input[1][1][1]) then
 		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
 		local output = {}
@@ -255,7 +255,7 @@ function layersModule.maxPooling1D(args)
 		return output
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
 		local output = {}
@@ -303,7 +303,7 @@ function layersModule.maxPooling2D(args)
 		return output
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
 		local output = {}
@@ -360,7 +360,7 @@ function layersModule.maxPooling3D(args)
 		return output
 	end
 
-	if type(args.input[1][1][1]) == "table" then
+	if canindex(args.input[1][1][1]) then
 		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
 		local output = {}
@@ -399,7 +399,7 @@ function layersModule.sumPooling1D(args)
 		return output
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
 		local output = {}
@@ -447,7 +447,7 @@ function layersModule.sumPooling2D(args)
 		return output
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
 		local output = {}
@@ -504,7 +504,7 @@ function layersModule.sumPooling3D(args)
 		return output
 	end
 
-	if type(args.input[1][1][1]) == "table" then
+	if canindex(args.input[1][1][1]) then
 		local input, kernel, stride, dilation = args.input, args.kernel, args.stride, args.dilation
 
 		local output = {}
@@ -530,7 +530,7 @@ function layersModule.upSample1D(args)
 		return output
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, kernel = args.input, args.kernel
 
 		local output = {}
@@ -556,7 +556,7 @@ function layersModule.upSample2D(args)
 		end
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, kernel = args.input, args.kernel
 
 		local output = {}
@@ -586,7 +586,7 @@ function layersModule.upSample3D(args)
 		end
 	end
 
-	if type(args.input[1][1][1]) == "table" then
+	if canindex(args.input[1][1][1]) then
 		local input, kernel = args.input, args.kernel
 
 		local output = {}
@@ -612,7 +612,7 @@ function layersModule.zeroPad1D(args)
 		return input
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, paddingAmount = args.input, args.paddingAmount
 
 		local output = {}
@@ -654,7 +654,7 @@ function layersModule.zeroPad2D(args)
 		return input
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, paddingAmount = args.input, args.paddingAmount
 
 		local output = {}
@@ -718,7 +718,7 @@ function layersModule.zeroPad3D(args)
 		return input
 	end
 
-	if type(args.input[1][1][1]) == "table" then
+	if canindex(args.input[1][1][1]) then
 		local input, paddingAmount = args.input, args.paddingAmount
 
 		local output = {}
@@ -744,7 +744,7 @@ function layersModule.crop1D(args)
 		return output
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, start, outputShape = args.input, args.start, args.outputShape
 
 		local output = {}
@@ -776,7 +776,7 @@ function layersModule.crop2D(args)
 		return output
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, start, outputShape = args.input, args.start, args.outputShape
 
 		local output = {}
@@ -814,7 +814,7 @@ function layersModule.crop3D(args)
 		return output
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, start, outputShape = args.input, args.start, args.outputShape
 
 		local output = {}
@@ -865,7 +865,7 @@ function layersModule.convolutional1D(args)
 		return output
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 		local activation = activationsModule[args.activation]
 
@@ -920,7 +920,7 @@ function layersModule.convolutional2D(args)
 		end
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, filter, stride, dilation, biases, alpha, activation = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation]
 
 		local output = {}
@@ -983,7 +983,7 @@ function layersModule.convolutional3D(args)
 		end
 	end
 
-	if type(args.input[1][1][1]) == "table" then
+	if canindex(args.input[1][1][1]) then
 		local input, filter, stride, dilation, biases, alpha, activation = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation]
 
 		local output = {}
@@ -1014,7 +1014,7 @@ function layersModule.convolutionalTranspose1D(args)
 		}
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
 		local activation = activationsModule[args.activation]
 
@@ -1046,7 +1046,7 @@ function layersModule.convolutionalTranspose2D(args)
 		}
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
 		local activation = activationsModule[args.activation]
 
@@ -1078,7 +1078,7 @@ function layersModule.convolutionalTranspose3D(args)
 		}
 	end
 
-	if type(args.input[1][1][1]) == "table" then
+	if canindex(args.input[1][1][1]) then
 		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
 		local activation = activationsModule[args.activation]
 
@@ -1118,7 +1118,7 @@ function layersModule.add1D(args)
 		return input
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, biases = args.input, args.biases
 
 		local output = {}
@@ -1144,7 +1144,7 @@ function layersModule.add2D(args)
 		return input
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, biases = args.input, args.biases
 
 		local output = {}
@@ -1172,7 +1172,7 @@ function layersModule.add3D(args)
 		return input
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, biases = args.input, args.biases
 
 		local output = {}
@@ -1196,7 +1196,7 @@ function layersModule.subtract1D(args)
 		return input
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, biases = args.input, args.biases
 
 		local output = {}
@@ -1222,7 +1222,7 @@ function layersModule.subtract2D(args)
 		return input
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, biases = args.input, args.biases
 
 		local output = {}
@@ -1250,7 +1250,7 @@ function layersModule.subtract3D(args)
 		return input
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, biases = args.input, args.biases
 
 		local output = {}
@@ -1274,7 +1274,7 @@ function layersModule.multiply1D(args)
 		return input
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, weights = args.input, args.weights
 
 		local output = {}
@@ -1300,7 +1300,7 @@ function layersModule.multiply2D(args)
 		return input
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, weights = args.input, args.weights
 
 		local output = {}
@@ -1328,7 +1328,7 @@ function layersModule.multiply3D(args)
 		return input
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, weights = args.input, args.weights
 
 		local output = {}
@@ -1352,7 +1352,7 @@ function layersModule.divide1D(args)
 		return input
 	end
 
-	if type(args.input[1]) == "table" then
+	if canindex(args.input[1]) then
 		local input, weights = args.input, args.weights
 
 		local output = {}
@@ -1378,7 +1378,7 @@ function layersModule.divide2D(args)
 		return input
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, weights = args.input, args.weights
 
 		local output = {}
@@ -1406,7 +1406,7 @@ function layersModule.divide3D(args)
 		return input
 	end
 
-	if type(args.input[1][1]) == "table" then
+	if canindex(args.input[1][1]) then
 		local input, weights = args.input, args.weights
 
 		local output = {}
@@ -1430,7 +1430,7 @@ function layersModule.activate(args)
 
 	activateFunc = function(input, activation, derivative, alpha)
 		for a = 1, #input do
-			if type(input[a]) == "table" then
+			if canindex(input[a]) then
 				input[a] = activateFunc(
 					input,
 					activation,

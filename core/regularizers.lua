@@ -29,7 +29,7 @@ function regularizersModule.l1(args)
 		local sum = 0
 
 		for a = 1, #tbl do
-			if type(tbl[a]) == "table" then
+			if canindex(tbl[a]) then
 				sum = sum + absoluteSum(tbl[a])
 			else
 				sum = sum + math.abs(tbl[a])
@@ -43,7 +43,7 @@ function regularizersModule.l1(args)
 		l1Norm = l1Norm or absoluteSum(gradient)
 
 		for a = 1, #gradient do
-			if type(args.gradient[a]) == "table" then
+			if canindex(args.gradient[a]) then
 				gradient[a] = regularizerFunc(gradient[a], lambda, l1Norm)
 			else
 				gradient[a] = gradient[a] + lambda * l1Norm
@@ -69,7 +69,7 @@ function regularizersModule.l2(args)
 		local sum = 0
 
 		for a = 1, #tbl do
-			if type(tbl[a]) == "table" then
+			if canindex(tbl[a]) then
 				sum = sum + squaredSum(tbl[a])
 			else
 				sum = sum + tbl[a]^2
@@ -83,7 +83,7 @@ function regularizersModule.l2(args)
 		l2Norm = l2Norm or squaredSum(gradient)
 
 		for a = 1, #gradient do
-			if type(args.gradient[a]) == "table" then
+			if canindex(args.gradient[a]) then
 				gradient[a] = regularizerFunc(gradient[a], lambda, l2Norm)
 			else
 				gradient[a] = gradient[a] + lambda * l2Norm

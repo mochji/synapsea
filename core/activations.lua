@@ -128,7 +128,7 @@ function activationsModule.softMax(x, derivative)
 		local expSum = 0
 
 		for a = 1, #x do
-			if type(x[a]) == "table" then
+			if canindex(x[a]) then
 				expSum = expSum + getExpSum(x[a])
 			else
 				expSum = expSum + math.exp(x[a])
@@ -142,7 +142,7 @@ function activationsModule.softMax(x, derivative)
 		local output = {}
 
 		for a = 1, #x do
-			if type(x[a]) == "table" then
+			if canindex(x[a]) then
 				output[a] = softMax(x[a])
 			else
 				output[a] = math.exp(x[a]) / expSum
@@ -156,7 +156,7 @@ function activationsModule.softMax(x, derivative)
 		local output = {}
 
 		for a = 1, #x do
-			if type(x[a]) == "table" then
+			if canindex(x[a]) then
 				output[a] = softMaxDerivative(x[a])
 			else
 				output[a] = (math.exp(x[a]) / expSum) * (1 - (math.exp(x[a]) / expSum))

@@ -26,7 +26,7 @@ local optimizersModule = {
 function optimizersModule.momentum(args)
 	local function optimizerFunc(gradient, momentum, stepSize, change)
 		for a, _ in pairs(gradient) do
-			if type(gradient[a]) == "table" then
+			if canindex(gradient[a]) then
 				gradient[a], lastGradient = optimizerFunc(gradient[a], momentum, stepSize)
 			else
 				change = stepSize * gradient[a] + momentum * change

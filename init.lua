@@ -44,6 +44,7 @@ function canindex(item)
 end
 
 local synapsea = {
+	path         = synapseaPath,
 	version      = synapseaVersion,
 	activations  = require(synapseaPath .. "core.activations"),
 	losses       = require(synapseaPath .. "core.losses"),

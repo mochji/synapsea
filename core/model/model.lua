@@ -22,7 +22,7 @@
 local layersModule       = require(SYNAPSEA_PATH .. "core.layers.layers")
 local buildModule        = require(SYNAPSEA_PATH .. "core.layers.build")
 local initializersModule = require(SYNAPSEA_PATH .. "core.initializers")
-local backPropModule     = require(SYNAPSEA_PATH .. "core.model.backProp")
+local backPropModule     = require(SYNAPSEA_PATH .. "core.model.backprop")
 
 local modelModule = {
 	layerToParameters,

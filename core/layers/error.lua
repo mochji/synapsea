@@ -23,7 +23,7 @@
 	error = (weight_k * error_j) * activation'(output) | hidden
 ]]--
 
-local activationsModule = require(SYNAPSEA_PATH .. "core.activations")
+local activationsModule = getModule(SYNAPSEA_PATH, "activations")
 
 local errorModule = {
 	dense,

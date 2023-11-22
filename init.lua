@@ -33,7 +33,8 @@ local synapseaVersion = "v2.0.00-unstable"
 local tempBackup = {
 	SYNAPSEA_PATH    = SYNAPSEA_PATH,
 	SYNAPSEA_VERSION = SYNAPSEA_VERSION,
-	canindex         = canindex
+	canindex         = canindex,
+	getModule        = getModule
 }
 
 SYNAPSEA_PATH    = synapseaPath
@@ -43,24 +44,28 @@ function canindex(item)
 	return type(item) == "table" or (type(item) == "userdata" and getmetatable(item).__index)
 end
 
+function getModule(synapseaPath, module)
+	return dofile(synapseaPath .. string.gsub("core." .. module, "%.", package.config:sub(1, 1)) .. ".lua")
+end
+
 local synapsea = {
 	path         = synapseaPath,
 	version      = synapseaVersion,
-	activations  = require(synapseaPath .. "core.activations"),
-	losses       = require(synapseaPath .. "core.losses"),
-	math         = require(synapseaPath .. "core.math"),
-	initializers = require(synapseaPath .. "core.initializers"),
-	optimizers   = require(synapseaPath .. "core.optimizers"),
-	regularizers = require(synapseaPath .. "core.regularizers"),
-	model        = require(synapseaPath .. "core.model.model"),
+	activations  = getModule(synapseaPath, "activations"),
+	losses       = getModule(synapseaPath, "losses"),
+	math         = getModule(synapseaPath, "math"),
+	initializers = getModule(synapseaPath, "initializers"),
+	optimizers   = getModule(synapseaPath, "optimizers"),
+	regularizers = getModule(synapseaPath, "regularizers"),
+	model        = getModule(synapseaPath, "model.model"),
 	layers       = {}
 }
 
 do
-	local layersModule   = require(synapseaPath .. "core.layers.layers")
-	local buildModule    = require(synapseaPath .. "core.layers.build")
-	local errorModule    = require(synapseaPath .. "core.layers.error")
-	local gradientModule = require(synapseaPath .. "core.layers.gradient")
+	local layersModule   = getModule(synapseaPath, "layers.layers")
+	local buildModule    = getModule(synapseaPath, "layers.build")
+	local errorModule    = getModule(synapseaPath, "layers.error")
+	local gradientModule = getModule(synapseaPath, "layers.gradient")
 
 	for layerName, layerFunc in pairs(layersModule) do
 		synapsea.layers[layerName] = setmetatable(
@@ -81,7 +86,9 @@ do
 	end
 end
 
-SYNAPSEA_PATH = tempBackup.SYNAPSEA_PATH
-canindex      = tempBackup.canindex
+SYNAPSEA_PATH    = tempBackup.SYNAPSEA_PATH
+SYNAPSEA_VERSION = tempBackup.SYNAPSEA_VERSION
+canindex         = tempBackup.canindex
+getModule        = tempBackup.getModule
 
 return synapsea

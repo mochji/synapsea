@@ -19,10 +19,10 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local layersModule       = require(SYNAPSEA_PATH .. "core.layers.layers")
-local buildModule        = require(SYNAPSEA_PATH .. "core.layers.build")
-local initializersModule = require(SYNAPSEA_PATH .. "core.initializers")
-local backPropModule     = require(SYNAPSEA_PATH .. "core.model.backprop")
+local layersModule       = getModule(SYNAPSEA_PATH, "layers.layers")
+local buildModule        = getModule(SYNAPSEA_PATH, "layers.build")
+local initializersModule = getModule(SYNAPSEA_PATH, "initializers")
+local backPropModule     = getModule(SYNAPSEA_PATH, "model.backprop")
 
 local modelModule = {
 	layerToParameters,
@@ -191,7 +191,7 @@ function modelModule.new(inputShape, metaData)
 		trainingConfig = {}
 	}
 
-	model.metaData.synapseaVersion = "v2.0.00-unstable"
+	model.metaData.synapseaVersion = SYNAPSEA_VERSION
 
 	model.addLayer    = modelModule.addLayer
 	model.removeLayer = modelModule.removeLayer

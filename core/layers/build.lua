@@ -4,17 +4,17 @@
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 mochji
-																		   
+
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-																		   
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
-																		   
+
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
@@ -65,6 +65,8 @@ local buildModule = {
 }
 
 function buildModule.dense(args)
+	-- Default values
+
 	local layer, parameterBuild = {
 		config = {
 			activation = args.activation or "linear",
@@ -117,11 +119,16 @@ function buildModule.dense(args)
 end
 
 function buildModule.averagePooling1D(args)
+	-- Default values
+
+	args.stride = args.stride or {1}
+	args.dilation = args.dilation or {1}
+
 	local layer = {
 		config = {
 			kernel = args.kernel,
-			stride = args.stride or {1},
-			dilation = args.dilation or {1}
+			stride = args.stride,
+			dilation = args.dilation
 		},
 		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
@@ -131,11 +138,16 @@ function buildModule.averagePooling1D(args)
 end
 
 function buildModule.averagePooling2D(args)
+	-- Default values
+
+	args.stride = args.stride or {1, 1}
+	args.dilation = args.dilation or {1, 1}
+
 	local layer = {
 		config = {
 			kernel = args.kernel,
-			stride = args.stride or {1, 1},
-			dilation = args.dilation or {1, 1}
+			stride = args.stride,
+			dilation = args.dilation
 		},
 		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1}
@@ -145,11 +157,16 @@ function buildModule.averagePooling2D(args)
 end
 
 function buildModule.averagePooling3D(args)
+	-- Default values
+
+	args.stride = args.stride or {1, 1, 1}
+	args.dilation = args.dilation or {1, 1, 1}
+
 	local layer = {
 		config = {
 			kernel = args.kernel,
-			stride = args.stride or {1, 1, 1},
-			dilation = args.dilation or {1, 1, 1}
+			stride = args.stride,
+			dilation = args.dilation
 		},
 		inputShape = args.inputShape,
 		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1}
@@ -246,12 +263,18 @@ buildModule.crop2D = buildModule.crop1D
 buildModule.crop3D = buildModule.crop1D
 
 function buildModule.convolutional1D(args)
+	-- Default values
+
+	args.stride = args.stride or {1}
+	args.dilation = args.dilation or {1}
+	args.filters = args.filters or 1
+
 	local layer, parameterBuild = {
 		config = {
 			activation = args.activation or "linear",
-			stride = args.stride or {1},
-			dilation = args.dilation or {1},
-			filters = args.filters or 1
+			stride = args.stride,
+			dilation = args.dilation,
+			filters = args.filters
 		},
 		parameters = {
 			alpha = args.alpha
@@ -302,12 +325,18 @@ function buildModule.convolutional1D(args)
 end
 
 function buildModule.convolutional2D(args)
+	-- Default values
+
+	args.stride = args.stride or {1, 1}
+	args.dilation = args.dilation or {1, 1}
+	args.filters = args.filters or 1
+
 	local layer, parameterBuild = {
 		config = {
 			activation = args.activation or "linear",
-			stride = args.stride or {1, 1},
-			dilation = args.dilation or {1, 1},
-			filters = args.filters or 1
+			stride = args.stride,
+			dilation = args.dilation,
+			filters = args.filters
 		},
 		parameters = {
 			alpha = args.alpha
@@ -358,12 +387,18 @@ function buildModule.convolutional2D(args)
 end
 
 function buildModule.convolutional3D(args)
+	-- Default values
+
+	args.stride = args.stride or {1, 1, 1}
+	args.dilation = args.dilation or {1, 1, 1}
+	args.filters = args.filters or 1
+
 	local layer, parameterBuild = {
 		config = {
 			activation = args.activation or "linear",
-			stride = args.stride or {1, 1, 1},
-			dilation = args.dilation or {1, 1, 1},
-			filters = args.filters or 1
+			stride = args.stride,
+			dilation = args.dilation,
+			filters = args.filters
 		},
 		parameters = {
 			alpha = args.alpha

@@ -25,38 +25,53 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-SYNAPSEA_PATH = debug.getinfo(1).short_src:match("(.*[/\\])") or ""
-SYNAPSEA_VERSION = "v2.0.00-unstable"
+local tempBackup = {
+	SYNAPSEA_PATH    = SYNAPSEA_PATH,
+	SYNAPSEA_VERSION = SYNAPSEA_VERSION,
+	canindex         = canindex
+}
+
+local synapseaPath    = debug.getinfo(1).short_src:match("(.*[/\\])") or ""
+local synapseaVersion = "v2.0.00-unstable"
+
+SYNAPSEA_PATH    = synapseaPath
+SYNAPSEA_VERSION = synapseaVersion
 
 local synapsea = {
-	version      = SYNAPSEA_VERSION,
-
-	activations  = require(SYNAPSEA_PATH .. "core.activations"),
-	losses       = require(SYNAPSEA_PATH .. "core.losses"),
-	math         = require(SYNAPSEA_PATH .. "core.math"),
-	initializers = require(SYNAPSEA_PATH .. "core.initializers"),
-	optimizers   = require(SYNAPSEA_PATH .. "core.optimizers"),
-	regularizers = require(SYNAPSEA_PATH .. "core.regularizers"),
-	layers       = require(SYNAPSEA_PATH .. "core.layers.layers"),
-	backProp     = require(SYNAPSEA_PATH .. "core.backProp"),
-	model        = require(SYNAPSEA_PATH .. "core.model")
+	version      = synapseaVersion,
+	activations  = require(synapseaPath .. "core.activations"),
+	losses       = require(synapseaPath .. "core.losses"),
+	math         = require(synapseaPath .. "core.math"),
+	initializers = require(synapseaPath .. "core.initializers"),
+	optimizers   = require(synapseaPath .. "core.optimizers"),
+	regularizers = require(synapseaPath .. "core.regularizers"),
+	model        = require(synapseaPath .. "core.model.model"),
+	layers       = {}
 }
 
 do
-	local buildModule    = require(SYNAPSEA_PATH .. "core.layers.build")
-	local errorModule    = require(SYNAPSEA_PATH .. "core.layers.error")
-	local gradientModule = require(SYNAPSEA_PATH .. "core.layers.gradient")
+	local layersModule   = require(synapseaPath .. "core.layers.layers")
+	local buildModule    = require(synapseaPath .. "core.layers.build")
+	local errorModule    = require(synapseaPath .. "core.layers.error")
+	local gradientModule = require(synapseaPath .. "core.layers.gradient")
 
-	for name, func in pairs(synapsea.layers) do
-		synapsea.layers[name] = setmetatable(
+	for layerName, layerFunc in pairs(layersModule) do
+		synapsea.layers[layerName] = setmetatable(
 			{
-				build    = buildModule[name],
-				error    = errorModule[name],
-				gradient = gradientModule[name]
+				build    = buildModule[layerName],
+				error    = errorModule[layerName],
+				gradient = gradientModule[layerName]
 			},
-			{__call = func}
+			{
+				__call = function(_, args)
+					return layerFunc(args)
+				end
+			}
 		)
 	end
 end
+
+SYNAPSEA_PATH = tempBackup.SYNAPSEA_PATH
+canindex      = tempBackup.canindex
 
 return synapsea

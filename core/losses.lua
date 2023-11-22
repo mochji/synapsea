@@ -4,17 +4,17 @@
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 mochji
-																		   
+
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-																		   
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
-																		   
+
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
@@ -40,7 +40,7 @@ function lossesModule.meanSquaredError(output, expectedOutput)
 		local loss, count = 0, 0
 
 		for a = 1, #output do
-			if type(output[a]) == "table" then
+			if canindex(output[a]) then
 				local returnedLoss, returnedCount = lossFunc(output[a], expectedOutput[a])
 				loss, count = loss + returnedLoss, count + returnedCount
 			else
@@ -66,7 +66,7 @@ function lossesModule.meanAbsoluteError(output, expectedOutput)
 		local loss, count = 0, 0
 
 		for a = 1, #output do
-			if type(output[a]) == "table" then
+			if canindex(output[a]) then
 				local returnedLoss, returnedCount = lossFunc(output[a], expectedOutput[a])
 				loss, count = loss + returnedLoss, count + returnedCount
 			else
@@ -92,7 +92,7 @@ function lossesModule.sumOfSquaredError(output, expectedOutput)
 		local loss = 0
 
 		for a = 1, #output do
-			if type(output[a]) == "table" then
+			if canindex(output[a]) then
 				loss = loss + lossFunc(output[a], expectedOutput[a])
 			else
 				loss = loss + (expectedOutput[a] - output[a])^2
@@ -116,7 +116,7 @@ function lossesModule.rootOfMeanSquaredError(output, expectedOutput)
 		local loss, count = 0, 0
 
 		for a = 1, #output do
-			if type(output[a]) == "table" then
+			if canindex(output[a]) then
 				local returnedLoss, returnedCount = lossFunc(output[a], expectedOutput[a])
 				loss, count = loss + returnedLoss, count + returnedCount
 			else
@@ -142,7 +142,7 @@ function lossesModule.crossEntropy(output, expectedOutput)
 		local loss = 0
 
 		for a = 1, #output do
-			if type(output[a]) == "table" then
+			if canindex(output[a]) then
 				loss = loss + lossFunc(output[a], expectedOutput[a])
 			else
 				loss = loss + expectedOutput[a] * math.log(output[a])
@@ -166,7 +166,7 @@ function lossesModule.binaryCrossEntropy(output, expectedOutput)
 		local loss = 0
 
 		for a = 1, #output do
-			if type(output[a]) == "table" then
+			if canindex(output[a]) then
 				loss = loss + lossFunc(output[a], expectedOutput[a])
 			else
 				loss = loss + expectedOutput[a] * math.log(output[a]) + (1 - expectedOutput[a]) * math.log(1- output[a])
@@ -190,7 +190,7 @@ function lossesModule.hinge(output, expectedOutput)
 		local loss = 0
 
 		for a = 1, #output do
-			if type(output[a]) == "table" then
+			if canindex(output[a]) then
 				loss = loss + lossFunc(output[a], expectedOutput[a])
 			else
 				loss = loss + math.max(0, 1 - expectedOutput[a] * output[a])
@@ -222,7 +222,7 @@ function lossesModule.huber(output, expectedOutput, lossArgs)
 		local loss = 0
 
 		for a = 1, #output do
-			if type(output[a]) == "table" then
+			if canindex(output[a]) then
 				loss = loss + lossFunc(output[a], expectedOutput[a])
 			else
 				local x = output[a] - expectedOutput[a]
@@ -254,7 +254,7 @@ function lossesModule.klDivergence(output, expectedOutput, lossArgs)
 		local loss = 0
 
 		for a = 1, #output do
-			if type(output[a]) == "table" then
+			if canindex(output[a]) then
 				loss = loss + lossFunc(output[a], expectedOutput[a])
 			else
 				loss = loss + output[a] * math.log(output[a] + elipson / expectedOutput[a] + elipson)

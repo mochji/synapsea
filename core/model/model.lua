@@ -1,28 +1,28 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/model.lua
+	core/model/model.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 mochji
-																		   
+
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-																		   
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
-																		   
+
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local layerModule        = require(SYNAPSEA_PATH .. "core.layers.layers")
+local layersModule       = require(SYNAPSEA_PATH .. "core.layers.layers")
 local buildModule        = require(SYNAPSEA_PATH .. "core.layers.build")
 local initializersModule = require(SYNAPSEA_PATH .. "core.initializers")
-local backPropModule     = require(SYNAPSEA_PATH .. "core.backProp")
+local backPropModule     = require(SYNAPSEA_PATH .. "core.model.backProp")
 
 local modelModule = {
 	layerToParameters,
@@ -54,7 +54,6 @@ function modelModule.layerToParameters(layer)
 
 	return parameters
 end
-
 
 function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
 	buildParameters = buildParameters or {}
@@ -167,7 +166,7 @@ end
 function modelModule.import(fileName)
 end
 
-function modelModule.fit(model, dataset, algorithm, epochs, learningRate, gradientDescentArgs)
+function modelModule.fit(model)
 end
 
 function modelModule.forwardPass(model, input)
@@ -177,7 +176,7 @@ function modelModule.forwardPass(model, input)
 		parameters = modelModule.layerToParameters(model.layerConfig[a])
 		parameters.input = lastOutput
 
-		lastOutput = layerModule[model.layerConfig[a].type](parameters)
+		lastOutput = layersModule[model.layerConfig[a].type](parameters)
 	end
 
 	return lastOutput
@@ -192,7 +191,7 @@ function modelModule.new(inputShape, metaData)
 		trainingConfig = {}
 	}
 
-	model.metaData.synapseaVersion = SYNAPSEA_VERSION
+	model.metaData.synapseaVersion = "v2.0.00-unstable"
 
 	model.addLayer    = modelModule.addLayer
 	model.removeLayer = modelModule.removeLayer

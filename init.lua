@@ -27,7 +27,8 @@
 
 local synapseaVersion = "v2.0.00-unstable"
 local synapseaPath = 
-	("./" .. debug.getinfo(1, "S").source)
+	debug.getinfo(1, "S").source
+		:sub(2)
 		:match("(.*" .. package.config:sub(1, 1) .. ")")
 
 local oldPackagePath = package.path

@@ -62,7 +62,7 @@ local layersModule = {
 	divide1D,
 	divide2D,
 	divide3D,
-	softmax,
+	softMax,
 	activate,
 	dropOut
 }
@@ -1422,8 +1422,8 @@ function layersModule.divide3D(args)
 	return divideFunc(args.input, args.weights)
 end
 
-function layersModule.softmax(args)
-	return activation.softmax(args.input)
+function layersModule.softMax(args)
+	return activation.softMax(args.input)
 end
 
 function layersModule.activate(args)

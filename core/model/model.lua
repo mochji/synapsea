@@ -67,7 +67,7 @@ function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
 		if layerNumber == 1 then
 			buildParameters.inputShape = model.inputShape
 		else
-			buildParameters.inputShape = model.layerConfig[layerNumber + 1].outputShape
+			buildParameters.inputShape = model.layerConfig[layerNumber - 1].outputShape
 		end
 
 		layer, parameterBuild = buildModule[layerType](buildParameters)
@@ -101,7 +101,7 @@ function modelModule.removeLayer(model, layerNumber)
 	return model
 end
 
-function modelModule.initialize(model, learningRate, epochs, optimizer, optimizerParameters, regularizer, regularizerParameters)
+function modelModule.initialize(model, args)
 	if model.parameterBuild then
 		for a = 1, #model.parameterBuild do
 			local layer = model.layerConfig[a]
@@ -115,28 +115,32 @@ function modelModule.initialize(model, learningRate, epochs, optimizer, optimize
 		end
 	end
 
-	if optimizer then
+	if args.optimizer then
 		model.trainingConfig.optimizer = {
-			optimizer = optimizer,
-			parameters = optimizerParameters
+			optimizer = args.optimizer,
+			parameters = args.optimizerParameters
 		}
 	end
 
-	if regularizer then
+	if args.regularizer then
 		model.trainingConfig.regularizer = {
-			regularizer = regularizer,
-			parameters = regularizerParameters
+			regularizer = args.regularizer,
+			parameters = args.regularizerParameters
 		}
 	end
 
 	-- This is done this way to avoid overwriting training data when initializing after first initialization to reset parametera
 
-	if learningRate then
-		model.trainingConfig.learningRate = learningRate
+	if args.learningRate then
+		model.trainingConfig.learningRate = args.learningRate
 	end
 
-	if epochs then
-		model.trainingConfig.epochs = epochs
+	if args.epochs then
+		model.trainingConfig.epochs = args.epochs
+	end
+
+	if args.loss then
+		model.trainingConfig.loss = args.loss
 	end
 
 	if not model.layerConfig[#model.layerConfig] then

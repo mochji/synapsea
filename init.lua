@@ -35,6 +35,7 @@ local oldPackagePath = package.path
 package.path = synapseaPath .. "?.lua"
 
 local synapsea = {
+	path         = synapseaPath,
 	version      = synapseaVersion,
 
 	activations  = require("core.activations"),

@@ -25,70 +25,27 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local synapseaPath    = debug.getinfo(1).short_src:match("(.*[/\\])") or ""
 local synapseaVersion = "v2.0.00-unstable"
+local synapseaPath = 
+	("./" .. debug.getinfo(1, "S").source)
+		:match("(.*" .. package.config:sub(1, 1) .. ")")
 
--- This is a really hacky fix but who cares tbh
-
-local tempBackup = {
-	SYNAPSEA_PATH    = SYNAPSEA_PATH,
-	SYNAPSEA_VERSION = SYNAPSEA_VERSION,
-	canindex         = canindex,
-	getModule        = getModule
-}
-
-SYNAPSEA_PATH    = synapseaPath
-SYNAPSEA_VERSION = synapseaVersion
-
-function canindex(item)
-	return type(item) == "table" or (type(item) == "userdata" and getmetatable(item).__index)
-end
-
-function getModule(synapseaPath, module)
-	return dofile(synapseaPath .. string.gsub("core." .. module, "%.", package.config:sub(1, 1)) .. ".lua")
-end
+local oldPackagePath = package.path
+package.path = synapseaPath .. "?.lua"
 
 local synapsea = {
-	path         = synapseaPath,
 	version      = synapseaVersion,
-	activations  = getModule(synapseaPath, "activations"),
-	losses       = getModule(synapseaPath, "losses"),
-	math         = getModule(synapseaPath, "math"),
-	initializers = getModule(synapseaPath, "initializers"),
-	optimizers   = getModule(synapseaPath, "optimizers"),
-	regularizers = getModule(synapseaPath, "regularizers"),
-	model        = getModule(synapseaPath, "model.model"),
-	layers       = {}
+
+	activations  = require("core.activations"),
+	losses       = require("core.losses"),
+	math         = require("core.math"),
+	initializers = require("core.initializers"),
+	optimizers   = require("core.optimizers"),
+	regularizers = require("core.regularizers"),
+	layers       = {},
+	model        = require("core.model.model")
 }
 
-do
-	local layersModule   = getModule(synapseaPath, "layers.layers")
-	local buildModule    = getModule(synapseaPath, "layers.build")
-	local errorModule    = getModule(synapseaPath, "layers.error")
-	local gradientModule = getModule(synapseaPath, "layers.gradient")
-
-	for layerName, layerFunc in pairs(layersModule) do
-		synapsea.layers[layerName] = setmetatable(
-			{
-				build    = buildModule[layerName],
-				error    = errorModule[layerName],
-				gradient = gradientModule[layerName]
-			},
-			{
-				-- For some reason it sets the first parameter to self?
-				-- This is another hacky fix
-
-				__call = function(_, args)
-					return layerFunc(args)
-				end
-			}
-		)
-	end
-end
-
-SYNAPSEA_PATH    = tempBackup.SYNAPSEA_PATH
-SYNAPSEA_VERSION = tempBackup.SYNAPSEA_VERSION
-canindex         = tempBackup.canindex
-getModule        = tempBackup.getModule
+package.path = oldPackagePath
 
 return synapsea

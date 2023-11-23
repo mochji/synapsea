@@ -19,10 +19,10 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local layersModule       = getModule(SYNAPSEA_PATH, "layers.layers")
-local buildModule        = getModule(SYNAPSEA_PATH, "layers.build")
-local initializersModule = getModule(SYNAPSEA_PATH, "initializers")
-local backPropModule     = getModule(SYNAPSEA_PATH, "model.backprop")
+local layersModule       = require("core.layers.layers")
+local buildModule        = require("core.layers.build")
+local initializersModule = require("core.initializers")
+local backPropModule     = require("core.model.backprop")
 
 local modelModule = {
 	layerToParameters,

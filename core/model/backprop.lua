@@ -19,8 +19,8 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local errorModule    = getModule(SYNAPSEA_PATH, "layers.error")
-local gradientModule = getModule(SYNAPSEA_PATH, "layers.gradient")
+local errorModule    = require("core.layers.error")
+local gradientModule = require("core.layers.gradient")
 
 local backPropModule = {
 	outputError,

@@ -26,7 +26,7 @@ Synapsea is built from the ground up to be simple, easy to understand and portab
 Synapsea is very simple to install, either clone the Github repository using Git:
 
 ```
-git clone https://github.com/mochji/synapsea
+git clone https://github.com/mochji/synapsea.git
 ```
 
 Or download the zip file from GitHub and unzip it.

@@ -29,7 +29,7 @@ Synapsea is very simple to install, either clone the Github repository using Git
 git clone https://github.com/mochji/synapsea
 ```
 
-Or download the zip file from Github and unzip it.
+Or download the zip file from GitHub and unzip it.
 
 Once you have cloned the Synapsea repository just move or copy it to a directory where you can `require` it.
 
@@ -47,13 +47,15 @@ Try the Synapsea API:
 
 ```lua
 > synapsea = require("synapsea")
+> synapsea.version
+v2.0.00-unstable
+> synapsea.path
+/usr/share/lua/5.4/synapsea/
 > synapsea.activations.sigmoid(tonumber(io.read()))
 2.9
 0.94784643692158
-> model = synapsea.model.new{3, 3}
-> model:addLayer("flatten")
-> model:initialize()
-> output = model:forwardPass{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
+> input = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
+> output = synapsea.layers.flatten{input = input}
 > for a = 1, #output do print(a, output[a]) end
 1       1
 2       2

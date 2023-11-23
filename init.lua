@@ -44,9 +44,31 @@ local synapsea = {
 	initializers = require("core.initializers"),
 	optimizers   = require("core.optimizers"),
 	regularizers = require("core.regularizers"),
-	layers       = {},
+	layers       = require("core.layers.layers"),
 	model        = require("core.model.model")
 }
+
+for layerName, layerFunc in pairs(synapsea.layers) do
+	local buildModule    = require("core.layers.build")
+	local errorModule    = require("core.layers.error")
+	local gradientModule = require("core.layers.gradient")
+
+	synapsea.layers[layerName] = setmetatable(
+		{
+			build    = buildModule[layerName],
+			error    = errorModule[layerName],
+			gradient = gradientModule[layerName]
+		},
+		{
+			-- For some reason, it makes the first argument self automatically so this is a very
+			-- hacky fix but who cares, the user? No!
+
+			__call = function(_, args)
+				return layerFunc(args)
+			end
+		}
+	)
+end
 
 package.path = oldPackagePath
 

@@ -1,6 +1,8 @@
 ## NOTE
 
-Until v2.0.00 releases, this is really bad. I don't know when v2.0.00 is gonna release but yeah. This sucks!!
+Until `v2.0.00` releases, this is really bad. I don't know when `v2.0.00` is gonna release but yeah. This sucks!!
+
+Check the `development` branch for updates on `v2.0.00`.
 
 # Synapsea
 ### (formerly Lua Neural Network)

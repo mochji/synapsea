@@ -54,18 +54,18 @@ v2.0.00-unstable
 > synapsea.activations.sigmoid(tonumber(io.read()))
 2.9
 0.94784643692158
-> input = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
+> input = synapsea.initializers.normalRandom({3, 3}, {mean = 0, sd = 0.1})
 > output = synapsea.layers.flatten{input = input}
 > for a = 1, #output do print(a, output[a]) end
-1       1
-2       2
-3       3
-4       4
-5       5
-6       6
-7       7
-8       8
-9       9
+1       0.12884759243026
+2       0.16374163630011
+3       0.076140250714198
+4       0.078038014880484
+5       0.037395010665463
+6       -0.13098177989544
+7       0.032318751265418
+8       -0.14966043873079
+9       0.33041979998093
 ```
 
 For more complex examples, please see [Examples](https://sites.google.com/view/synapsea/api/examples).

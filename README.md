@@ -1,11 +1,11 @@
+## NOTE
+
+Until v2.0.00 releases, this is really bad. I don't know when v2.0.00 is gonna release but yeah. This sucks!!
+
 # Synapsea
 ### (formerly Lua Neural Network)
 
 ## Lua: https://lua.org
-
-## NOTE
-
-This is kinda bad right now, uhh yeah. I don't know when v1.3.00 is gonna come out but just letting you know, this is kinda bad right now !
 
 ## DESCRIPTION
 

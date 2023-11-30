@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/model/backProp.lua
+	core/backprop.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 mochji
@@ -46,10 +46,10 @@ function backPropModule.outputError(output, expectedOutput, activation, alpha)
 	return outputError
 end
 
-function backPropModule.gradientDescent.stochastic(model, dataset, expectedOutput, learningRate, gradientDescentArgs)
+function backPropModule.gradientDescent.stochastic(model, dataset, args)
 end
 
-function backPropModule.gradientDescent.batch(model, dataset, expectedOutput, learningRate, gradientDescentArgs)
+function backPropModule.gradientDescent.batch(model, dataset, args)
 end
 
 return backPropModule

@@ -84,13 +84,13 @@ function buildModule.dense(args)
 	-- Initializers
 
 	layer.initializer.weights = {
-		initializer = args.weightsInitializer or "constant",
+		initializer = args.weightsInit or "constant",
 		parameters = args.weightsInitParameters or {value = 0}
 	}
 
 	if args.useBias then
 		layer.initializer.bias = {
-			initializer = args.biasInitializer or "constant",
+			initializer = args.biasInit or "constant",
 			parameters = args.biasInitParameters or {value = 0}
 		}
 	end
@@ -130,9 +130,14 @@ function buildModule.averagePooling1D(args)
 			stride = args.stride,
 			dilation = args.dilation
 		},
-		inputShape = args.inputShape,
-		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
+		inputShape = args.inputShape
 	}
+
+	if args.inputShape[2] then
+		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1}
+	else
+		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
+	end
 
 	return layer
 end
@@ -149,9 +154,14 @@ function buildModule.averagePooling2D(args)
 			stride = args.stride,
 			dilation = args.dilation
 		},
-		inputShape = args.inputShape,
-		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1}
+		inputShape = args.inputShape
 	}
+
+	if args.inputShape[3] then
+		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[3] - args.kernel[2]) / args.stride[2]) + 1}
+	else
+		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1}
+	end
 
 	return layer
 end
@@ -168,9 +178,14 @@ function buildModule.averagePooling3D(args)
 			stride = args.stride,
 			dilation = args.dilation
 		},
-		inputShape = args.inputShape,
-		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1}
+		inputShape = args.inputShape
 	}
+
+	if args.inputShape[4] then
+		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[3] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[4] - args.kernel[3]) / args.stride[3]) + 1}
+	else
+		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1}
+	end
 
 	return layer
 end
@@ -188,79 +203,160 @@ buildModule.sumPooling2D = buildModule.averagePooling2D
 buildModule.sumPooling3D = buildModule.averagePooling3D
 
 function buildModule.upSample1D(args)
-	return {
+	local layer = {
 		config = {
 			kernel = args.kernel
 		},
-		inputShape = args.inputShape,
-		outputShape = {args.inputShape[1] * args.kernel[1]}
+		inputShape = args.inputShape
 	}
+
+	if args.inputShape[2] then
+		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1}
+	else
+		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
+	end
+
+	return layer
 end
 
 function buildModule.upSample2D(args)
-	return {
+	local layer = {
 		config = {
 			kernel = args.kernel
 		},
-		inputShape = args.inputShape,
-		outputShape = {args.inputShape[1] * args.kernel[1], args.inputShape[2] * args.kernel[2]}
+		inputShape = args.inputShape
 	}
+
+	if args.inputShape[3] then
+		layer.outputShape = {args.inputShape[1], args.inputShape[2] * args.kernel[1], args.inputShape[3] * args.kernel[2]}
+	else
+		layer.outputShape = {args.inputShape[1] * args.kernel[1], args.inputShape[2] * args.kernel[2]}
+	end
+
+	return layer
 end
 
 function buildModule.upSample3D(args)
-	return {
+	local layer = {
 		config = {
 			kernel = args.kernel
 		},
-		inputShape = args.inputShape,
-		outputShape = {args.inputShape[1] * args.kernel[1], args.inputShape[2] * args.kernel[2], args.inputShape[3] * args.kernel[3]}
+		inputShape = args.inputShape
 	}
+
+	if args.inputShape[4] then
+		layer.outputShape = {args.inputShape[1], args.inputShape[2] * args.kernel[1], args.inputShape[3] * args.kernel[2], args.inputShape[4] * args.kernel[3]}
+	else
+		layer.outputShape = {args.inputShape[1] * args.kernel[1], args.inputShape[2] * args.kernel[2], args.inputShape[3] * args.kernel[3]}
+	end
+
+	return layer
 end
 
 function buildModule.zeroPad1D(args)
-	return {
+	local layer = {
 		config = {
 			paddingAmount = args.paddingAmount
 		},
-		inputShape = args.inputShape,
-		outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2}
+		inputShape = args.inputShape
 	}
+
+	if args.inputShape[2] then
+		layer.outputShape = {args.inputShape[1], args.inputShape[2] + args.paddingAmount[1] * 2}
+	else
+		layer.outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2}
+	end
+
+	return layer
 end
 
 function buildModule.zeroPad2D(args)
-	return {
+	local layer = {
 		config = {
 			paddingAmount = args.paddingAmount
 		},
-		inputShape = args.inputShape,
-		outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2}
+		inputShape = args.inputShape
 	}
+
+	if args.inputShape[3] then
+		layer.outputShape = {args.inputShape[1], args.inputShape[2] + args.paddingAmount[1] * 2, args.inputShape[3] + args.paddingAmount[2] * 2}
+	else
+		layer.outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2}
+	end
+
+	return layer
 end
 
 function buildModule.zeroPad3D(args)
-	return {
+	local layer = {
 		config = {
 			paddingAmount = args.paddingAmount
 		},
-		inputShape = args.inputShape,
-		outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2, args.inputShape[3] + args.paddingAmount[3] * 2}
+		inputShape = args.inputShape
 	}
+
+	if args.inputShape[4] then
+		layer.outputShape = {args.inputShape[1], args.inputShape[2] + args.paddingAmount[1] * 2, args.inputShape[3] + args.paddingAmount[2]* 2, args.inputShape[4] + args.paddingAmount[3] * 2}
+	else
+		layer.outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2, args.inputShape[3] + args.paddingAmount[3] * 2}
+	end
+
+	return layer
 end
 
 function buildModule.crop1D(args)
-	return {
+	local layer = {
 		config = {
 			start = args.start,
 			outputShape = args.outputShape
 		},
-		inputShape = args.inputShape,
-		outputShape = args.outputShape
+		inputShape = args.inputShape
 	}
+
+	if args.inputShape[2] then
+		layer.outputShape = {args.inputShape[1], args.outputShape[1]}
+	else
+		layer.outputShape = args.outputShape
+	end
+
+	return layer
 end
 
-buildModule.crop2D = buildModule.crop1D
+function buildModule.crop2D(args)
+	local layer = {
+		config = {
+			start = args.start,
+			outputShape = args.outputShape
+		},
+		inputShape = args.inputShape
+	}
 
-buildModule.crop3D = buildModule.crop1D
+	if args.inputShape[2] then
+		layer.outputShape = {args.inputShape[1], args.outputShape[1], args.outputShape[2]}
+	else
+		layer.outputShape = args.outputShape
+	end
+
+	return layer
+end
+
+function buildModule.crop3D(args)
+	local layer = {
+		config = {
+			start = args.start,
+			outputShape = args.outputShape
+		},
+		inputShape = args.inputShape
+	}
+
+	if args.inputShape[2] then
+		layer.outputShape = {args.inputShape[1], args.outputShape[1], args.outputShape[2], args.outputShape[3]}
+	else
+		layer.outputShape = args.outputShape
+	end
+
+	return layer
+end
 
 function buildModule.convolutional1D(args)
 	-- Default values
@@ -281,20 +377,27 @@ function buildModule.convolutional1D(args)
 		},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape,
-		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
+		inputShape = args.inputShape
 	}, {}
+
+	-- Output shape
+
+	if args.inputShape[2] then
+		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1}
+	else
+		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
+	end
 
 	-- Initializers
 
 	layer.initializer.filter = {
-		initializer = args.filterInitializer or "constant",
+		initializer = args.filterInit or "constant",
 		parameters = args.filterInitParameters or {value = 0}
 	}
 
 	if args.useBias then
 		layer.initializer.biases = {
-			initializer = args.biasesInitializer or "constant",
+			initializer = args.biasesInit or "constant",
 			parameters = args.biasesInitParameters or {value = 0}
 		}
 	end
@@ -343,20 +446,27 @@ function buildModule.convolutional2D(args)
 		},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape,
-		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1}
+		inputShape = args.inputShape
 	}, {}
+
+	-- Output shape
+
+	if args.inputShape[3] then
+		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[3] - args.kernel[2]) / args.stride[2]) + 1}
+	else
+		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1}
+	end
 
 	-- Initializers
 
 	layer.initializer.filter = {
-		initializer = args.filterInitializer or "constant",
+		initializer = args.filterInit or "constant",
 		parameters = args.filterInitParameters or {value = 0}
 	}
 
 	if args.useBias then
 		layer.initializer.biases = {
-			initializer = args.biasesInitializer or "constant",
+			initializer = args.biasesInit or "constant",
 			parameters = args.biasesInitParameters or {value = 0}
 		}
 	end
@@ -405,20 +515,27 @@ function buildModule.convolutional3D(args)
 		},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape,
-		outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1}
+		inputShape = args.inputShape
 	}, {}
+
+	-- Output shape
+
+	if args.inputShape[4] then
+		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[3] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[4] - args.kernel[3]) / args.stride[3]) + 1}
+	else
+		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1}
+	end
 
 	-- Initializers
 
 	layer.initializer.filter = {
-		initializer = args.filterInitializer or "constant",
+		initializer = args.filterInit or "constant",
 		parameters = args.filterInitParameters or {value = 0}
 	}
 
 	if args.useBias then
 		layer.initializer.biases = {
-			initializer = args.biasesInitializer or "constant",
+			initializer = args.biasesInit or "constant",
 			parameters = args.biasesInitParameters or {value = 0}
 		}
 	end
@@ -449,25 +566,208 @@ function buildModule.convolutional3D(args)
 end
 
 function buildModule.convolutionalTranspose1D(args)
-	local layer, parameterBuild = buildModule.convolutional1D(args)
+	-- Default values
 
-	layer.config.paddingAmount = args.paddingAmount
+	args.stride = args.stride or {1}
+	args.dilation = args.dilation or {1}
+	args.filters = args.filters or 1
+
+	local layer, parameterBuild = {
+		config = {
+			activation = args.activation or "linear",
+			stride = args.stride,
+			dilation = args.dilation,
+			filters = args.filters
+		},
+		parameters = {
+			alpha = args.alpha
+		},
+		trainable = {},
+		initializer = {},
+		inputShape = args.inputShape
+	}, {}
+
+	-- Output shape
+
+	if args.inputShape[2] then
+		layer.outputShape = {args.inputShape[1], math.floor(((args.inputShape[2] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1}
+	else
+		layer.outputShape = {math.floor(((args.inputShape[1] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1}
+	end
+
+	-- Initializers
+
+	layer.initializer.filter = {
+		initializer = args.filterInit or "constant",
+		parameters = args.filterInitParameters or {value = 0}
+	}
+
+	if args.useBias then
+		layer.initializer.biases = {
+			initializer = args.biasesInit or "constant",
+			parameters = args.biasesInitParameters or {value = 0}
+		}
+	end
+
+	-- Trainable
+
+	if args.filterTrainable then
+		layer.trainable.filter = true
+	end
+
+	if args.biasesTrainable and args.useBias then
+		layer.trainable.biases = true
+	end
+
+	-- Parameters
+
+	parameterBuild.filter = {
+		shape = {args.filters, args.kernel[1]}
+	}
+
+	if args.useBias then
+		parameterBuild.biases = {
+			shape = layer.outputShape
+		}
+	end
 
 	return layer, parameterBuild
 end
 
 function buildModule.convolutionalTranspose2D(args)
-	local layer, parameterBuild = buildModule.convolutional2D(args)
+	-- Default values
 
-	layer.config.paddingAmount = args.paddingAmount
+	args.stride = args.stride or {1, 1}
+	args.dilation = args.dilation or {1, 1}
+	args.filters = args.filters or 1
+
+	local layer, parameterBuild = {
+		config = {
+			activation = args.activation or "linear",
+			stride = args.stride,
+			dilation = args.dilation,
+			filters = args.filters
+		},
+		parameters = {
+			alpha = args.alpha
+		},
+		trainable = {},
+		initializer = {},
+		inputShape = args.inputShape
+	}, {}
+
+	-- Output shape
+
+	if args.inputShape[3] then
+		layer.outputShape = {args.inputShape[1], math.floor(((args.inputShape[2] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1, math.floor(((args.inputShape[3] + args.paddingAmount[2]) - args.kernel[2]) / args.stride[2]) + 1}
+	else
+		layer.outputShape = {math.floor(((args.inputShape[1] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1, math.floor(((args.inputShape[2] + args.paddingAmount[2]) - args.kernel[2]) / args.stride[2]) + 1}
+	end
+
+	-- Initializers
+
+	layer.initializer.filter = {
+		initializer = args.filterInit or "constant",
+		parameters = args.filterInitParameters or {value = 0}
+	}
+
+	if args.useBias then
+		layer.initializer.biases = {
+			initializer = args.biasesInit or "constant",
+			parameters = args.biasesInitParameters or {value = 0}
+		}
+	end
+
+	-- Trainable
+
+	if args.filterTrainable then
+		layer.trainable.filter = true
+	end
+
+	if args.biasesTrainable and args.useBias then
+		layer.trainable.biases = true
+	end
+
+	-- Parameters
+
+	parameterBuild.filter = {
+		shape = {args.filters, args.kernel[1], args.kernel[2]}
+	}
+
+	if args.useBias then
+		parameterBuild.biases = {
+			shape = layer.outputShape
+		}
+	end
 
 	return layer, parameterBuild
 end
 
 function buildModule.convolutionalTranspose3D(args)
-	local layer, parameterBuild = buildModule.convolutional3D(args)
+	-- Default values
 
-	layer.config.paddingAmount = args.paddingAmount
+	args.stride = args.stride or {1, 1, 1}
+	args.dilation = args.dilation or {1, 1, 1}
+	args.filters = args.filters or 1
+
+	local layer, parameterBuild = {
+		config = {
+			activation = args.activation or "linear",
+			stride = args.stride,
+			dilation = args.dilation,
+			filters = args.filters
+		},
+		parameters = {
+			alpha = args.alpha
+		},
+		trainable = {},
+		initializer = {},
+		inputShape = args.inputShape
+	}, {}
+
+	-- Output shape
+
+	if args.inputShape[4] then
+		layer.outputShape = {args.inputShape[1], math.floor(((args.inputShape[2] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1, math.floor(((args.inputShape[3] + args.paddingAmount[2]) - args.kernel[2]) / args.stride[2]) + 1, math.floor(((args.inputShape[4] + args.paddingAmount[3]) - args.kernel[3]) / args.stride[3]) + 1}
+	else
+		layer.outputShape = {math.floor(((args.inputShape[1] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1, math.floor(((args.inputShape[2] + args.paddingAmount[2]) - args.kernel[2]) / args.stride[2]) + 1, math.floor(((args.inputShape[3] + args.paddingAmount[3]) - args.kernel[3]) / args.stride[3]) + 1}
+	end
+
+	-- Initializers
+
+	layer.initializer.filter = {
+		initializer = args.filterInit or "constant",
+		parameters = args.filterInitParameters or {value = 0}
+	}
+
+	if args.useBias then
+		layer.initializer.biases = {
+			initializer = args.biasesInit or "constant",
+			parameters = args.biasesInitParameters or {value = 0}
+		}
+	end
+
+	-- Trainable
+
+	if args.filterTrainable then
+		layer.trainable.filter = true
+	end
+
+	if args.biasesTrainable and args.useBias then
+		layer.trainable.biases = true
+	end
+
+	-- Parameters
+
+	parameterBuild.filter = {
+		shape = {args.filters, args.kernel[1], args.kernel[2], args.kernel[3]}
+	}
+
+	if args.useBias then
+		parameterBuild.biases = {
+			shape = layer.outputShape
+		}
+	end
 
 	return layer, parameterBuild
 end
@@ -497,7 +797,7 @@ function buildModule.add1D(args)
 	-- Initializers
 
 	layer.initializer.biases = {
-		initializer = args.biasesInitializer or "constant",
+		initializer = args.biasesInit or "constant",
 		parameters = args.biasesInitParameters or {value = 0}
 	}
 
@@ -538,7 +838,7 @@ function buildModule.multiply1D(args)
 	-- Initializers
 
 	layer.initializer.weights = {
-		initializer = args.weightsInitializer or "constant",
+		initializer = args.weightsInit or "constant",
 		parameters = args.weightsInitParameters or {value = 0}
 	}
 

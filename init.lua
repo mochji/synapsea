@@ -45,7 +45,7 @@ local synapsea = {
 	optimizers   = require("core.optimizers"),
 	regularizers = require("core.regularizers"),
 	layers       = require("core.layers.layers"),
-	model        = require("core.model.model")
+	model        = require("core.model")
 }
 
 for layerName, layerFunc in pairs(synapsea.layers) do
@@ -60,8 +60,7 @@ for layerName, layerFunc in pairs(synapsea.layers) do
 			gradient = gradientModule[layerName]
 		},
 		{
-			-- For some reason, it makes the first argument self automatically so this is a very
-			-- hacky fix but who cares, the user? No!
+			-- For some reason, it makes the first argument self automatically so this is a """"fix""""
 
 			__call = function(_, args)
 				return layerFunc(args)

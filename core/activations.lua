@@ -30,9 +30,9 @@ local activationsModule = {
 	exponential,
 	swish,
 	binaryStep,
-	softMax,
-	softPlus,
-	softSign,
+	softmax,
+	softplus,
+	softsign,
 	linear,
 	variableLinear,
 	hardSigmoid,
@@ -123,8 +123,8 @@ function activationsModule.binaryStep(x, derivative)
 	return 0
 end
 
-function activationsModule.softMax(x, derivative)
-	local getExpSum, softMax, softMaxDerivative
+function activationsModule.softmax(x, derivative)
+	local getExpSum, softmax, softmaxDerivative
 
 	getExpSum = function(x)
 		local expSum = 0
@@ -140,7 +140,7 @@ function activationsModule.softMax(x, derivative)
 		return expSum
 	end
 
-	softMax = function(x, expSum)
+	softmax = function(x, expSum)
 		local output = {}
 
 		for a = 1, #x do
@@ -154,7 +154,7 @@ function activationsModule.softMax(x, derivative)
 		return output
 	end
 
-	softMaxDerivative = function(x, expSum)
+	softmaxDerivative = function(x, expSum)
 		local output = {}
 
 		for a = 1, #x do
@@ -169,13 +169,13 @@ function activationsModule.softMax(x, derivative)
 	end
 
 	if derivative then
-		return softMaxDerivative(x, getExpSum(x))
+		return softmaxDerivative(x, getExpSum(x))
 	end
 
-	return softMax(x, getExpSum(x))
+	return softmax(x, getExpSum(x))
 end
 
-function activationsModule.softPlus(x, derivative)
+function activationsModule.softplus(x, derivative)
 	if derivative then
 		return 1 / (1 + math.exp(-x))
 	end
@@ -183,7 +183,7 @@ function activationsModule.softPlus(x, derivative)
 	return math.log(1 + math.exp(x))
 end
 
-function activationsModule.softSign(x, derivative)
+function activationsModule.softsign(x, derivative)
 	if derivative then
 		if x == 0 then
 			return 1   -- Undefined at x = 0 so return 1

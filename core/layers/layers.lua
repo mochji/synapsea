@@ -62,9 +62,9 @@ local layersModule = {
 	divide1D,
 	divide2D,
 	divide3D,
-	softMax,
+	softmax,
 	activate,
-	dropOut
+	dropout
 }
 
 function layersModule.dense(args)
@@ -116,7 +116,9 @@ function layersModule.averagePooling1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+			for _, b in pairs(poolingFunc(input[a], kernel, stride, dilation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -128,16 +130,16 @@ end
 function layersModule.averagePooling2D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
 		local kernelProduct = kernel[1] * kernel[2]
-		local outputSize = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1}
+		local outputShape = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1}
 		local startIndexA = 0
 
 		local output = {}
 
-		for a = 1, outputSize[1] do
+		for a = 1, outputShape[1] do
 			local startIndexB = 0
 			output[a] = {}
 
-			for b = 1, outputSize[2] do
+			for b = 1, outputShape[2] do
 				local sum = 0
 
 				for c = 1, kernel[1] do
@@ -165,7 +167,9 @@ function layersModule.averagePooling2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+			for _, b in pairs(poolingFunc(input[a], kernel, stride, dilation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -177,20 +181,20 @@ end
 function layersModule.averagePooling3D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
 		local kernelProduct = kernel[1] * kernel[2] * kernel[3]
-		local outputSize = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1, math.floor((#input[1][1] - kernel[3]) / stride[3]) + 1}
+		local outputShape = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1, math.floor((#input[1][1] - kernel[3]) / stride[3]) + 1}
 		local startIndexA = 0
 
 		local output = {}
 
-		for a = 1, outputDepth do
+		for a = 1, outputShape[1] do
 			output[a] = {}
 			local startIndexB = 0
 
-			for b = 1, outputHeight do
+			for b = 1, outputShape[2] do
 				output[a][b] = {}
 				local startIndexC = 0
 
-				for c = 1, outputWidth do
+				for c = 1, outputShape[3] do
 					local sum = 0
 
 					for d = 1, kernel[1] do
@@ -223,7 +227,9 @@ function layersModule.averagePooling3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+			for _, b in pairs(poolingFunc(input[a], kernel, stride, dilation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -262,7 +268,9 @@ function layersModule.maxPooling1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+			for _, b in pairs(poolingFunc(input[a], kernel, stride, dilation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -273,16 +281,16 @@ end
 
 function layersModule.maxPooling2D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
-		local outputShape = {math.floor((#args.filter - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.filter[1] - args.kernel[2]) / args.stride[2]) + 1}
+		local outputShape = {math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1}
 		local startIndexA = 0
 
 		local output = {}
 
-		for a = 1, outputHeight do
+		for a = 1, outputShape[1] do
 			output[a] = {}
 			local startIndexB = 0
 
-			for b = 1, outputWidth do
+			for b = 1, outputShape[2] do
 				local max = input[startIndexA + 1][startIndexB + 1]
 
 				for c = 1, kernel[1] do
@@ -310,7 +318,9 @@ function layersModule.maxPooling2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+			for _, b in pairs(poolingFunc(input[a], kernel, stride, dilation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -321,20 +331,20 @@ end
 
 function layersModule.maxPooling3D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
-		local outputSize = {math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1, math.floor((#args.input[1][1] - args.kernel[3]) / args.stride[3]) + 1}
+		local outputShape = {math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1, math.floor((#args.input[1][1] - args.kernel[3]) / args.stride[3]) + 1}
 		local startIndexA = 0
 
 		local output = {}
 
-		for a = 1, outputDepth do
+		for a = 1, outputShape[1] do
 			output[a] = {}
 			local startIndexB = 0
 
-			for b = 1, outputHeight do
+			for b = 1, outputShape[2] do
 				output[a][b] = {}
 				local startIndexC = 0
 
-				for c = 1, outputWidth do
+				for c = 1, outputShape[3] do
 					local max = input[startIndexA + 1][startIndexB + 1][startIndexC + 1]
 
 					for d = 1, kernel[1] do
@@ -367,7 +377,9 @@ function layersModule.maxPooling3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+			for _, b in pairs(poolingFunc(input[a], kernel, stride, dilation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -406,7 +418,9 @@ function layersModule.sumPooling1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+			for _, b in pairs(poolingFunc(input[a], kernel, stride, dilation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -417,16 +431,16 @@ end
 
 function layersModule.sumPooling2D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
-		local outputSize = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1}
+		local outputShape = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1}
 		local startIndexA = 0
 
 		local output = {}
 
-		for a = 1, outputSize[1] do
+		for a = 1, outputShape[1] do
 			local startIndexB = 0
 			output[a] = {}
 
-			for b = 1, outputSize[2] do
+			for b = 1, outputShape[2] do
 				local sum = 0
 
 				for c = 1, kernel[1] do
@@ -454,7 +468,9 @@ function layersModule.sumPooling2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+			for _, b in pairs(poolingFunc(input[a], kernel, stride, dilation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -465,20 +481,20 @@ end
 
 function layersModule.sumPooling3D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
-		local outputSize = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1, math.floor((#input[1][1] - kernel[3]) / stride[3]) + 1}
+		local outputShape = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1, math.floor((#input[1][1] - kernel[3]) / stride[3]) + 1}
 		local startIndexA = 0
 
 		local output = {}
 
-		for a = 1, outputDepth do
+		for a = 1, outputShape[1] do
 			output[a] = {}
 			local startIndexB = 0
 
-			for b = 1, outputHeight do
+			for b = 1, outputShape[2] do
 				output[a][b] = {}
 				local startIndexC = 0
 
-				for c = 1, outputWidth do
+				for c = 1, outputShape[3] do
 					local sum = 0
 
 					for d = 1, kernel[1] do
@@ -511,7 +527,9 @@ function layersModule.sumPooling3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = poolingFunc(input[a], kernel, stride, dilation)
+			for _, b in pairs(poolingFunc(input[a], kernel, stride, dilation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -537,7 +555,9 @@ function layersModule.upSample1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = upSampleFunc(input[a], kernel)
+			for _, b in pairs(upSampleFunc(input[a], kernel)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -548,6 +568,8 @@ end
 
 function layersModule.upSample2D(args)
 	local function upSampleFunc(input, kernel)
+		local output = {}
+
 		for a = 1, #input * kernel[1] do
 			output[a] = {}
 
@@ -555,6 +577,8 @@ function layersModule.upSample2D(args)
 				output[a][b] = input[math.ceil(a / kernel[1])][math.ceil(b / kernel[2])]
 			end
 		end
+
+		return output
 	end
 
 	if canindex(args.input[1][1]) then
@@ -563,7 +587,9 @@ function layersModule.upSample2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = upSampleFunc(input, kernel)
+			for _, b in pairs(upSampleFunc(input, kernel)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -574,6 +600,8 @@ end
 
 function layersModule.upSample3D(args)
 	local function upSampleFunc(input, kernel)
+		local output = {}
+
 		for a = 1, #input * kernel[1] do
 			output[a] = {}
 
@@ -585,6 +613,8 @@ function layersModule.upSample3D(args)
 				end
 			end
 		end
+
+		return output
 	end
 
 	if canindex(args.input[1][1][1]) then
@@ -593,7 +623,9 @@ function layersModule.upSample3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = upSampleFunc(input, kernel)
+			for _, b in pairs(upSampleFunc(input, kernel)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -619,7 +651,9 @@ function layersModule.zeroPad1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = zeroPadFunc(input, paddingAmount)
+			for _, b in pairs(zeroPadFunc(input, paddingAmount)) do
+				output[a] = b
+			end
 		end
 	
 		return output
@@ -661,7 +695,9 @@ function layersModule.zeroPad2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = zeroPadFunc(input, paddingAmount)
+			for _, b in pairs(zeroPadFunc(input, paddingAmount)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -725,7 +761,9 @@ function layersModule.zeroPad3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = zeroPadFunc(input, paddingAmount)
+			for _, b in pairs(zeroPadFunc(input, paddingAmount)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -751,7 +789,9 @@ function layersModule.crop1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = cropFunc(input, start, outputShape)
+			for _, b in pairs(cropFunc(input, start, outputShape)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -783,7 +823,9 @@ function layersModule.crop2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = cropFunc(input, start, outputShape)
+			for _, b in pairs(cropFunc(input, start, outputShape)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -821,7 +863,9 @@ function layersModule.crop3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = cropFunc(input, start, outputShape)
+			for _, b in pairs(cropFunc(input, start, outputShape)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -867,13 +911,15 @@ function layersModule.convolutional1D(args)
 	end
 
 	if canindex(args.input[1]) then
-		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 		local activation = activationsModule[args.activation]
+		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)
+			for _, b in pairs(convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -919,15 +965,24 @@ function layersModule.convolutional2D(args)
 				startIndexA = startIndexA + 1
 			end
 		end
+
+		if #output == 1 then
+			return output[1]
+		end
+
+		return output
 	end
 
 	if canindex(args.input[1][1]) then
-		local input, filter, stride, dilation, biases, alpha, activation = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation]
+		local activation = activationsModule[args.activation]
+		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)
+			for _, b in pairs(convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -982,15 +1037,24 @@ function layersModule.convolutional3D(args)
 				startIndexA = startIndexA + 1
 			end
 		end
+
+		if #output == 1 then
+			return output[1]
+		end
+
+		return output
 	end
 
 	if canindex(args.input[1][1][1]) then
-		local input, filter, stride, dilation, biases, alpha, activation = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, activationsModule[args.activation]
+		local activation = activationsModule[args.activation]
+		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 
 		local output = {}
 	
 		for a = 1, #input do
-			output[a] = convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)
+			for _, b in pairs(convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1022,7 +1086,9 @@ function layersModule.convolutionalTranspose1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)
+			for _, b in pairs(convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1054,7 +1120,9 @@ function layersModule.convolutionalTranspose2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)
+			for _, b in pairs(convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1086,7 +1154,9 @@ function layersModule.convolutionalTranspose3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)
+			for _, b in pairs(convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1096,15 +1166,23 @@ function layersModule.convolutionalTranspose3D(args)
 end
 
 function layersModule.flatten(args)
-	local output = {}
+	local flattenFunc
 
-	local a = 1
+	flattenFunc = function(input)
+		local output = {}
 
-	for _, v in next, args.input do
-		output[a] = v
+		for a = 1, #output do
+			if canindex(output[a]) then
+				for _, b in pairs(flattenFunc(input[a])) do
+					output[a] = b
+				end
+			else
+				output[a] = input[a]
+			end
+		end
 	end
 
-	return output
+	return flattenFunc(args.input)
 end
 
 function layersModule.reshape(args)
@@ -1125,7 +1203,9 @@ function layersModule.add1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = addFunc(input, biases)
+			for _, b in pairs(addFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1151,7 +1231,9 @@ function layersModule.add2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = addFunc(input, biases)
+			for _,b in pairs(addFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1179,7 +1261,9 @@ function layersModule.add3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = addFunc(input, biases)
+			for _, b in pairs(addFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1203,7 +1287,9 @@ function layersModule.subtract1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = subtractFunc(input, biases)
+			for _, b in pairs(subtractFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1229,7 +1315,9 @@ function layersModule.subtract2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = subtractFunc(input, biases)
+			for _, b in pairs(subtractFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1257,7 +1345,9 @@ function layersModule.subtract3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = subtractFunc(input, biases)
+			for _, b in pairs(subtractFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1281,7 +1371,9 @@ function layersModule.multiply1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = multiplyFunc(input, weights)
+			for _, b in pairs(multiplyFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1307,7 +1399,9 @@ function layersModule.multiply2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = multiplyFunc(input, weights)
+			for _, b in pairs(multiplyFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1335,7 +1429,9 @@ function layersModule.multiply3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = multiplyFunc(input, weights)
+			for _, b in pairs(multiplyFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1359,7 +1455,9 @@ function layersModule.divide1D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = divideFunc(input, weights)
+			for _, b in pairs(divideFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1385,7 +1483,9 @@ function layersModule.divide2D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = divideFunc(input, weights)
+			for _, b in pairs(divideFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1413,7 +1513,9 @@ function layersModule.divide3D(args)
 		local output = {}
 
 		for a = 1, #input do
-			output[a] = divideFunc(input, weights)
+			for _, b in pairs(divideFunc(input[a], biases)) do
+				output[a] = b
+			end
 		end
 
 		return output
@@ -1422,8 +1524,8 @@ function layersModule.divide3D(args)
 	return divideFunc(args.input, args.weights)
 end
 
-function layersModule.softMax(args)
-	return activation.softMax(args.input)
+function layersModule.softmax(args)
+	return activation.softmax(args.input)
 end
 
 function layersModule.activate(args)
@@ -1449,7 +1551,7 @@ function layersModule.activate(args)
 	return activationFunc(args.input, activationsModule[args.activation], args.derivative, args.alpha)
 end
 
-function layersModule.dropOut(args)
+function layersModule.dropout(args)
 	return args.input
 end
 

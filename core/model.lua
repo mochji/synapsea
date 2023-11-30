@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/model/model.lua
+	core/model.lua
 
 	Synapsea, a simple yet powerful machine learning library made in pure Lua.
 	Copyright (C) 2023 mochji
@@ -22,7 +22,6 @@
 local layersModule       = require("core.layers.layers")
 local buildModule        = require("core.layers.build")
 local initializersModule = require("core.initializers")
-local backPropModule     = require("core.model.backprop")
 
 local modelModule = {
 	layerToParameters,
@@ -41,13 +40,13 @@ function modelModule.layerToParameters(layer)
 	local parameters = {}
 
 	if layer.parameters then
-		for parameterName, parameter in layer.parameters do
+		for parameterName, parameter in pairs(layer.parameters) do
 			parameters[parameterName] = parameter
 		end
 	end
 
 	if layer.config then
-		for configName, config in layer.config do
+		for configName, config in pairs(layer.config) do
 			parameters[configName] = config
 		end
 	end
@@ -129,7 +128,7 @@ function modelModule.initialize(model, args)
 		}
 	end
 
-	-- This is done this way to avoid overwriting training data when initializing after first initialization to reset parametera
+	-- This is done this way to avoid overwriting training data when initializing after first initialization to reset parameters (specific edge case and to make it easier)
 
 	if args.learningRate then
 		model.trainingConfig.learningRate = args.learningRate
@@ -152,9 +151,6 @@ function modelModule.initialize(model, args)
 	model.parameterBuild = nil
 	model.addLayer       = nil
 
-	model.hiddenLayers   = #model.layerConfig
-	model.totalLayers    = model.hiddenLayers + 2
-
 	model.forwardPass    = modelModule.forwardPass
 	model.fit            = modelModule.fit
 
@@ -165,25 +161,88 @@ function modelModule.summary(model, returnString)
 end
 
 function modelModule.export(model, fileName)
+	local tableToString
+
+	tableToString = function(table)
+		local output = "{"
+
+		for i, v in pairs(table) do
+			local valueType = type(v)
+
+			if valueType ~= "function" then
+				if type(i) == "number" then
+					output = output .. string.format("[%s]", i) .. "="
+				else
+					output = output .. string.format("[%q]", i) .. "="
+				end
+
+				if valueType == "table" then
+					output = output .. tableToString(v)
+				elseif valueType == "string" then
+					output = output .. string.format("%q", v)
+				elseif valueType ~= valueType then
+					output = output .. "0/0"
+				elseif valueType == math.huge then
+					output = output .. "2^1024"
+				else
+					output = output .. tostring(v)
+				end
+
+				output = output .. ","
+			end
+		end
+
+		if output:sub(#output) == "," then
+			output = output:sub(1, #output - 1)
+		end
+
+		return output .. "}"
+	end
+
+	local f, err = io.open(fileName, "w")
+
+	assert(f, fileName .. ": " .. (err or "nil error"))
+
+	f:write("return " .. tableToString(model))
+
+	f:close()
 end
 
 function modelModule.import(fileName)
+	local model = dofile(fileName)
+
+	if not model then
+		return nil
+	end
+
+	if model.parameterBuild then
+		model.addLayer = modelModule.addLayer
+	else
+		model.fit         = modelModule.fit
+		model.forwardPass = modelModule.forwardPass
+	end
+
+	model.removeLayer = modelModule.removeLayer
+	model.initialize  = modelModule.initialize
+	model.summary     = modelModule.summary
+
+	return model
 end
 
 function modelModule.fit(model)
 end
 
 function modelModule.forwardPass(model, input)
-	local lastOutput, parameters = input
+	local output, parameters = input
 
 	for a = 1, #model.layerConfig do
 		parameters = modelModule.layerToParameters(model.layerConfig[a])
 		parameters.input = lastOutput
 
-		lastOutput = layersModule[model.layerConfig[a].type](parameters)
+		utput = layersModule[model.layerConfig[a].type](parameters)
 	end
 
-	return lastOutput
+	return output
 end
 
 function modelModule.new(inputShape, metaData)

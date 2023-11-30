@@ -207,7 +207,7 @@ function lossesModule.hinge(output, expectedOutput)
 	return loss
 end
 
-function lossesModule.huber(output, expectedOutput, lossArgs)
+function lossesModule.huber(output, expectedOutput, args)
 	local delta = lossArgs.delta
 
 	if type(output) == "number" then
@@ -245,7 +245,7 @@ function lossesModule.huber(output, expectedOutput, lossArgs)
 	return loss
 end
 
-function lossesModule.klDivergence(output, expectedOutput, lossArgs)
+function lossesModule.klDivergence(output, expectedOutput, args)
 	local elipson = lossArgs.elipson
 
 	if type(output) == "number" then

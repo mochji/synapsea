@@ -23,7 +23,7 @@ Synapsea is built from the ground up to be simple, easy to understand and portab
 
 ## Installatation
 
-Synapsea is very simple to install, either clone the Github repository using Git:
+Synapsea is very simple to install, either clone the GitHub repository using Git:
 
 ```
 git clone https://github.com/mochji/synapsea.git

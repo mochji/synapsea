@@ -46,7 +46,7 @@ end
 function backPropModule.stochastic(model, dataset, args)
 end
 
-function backPropModule.gradientDescent.batch(model, dataset, args)
+function backPropModule.batch(model, dataset, args)
 end
 
 return backPropModule

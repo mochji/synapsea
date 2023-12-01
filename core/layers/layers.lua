@@ -20,6 +20,7 @@
 ]]--
 
 local canindex          = require("core.canindex")
+
 local activationsModule = require("core.activations")
 
 local layersModule = {

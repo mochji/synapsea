@@ -27,6 +27,7 @@ local initializersModule = require("core.initializers")
 local backPropModule     = require("core.backprop")
 
 local modelModule = {
+	new,
 	add,
 	pop,
 	initialize,
@@ -34,9 +35,28 @@ local modelModule = {
 	export,
 	import,
 	fit,
-	forwardPass,
-	new
+	forwardPass
 }
+
+function modelModule.new(inputShape, metaData)
+	local model = {
+		metaData = metaData or {},
+		inputShape = inputShape,
+		parameterBuild = {},
+		layerConfig = {},
+		trainingConfig = {}
+	}
+
+	model.metaData.synapseaVersion = "v2.0.00-unstable"
+
+	model.add        = modelModule.add
+	model.pop        = modelModule.pop
+	model.initialize = modelModule.initialize
+	model.summary    = modelModule.summary
+	model.export     = modelModule.export
+
+	return model
+end
 
 function modelModule.add(model, layerType, buildParameters)
 	buildParameters = buildParameters or {}
@@ -238,26 +258,6 @@ function modelModule.forwardPass(model, input)
 	end
 
 	return output
-end
-
-function modelModule.new(inputShape, metaData)
-	local model = {
-		metaData = metaData or {},
-		inputShape = inputShape,
-		parameterBuild = {},
-		layerConfig = {},
-		trainingConfig = {}
-	}
-
-	model.metaData.synapseaVersion = "v2.0.00-unstable"
-
-	model.add        = modelModule.add
-	model.pop        = modelModule.pop
-	model.initialize = modelModule.initialize
-	model.summary    = modelModule.summary
-	model.export     = modelModule.export
-
-	return model
 end
 
 return modelModule

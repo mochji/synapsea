@@ -24,6 +24,7 @@ local canindex           = require("core.canindex")
 local layersModule       = require("core.layers.layers")
 local buildModule        = require("core.layers.build")
 local initializersModule = require("core.initializers")
+local backPropModule     = require("core.backprop")
 
 local modelModule = {
 	add,
@@ -36,24 +37,6 @@ local modelModule = {
 	forwardPass,
 	new
 }
-
-local function layerToParameters(layer)
-	local parameters = {}
-
-	if layer.parameters then
-		for parameterName, parameter in pairs(layer.parameters) do
-			parameters[parameterName] = parameter
-		end
-	end
-
-	if layer.config then
-		for configName, config in pairs(layer.config) do
-			parameters[configName] = config
-		end
-	end
-
-	return parameters
-end
 
 function modelModule.add(model, layerType, buildParameters)
 	buildParameters = buildParameters or {}
@@ -227,17 +210,31 @@ function modelModule.import(fileName)
 	return model
 end
 
-function modelModule.fit(model)
+function modelModule.fit(model, algorithm, dataset, args)
+	return backPropModule.gradientDescent[algorithm](model, dataset, args)
 end
 
 function modelModule.forwardPass(model, input)
-	local output, parameters = input
+	local output = input
 
 	for a = 1, #model.layerConfig do
-		parameters = layerToParameters(model.layerConfig[a])
-		parameters.input = lastOutput
+		local args = {}
 
-		output = layersModule[model.layerConfig[a].type](parameters)
+		if layer.parameters then
+			for parameterName, parameter in pairs(layer.parameters) do
+				args[parameterName] = parameter
+			end
+		end
+
+		if layer.config then
+			for configName, config in pairs(layer.config) do
+				args[configName] = config
+			end
+		end
+
+		args.input = output
+
+		output = layersModule[model.layerConfig[a].type](args)
 	end
 
 	return output

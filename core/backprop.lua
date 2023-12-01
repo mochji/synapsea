@@ -23,14 +23,11 @@ local errorModule    = require("core.layers.error")
 local gradientModule = require("core.layers.gradient")
 
 local backPropModule = {
-	outputError,
-	gradientDescent = {
-		stochastic,
-		batch
-	}
+	stochastic,
+	batch
 }
 
-function backPropModule.outputError(output, expectedOutput, activation, alpha)
+local function outputError(output, expectedOutput, activation, alpha)
 	local outputError = {}
 
 	local activation = activationsModule[activation]
@@ -46,7 +43,7 @@ function backPropModule.outputError(output, expectedOutput, activation, alpha)
 	return outputError
 end
 
-function backPropModule.gradientDescent.stochastic(model, dataset, args)
+function backPropModule.stochastic(model, dataset, args)
 end
 
 function backPropModule.gradientDescent.batch(model, dataset, args)

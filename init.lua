@@ -1,8 +1,6 @@
 --[[
 	Synapsea v2.0.00-unstable
 
-	A simple yet powerful machine learning platform for Lua.
-
 	Read the README.md file for documentation and information, 
 
 	https://github.com/mochji/synapsea
@@ -25,7 +23,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local synapseaVersion = "v2.0.00-unstable"
 local synapseaPath =
 	debug.getinfo(1, "S").source
 		:sub(2)
@@ -37,7 +34,7 @@ package.path = synapseaPath .. "?.lua"
 
 local synapsea = {
 	path         = synapseaPath,
-	version      = synapseaVersion,
+	version      = require("core.utils.version"),
 
 	activations  = require("core.activations"),
 	losses       = require("core.losses"),

@@ -19,7 +19,8 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local canindex           = require("core.canindex")
+local canindex           = require("core.utils.canindex")
+local synapseaVersion    = require("core.utils.version")
 
 local layersModule       = require("core.layers.layers")
 local buildModule        = require("core.layers.build")
@@ -47,7 +48,7 @@ function modelModule.new(inputShape, metaData)
 		trainingConfig = {}
 	}
 
-	model.metaData.synapseaVersion = "v2.0.00-unstable"
+	model.metaData.synapseaVersion = synapseaVersion
 
 	model.add        = modelModule.add
 	model.pop        = modelModule.pop

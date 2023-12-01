@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/model.lua
+	core/model/sequential.lua
 
 	Synapsea, simple yet powerful machine learning platform for Lua.
 	Copyright (C) 2023 mochji
@@ -25,10 +25,9 @@ local synapseaVersion    = require("core.utils.version")
 local layersModule       = require("core.layers.layers")
 local buildModule        = require("core.layers.build")
 local initializersModule = require("core.initializers")
-local backPropModule     = require("core.backprop")
+local backPropModule     = require("core.model.backprop")
 
-local modelModule = {
-	new,
+local sequentialModule = {
 	add,
 	pop,
 	initialize,
@@ -39,27 +38,7 @@ local modelModule = {
 	forwardPass
 }
 
-function modelModule.new(inputShape, metaData)
-	local model = {
-		metaData = metaData or {},
-		inputShape = inputShape,
-		parameterBuild = {},
-		layerConfig = {},
-		trainingConfig = {}
-	}
-
-	model.metaData.synapseaVersion = synapseaVersion
-
-	model.add        = modelModule.add
-	model.pop        = modelModule.pop
-	model.initialize = modelModule.initialize
-	model.summary    = modelModule.summary
-	model.export     = modelModule.export
-
-	return model
-end
-
-function modelModule.add(model, layerType, buildParameters)
+function sequentialModule.add(model, layerType, buildParameters)
 	buildParameters = buildParameters or {}
 
 	local layerNumber = #model.layerConfig + 1
@@ -86,7 +65,7 @@ function modelModule.add(model, layerType, buildParameters)
 	return model
 end
 
-function modelModule.pop(model)
+function sequentialModule.pop(model)
 	assert(
 		#model.layerConfig >= 1,
 		"attempt to pop model with no layers"
@@ -101,7 +80,7 @@ function modelModule.pop(model)
 	return model
 end
 
-function modelModule.initialize(model, args)
+function sequentialModule.initialize(model, args)
 	if model.parameterBuild then
 		for a = 1, #model.parameterBuild do
 			local layer = model.layerConfig[a]
@@ -153,16 +132,16 @@ function modelModule.initialize(model, args)
 	model.parameterBuild = nil
 	model.add            = nil
 
-	model.forwardPass    = modelModule.forwardPass
-	model.fit            = modelModule.fit
+	model.forwardPass    = sequentialModule.forwardPass
+	model.fit            = sequentialModule.fit
 
 	return model
 end
 
-function modelModule.summary(model, returnString)
+function sequentialModule.summary(model, returnString)
 end
 
-function modelModule.export(model, fileName)
+function sequentialModule.export(model, fileName)
 	local tableToString
 
 	tableToString = function(table)
@@ -210,7 +189,7 @@ function modelModule.export(model, fileName)
 	f:close()
 end
 
-function modelModule.import(fileName)
+function sequentialModule.import(fileName)
 	local model = dofile(fileName)
 
 	if not model then
@@ -218,24 +197,24 @@ function modelModule.import(fileName)
 	end
 
 	if model.parameterBuild then
-		model.add = modelModule.add
+		model.add = sequentialModule.add
 	else
-		model.fit         = modelModule.fit
-		model.forwardPass = modelModule.forwardPass
+		model.fit         = sequentialModule.fit
+		model.forwardPass = sequentialModule.forwardPass
 	end
 
-	model.pop        = modelModule.pop
-	model.initialize = modelModule.initialize
-	model.summary    = modelModule.summary
+	model.pop        = sequentialModule.pop
+	model.initialize = sequentialModule.initialize
+	model.summary    = sequentialModule.summary
 
 	return model
 end
 
-function modelModule.fit(model, algorithm, dataset, args)
+function sequentialModule.fit(model, algorithm, dataset, args)
 	return backPropModule.gradientDescent[algorithm](model, dataset, args)
 end
 
-function modelModule.forwardPass(model, input)
+function sequentialModule.forwardPass(model, input)
 	local output = input
 
 	for a = 1, #model.layerConfig do
@@ -261,4 +240,27 @@ function modelModule.forwardPass(model, input)
 	return output
 end
 
-return modelModule
+return setmetatable(
+	sequentialModule,
+	{
+		__call = function(_, inputShape, metaData)
+			local model = {
+				metaData = metaData or {},
+				inputShape = inputShape,
+				parameterBuild = {},
+				layerConfig = {},
+				trainingConfig = {}
+			}
+
+			model.metaData.synapseaVersion = synapseaVersion
+
+			model.add        = sequentialModule.add
+			model.pop        = sequentialModule.pop
+			model.initialize = sequentialModule.initialize
+			model.summary    = sequentialModule.summary
+			model.export     = sequentialModule.export
+
+			return model
+		end
+	}
+)

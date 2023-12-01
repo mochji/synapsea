@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/backprop.lua
+	core/utils/canindex.lua
 
 	Synapsea, simple yet powerful machine learning platform for Lua.
 	Copyright (C) 2023 mochji
@@ -19,34 +19,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local errorModule    = require("core.layers.error")
-local gradientModule = require("core.layers.gradient")
-
-local backPropModule = {
-	stochastic,
-	batch
-}
-
-local function outputError(output, expectedOutput, activation, alpha)
-	local outputError = {}
-
-	local activation = activationsModule[activation]
-
-	for a = 1, #output do
-		if canindex(output[a]) then
-			outputError[a] = backPropModule.outputError(output[a], expectedOutput[a], activation)
-		else
-			outputError[a] = (output[a] - expectedOutput[a]) * activation(output[a], true, alpha)
-		end
-	end
-
-	return outputError
+return function(item)
+	return type(item) == "table" or (type(item) == "userdata" and getmetatable(item).__index)
 end
-
-function backPropModule.stochastic(model, dataset, args)
-end
-
-function backPropModule.batch(model, dataset, args)
-end
-
-return backPropModule

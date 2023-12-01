@@ -19,6 +19,8 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
+-- i am so sorry that this 1 line of code it's own seperate file
+
 return function(item)
 	return type(item) == "table" or (type(item) == "userdata" and getmetatable(item).__index)
 end

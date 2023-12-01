@@ -19,14 +19,15 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
+local canindex           = require("core.canindex")
+
 local layersModule       = require("core.layers.layers")
 local buildModule        = require("core.layers.build")
 local initializersModule = require("core.initializers")
 
 local modelModule = {
-	layerToParameters,
-	addLayer,
-	removeLayer,
+	add,
+	pop,
 	initialize,
 	summary,
 	export,
@@ -36,7 +37,7 @@ local modelModule = {
 	new
 }
 
-function modelModule.layerToParameters(layer)
+local function layerToParameters(layer)
 	local parameters = {}
 
 	if layer.parameters then
@@ -54,13 +55,12 @@ function modelModule.layerToParameters(layer)
 	return parameters
 end
 
-function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
+function modelModule.add(model, layerType, buildParameters)
 	buildParameters = buildParameters or {}
-	layerNumber     = layerNumber or #model.layerConfig + 1
+
+	local layerNumber = #model.layerConfig + 1
 
 	local layer, parameterBuild
-
-	assert(layerNumber >= 1, "attempt to add layer with an index less than 1")
 
 	if buildModule[layerType] then
 		if layerNumber == 1 then
@@ -76,25 +76,22 @@ function modelModule.addLayer(model, layerType, buildParameters, layerNumber)
 
 	layer.type = layerType
 
-	table.insert(model.layerConfig, layerNumber, layer)
-	table.insert(model.parameterBuild, layerNumber, parameterBuild or {})
+	model.layerConfig[layerNumber]    = layer
+	model.parameterBuild[layerNumber] = parameterBuild or {}
 
 	return model
 end
 
-function modelModule.removeLayer(model, layerNumber)
-	layerNumber = layerNumber or #model.layerConfig
+function modelModule.pop(model)
+	assert(
+		#model.layerConfig >= 1,
+		"attempt to pop model with no layers"
+	)
 
-	assert(model.layerConfig[layerNumber], "attempt to remove a non-existant layer (" .. tostring(layerNumber) .. ")")
-
-	if layerNumber == 1 and model.layerConfig[layerNumber + 1] then
-		model.inputShape = model.layerConfig[layerNumber + 1].inputShape
-	end
-
-	table.remove(model.layerConfig[layerNumber])
+	model.layerConfig[#model.layerConfig] = nil
 
 	if model.parameterBuild then
-		table.remove(model.parameterBuild[layerNumber])
+		model.parameterBuild[#model.parameterBuild] = nil
 	end
 
 	return model
@@ -128,7 +125,8 @@ function modelModule.initialize(model, args)
 		}
 	end
 
-	-- This is done this way to avoid overwriting training data when initializing after first initialization to reset parameters (specific edge case and to make it easier)
+	-- This is done this way to avoid overwriting training data when initializing after first initialization
+	-- to re-initialize parameters (to make a specific edge case easier)
 
 	if args.learningRate then
 		model.trainingConfig.learningRate = args.learningRate
@@ -149,7 +147,7 @@ function modelModule.initialize(model, args)
 	end
 
 	model.parameterBuild = nil
-	model.addLayer       = nil
+	model.add            = nil
 
 	model.forwardPass    = modelModule.forwardPass
 	model.fit            = modelModule.fit
@@ -176,13 +174,13 @@ function modelModule.export(model, fileName)
 					output = output .. string.format("[%q]", i) .. "="
 				end
 
-				if valueType == "table" then
+				if canindex(v) then
 					output = output .. tableToString(v)
 				elseif valueType == "string" then
 					output = output .. string.format("%q", v)
 				elseif valueType ~= valueType then
 					output = output .. "0/0"
-				elseif valueType == math.huge then
+				elseif valueType == 2^1024 then
 					output = output .. "2^1024"
 				else
 					output = output .. tostring(v)
@@ -216,15 +214,15 @@ function modelModule.import(fileName)
 	end
 
 	if model.parameterBuild then
-		model.addLayer = modelModule.addLayer
+		model.add = modelModule.add
 	else
 		model.fit         = modelModule.fit
 		model.forwardPass = modelModule.forwardPass
 	end
 
-	model.removeLayer = modelModule.removeLayer
-	model.initialize  = modelModule.initialize
-	model.summary     = modelModule.summary
+	model.pop        = modelModule.pop
+	model.initialize = modelModule.initialize
+	model.summary    = modelModule.summary
 
 	return model
 end
@@ -236,10 +234,10 @@ function modelModule.forwardPass(model, input)
 	local output, parameters = input
 
 	for a = 1, #model.layerConfig do
-		parameters = modelModule.layerToParameters(model.layerConfig[a])
+		parameters = layerToParameters(model.layerConfig[a])
 		parameters.input = lastOutput
 
-		utput = layersModule[model.layerConfig[a].type](parameters)
+		output = layersModule[model.layerConfig[a].type](parameters)
 	end
 
 	return output
@@ -256,11 +254,11 @@ function modelModule.new(inputShape, metaData)
 
 	model.metaData.synapseaVersion = SYNAPSEA_VERSION
 
-	model.addLayer    = modelModule.addLayer
-	model.removeLayer = modelModule.removeLayer
-	model.initialize  = modelModule.initialize
-	model.summary     = modelModule.summary
-	model.export      = modelModule.export
+	model.add        = modelModule.add
+	model.pop        = modelModule.pop
+	model.initialize = modelModule.initialize
+	model.summary    = modelModule.summary
+	model.export     = modelModule.export
 
 	return model
 end

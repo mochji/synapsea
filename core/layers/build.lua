@@ -884,7 +884,7 @@ function buildModule.activate(args)
 			alpha = args.alpha
 		},
 		inputShape = args.inputShape,
-		outputShape = args.outputShape
+		outputShape = args.inputShape
 	}
 end
 

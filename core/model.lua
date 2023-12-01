@@ -249,7 +249,7 @@ function modelModule.new(inputShape, metaData)
 		trainingConfig = {}
 	}
 
-	model.metaData.synapseaVersion = SYNAPSEA_VERSION
+	model.metaData.synapseaVersion = "v2.0.00-unstable"
 
 	model.add        = modelModule.add
 	model.pop        = modelModule.pop

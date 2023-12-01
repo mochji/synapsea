@@ -2,7 +2,7 @@
 	https://github.com/mochji/synapsea
 	core/layers/layers.lua
 
-	Synapsea, a simple yet powerful machine learning library made in pure Lua.
+	Synapsea, simple yet powerful machine learning platform for Lua.
 	Copyright (C) 2023 mochji
 
 	This program is free software: you can redistribute it and/or modify

@@ -8,7 +8,7 @@
 
 ## Overview
 
-Synapsea is a simple yet powerful machine learning library designed for building, saving, training and running powerful machine learning models.
+Synapsea is a simple yet powerful machine learning platform designed for building, saving, training and running powerful machine learning models.
 
 Synapsea is built from the ground up to be simple, easy to understand and portable with no external libraries, requring only a Lua interpreter.
 

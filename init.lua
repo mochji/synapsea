@@ -1,14 +1,14 @@
 --[[
 	Synapsea v2.0.00-unstable
 
-	A simple yet powerful machine learning library made in pure Lua.
+	A simple yet powerful machine learning platform for Lua.
 
 	Read the README.md file for documentation and information, 
 
 	https://github.com/mochji/synapsea
 	init.lua
 
-	Synapsea, a simple yet powerful machine learning library made in pure Lua.
+	Synapsea, simple yet powerful machine learning platform for Lua.
 	Copyright (C) 2023 mochji
 																		   
 	This program is free software: you can redistribute it and/or modify

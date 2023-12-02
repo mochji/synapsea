@@ -20,7 +20,6 @@
 ]]--
 
 local canindex           = require("core.utils.canindex")
-local synapseaVersion    = require("core.utils.version")
 
 local layersModule       = require("core.layers.layers")
 local buildModule        = require("core.layers.build")
@@ -252,7 +251,7 @@ return setmetatable(
 				trainingConfig = {}
 			}
 
-			model.metaData.synapseaVersion = synapseaVersion
+			model.metaData.synapseaVersion = "v2.0.00-unstable"
 
 			model.add        = sequentialModule.add
 			model.pop        = sequentialModule.pop

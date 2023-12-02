@@ -23,7 +23,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local synapseaPath =
+local synapseaPath    =
 	debug.getinfo(1, "S").source
 		:sub(2)
 		:match("(.*" .. package.config:sub(1, 1) .. ")")
@@ -34,7 +34,7 @@ package.path = synapseaPath .. "?.lua"
 
 local synapsea = {
 	path         = synapseaPath,
-	version      = require("core.utils.version"),
+	version      = "v2.0.00-unstable",
 
 	activations  = require("core.activations"),
 	losses       = require("core.losses"),

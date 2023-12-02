@@ -151,12 +151,14 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/mochji
 
  - Declare variables at the lowest scope possible.
  - **Do not** use global variables.
+ - **Do not** have a global state.
 
 #### Errors
 
  - Use specific exceptions.
  - Provide information about the error.
  - Handle errors at an appropriate place in the code.
+ - Use `assert` instead of `if not x then error() end`.
 
 ### Best practices
 

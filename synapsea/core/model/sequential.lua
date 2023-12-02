@@ -2,7 +2,7 @@
 	https://github.com/mochji/synapsea
 	core/model/sequential.lua
 
-	Synapsea, simple yet powerful machine learning platform for Lua.
+	Synapsea, a simple yet powerful machine learning framework for Lua.
 	Copyright (C) 2023 mochji
 
 	This program is free software: you can redistribute it and/or modify
@@ -66,7 +66,7 @@ end
 
 function Sequential.pop(model)
 	assert(
-		#model.layerConfig >= 1,
+		#model.layerConfig > 0,
 		"attempt to pop model with no layers"
 	)
 
@@ -80,6 +80,11 @@ function Sequential.pop(model)
 end
 
 function Sequential.initialize(model, args)
+	assert(
+		#model.layerConfig > 0,
+		"attempt to initialize model with no layers"
+	)
+
 	if model.parameterBuild then
 		for a = 1, #model.parameterBuild do
 			local layer = model.layerConfig[a]

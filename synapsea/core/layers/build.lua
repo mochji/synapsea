@@ -2,7 +2,7 @@
 	https://github.com/mochji/synapsea
 	core/layers/build.lua
 
-	Synapsea, simple yet powerful machine learning platform for Lua.
+	Synapsea, a simple yet powerful machine learning framework for Lua.
 	Copyright (C) 2023 mochji
 
 	This program is free software: you can redistribute it and/or modify

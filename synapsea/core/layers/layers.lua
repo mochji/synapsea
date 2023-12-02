@@ -98,7 +98,7 @@ function layersModule.averagePooling1D(args)
 			local sum = 0
 
 			for b = 1, #kernel[1] do
-				if b % dilation[1] == 0 then
+				if (startIndex + b) % dilation[1] == 0 then
 					sum = sum + input[startIndex + b]
 				end
 			end
@@ -145,7 +145,7 @@ function layersModule.averagePooling2D(args)
 
 				for c = 1, kernel[1] do
 					for d = 1, kernel[2] do
-						if c % dilation[1] == 0 and d % dilation[2] == 1 then
+						if (startIndexA + c) % dilation[1] == 0 and (startIndexB + d) % dilation[2] == 0 then
 							sum = sum + input[startIndexA + c][startIndexB + d]
 						end
 					end
@@ -201,7 +201,7 @@ function layersModule.averagePooling3D(args)
 					for d = 1, kernel[1] do
 						for e = 1, kernel[2] do
 							for f = 1, kernel[3] do
-								if d % dilation[1] == 0 and e % dilation[2] == 0 and f % dilation[3] == 0 then
+								if (startIndexA + d) % dilation[1] == 0 and (startIndexB + e) % dilation[2] == 0 and (startIndex + f) % dilation[3] == 0 then
 									sum = sum + input[startIndexA + d][startIndexB + e][startIndexC + f]
 								end
 							end
@@ -250,7 +250,7 @@ function layersModule.maxPooling1D(args)
 			local max = input[startIndex + 1]
 
 			for b = 1, #kernel[1] do
-				if b % dilation[1] == 0 then
+				if (startIndex + b) % dilation[1] == 0 then
 					max = math.max(max, input[startIndex + b])
 				end
 			end
@@ -296,7 +296,7 @@ function layersModule.maxPooling2D(args)
 
 				for c = 1, kernel[1] do
 					for d = 1, kernel[2] do
-						if c % dilation[1] == 0 and d % dilation[2] == 0 then
+						if (startIndexA + c) % dilation[1] == 0 and (startIndexB + d) % dilation[2] == 0 then
 							max = math.max(max, input[startIndexA + c][startIndexB + d])
 						end
 					end
@@ -351,7 +351,7 @@ function layersModule.maxPooling3D(args)
 					for d = 1, kernel[1] do
 						for e = 1, kernel[2] do
 							for f = 1, kernel[3] do
-								if d % dilation[1] == 0 and e % dilation[2] == 0 and f % dilation[3] == 0 then
+								if (startIndexA + d) % dilation[1] == 0 and (startIndexB + e) % dilation[2] == 0 and (startIndexC + f) % dilation[3] == 0 then
 									max = math.max(max, input[startIndexA + d][startIndexB + e][startIndexC + f])
 								end
 							end
@@ -400,7 +400,7 @@ function layersModule.sumPooling1D(args)
 			local sum = 0
 
 			for b = 1, #kernel[1] do
-				if b % dilation[1] == 0 then
+				if (startIndex + b) % dilation[1] == 0 then
 					sum = sum + input[startIndex + b]
 				end
 			end
@@ -446,7 +446,7 @@ function layersModule.sumPooling2D(args)
 
 				for c = 1, kernel[1] do
 					for d = 1, kernel[2] do
-						if c % dilation[1] == 0 and d % dilation[2] == 1 then
+						if (startIndexA + c) % dilation[1] == 0 and (startIndexB + d) % dilation[2] == 0 then
 							sum = sum + input[startIndexA + c][startIndexB + d]
 						end
 					end
@@ -501,7 +501,7 @@ function layersModule.sumPooling3D(args)
 					for d = 1, kernel[1] do
 						for e = 1, kernel[2] do
 							for f = 1, kernel[3] do
-								if d % dilation[1] == 0 and e % dilation[2] == 0 and f % dilation[3] == 0 then
+								if (startIndexA + d) % dilation[1] == 0 and (startIndexB + e) % dilation[2] == 0 and (startIndexC + f) % dilation[3] == 0 then
 									sum = sum + input[startIndexA + d][startIndexB + e][startIndexC + f]
 								end
 							end
@@ -889,7 +889,7 @@ function layersModule.convolutional1D(args)
 				local sum = 0
 
 				for c = 1, #filter[a] do
-					if c % dilation[1] == 0 then
+					if (startIndex + c) % dilation[1] == 0 then
 						sum = sum + input[startIndex + c] * filter[a][c]
 					end
 				end
@@ -948,7 +948,7 @@ function layersModule.convolutional2D(args)
 
 					for d = 1, #filter[a] do
 						for e = 1, #filter[a][d] do
-							if d % dilation[1] == 0 and e % dilation[2] == 0 then
+							if (startIndexA + d) % dilation[1] == 0 and (startIndexB + e) % dilation[2] == 0 then
 								sum = sum + input[startIndexA + d][startIndexB + e] * filter[a][d][e]
 							end
 						end
@@ -1016,7 +1016,7 @@ function layersModule.convolutional3D(args)
 						for e = 1, #filter[a] do
 							for f = 1, #filter[a][e] do
 								for g = 1, #filter[a][e][f] do
-									if e % dilation[1] == 0 and f % dilation[2] == 0 and g % dilation[3] == 0 then
+									if (startIndexA + e) % dilation[1] == 0 and (startIndexB + f) % dilation[2] == 0 and (startIndexC + g) % dilation[3] == 0 then
 										sum = sum + input[startIndexA + e][startIndexB + f][startIndexC + g] * filter[a][e][f][g]
 									end
 								end

@@ -26,7 +26,7 @@ local buildModule        = require("core.layers.build")
 local initializersModule = require("core.initializers")
 local backPropModule     = require("core.backprop")
 
-local sequentialModule = {
+local Sequential = {
 	add,
 	pop,
 	initialize,
@@ -37,7 +37,7 @@ local sequentialModule = {
 	forwardPass
 }
 
-function sequentialModule.add(model, layerType, buildParameters)
+function Sequential.add(model, layerType, buildParameters)
 	buildParameters = buildParameters or {}
 
 	local layerNumber = #model.layerConfig + 1
@@ -64,7 +64,7 @@ function sequentialModule.add(model, layerType, buildParameters)
 	return model
 end
 
-function sequentialModule.pop(model)
+function Sequential.pop(model)
 	assert(
 		#model.layerConfig >= 1,
 		"attempt to pop model with no layers"
@@ -79,7 +79,7 @@ function sequentialModule.pop(model)
 	return model
 end
 
-function sequentialModule.initialize(model, args)
+function Sequential.initialize(model, args)
 	if model.parameterBuild then
 		for a = 1, #model.parameterBuild do
 			local layer = model.layerConfig[a]
@@ -131,16 +131,16 @@ function sequentialModule.initialize(model, args)
 	model.parameterBuild = nil
 	model.add            = nil
 
-	model.forwardPass    = sequentialModule.forwardPass
-	model.fit            = sequentialModule.fit
+	model.forwardPass    = Sequential.forwardPass
+	model.fit            = Sequential.fit
 
 	return model
 end
 
-function sequentialModule.summary(model, returnString)
+function Sequential.summary(model, returnString)
 end
 
-function sequentialModule.export(model, fileName)
+function Sequential.export(model, fileName)
 	local tableToString
 
 	tableToString = function(table)
@@ -188,7 +188,7 @@ function sequentialModule.export(model, fileName)
 	f:close()
 end
 
-function sequentialModule.import(fileName)
+function Sequential.import(fileName)
 	local model = dofile(fileName)
 
 	if not model then
@@ -196,24 +196,24 @@ function sequentialModule.import(fileName)
 	end
 
 	if model.parameterBuild then
-		model.add = sequentialModule.add
+		model.add = Sequential.add
 	else
-		model.fit         = sequentialModule.fit
-		model.forwardPass = sequentialModule.forwardPass
+		model.fit         = Sequential.fit
+		model.forwardPass = Sequential.forwardPass
 	end
 
-	model.pop        = sequentialModule.pop
-	model.initialize = sequentialModule.initialize
-	model.summary    = sequentialModule.summary
+	model.pop        = Sequential.pop
+	model.initialize = Sequential.initialize
+	model.summary    = Sequential.summary
 
 	return model
 end
 
-function sequentialModule.fit(model, algorithm, dataset, args)
+function Sequential.fit(model, algorithm, dataset, args)
 	return backPropModule.gradientDescent[algorithm](model, dataset, args)
 end
 
-function sequentialModule.forwardPass(model, input)
+function Sequential.forwardPass(model, input)
 	local output = input
 
 	for a = 1, #model.layerConfig do
@@ -240,7 +240,7 @@ function sequentialModule.forwardPass(model, input)
 end
 
 return setmetatable(
-	sequentialModule,
+	Sequential,
 	{
 		__call = function(_, inputShape, metaData)
 			local model = {
@@ -251,13 +251,15 @@ return setmetatable(
 				trainingConfig = {}
 			}
 
+			assert(inputShape, "bad argument #1 to 'Sequential' (value expected)")
+
 			model.metaData.synapseaVersion = "v2.0.00-unstable"
 
-			model.add        = sequentialModule.add
-			model.pop        = sequentialModule.pop
-			model.initialize = sequentialModule.initialize
-			model.summary    = sequentialModule.summary
-			model.export     = sequentialModule.export
+			model.add        = Sequential.add
+			model.pop        = Sequential.pop
+			model.initialize = Sequential.initialize
+			model.summary    = Sequential.summary
+			model.export     = Sequential.export
 
 			return model
 		end

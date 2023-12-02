@@ -65,8 +65,6 @@ local buildModule = {
 }
 
 function buildModule.dense(args)
-	-- Default values
-
 	local layer, parameterBuild = {
 		config = {
 			activation = args.activation or "linear",

@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/model/backprop.lua
+	core/backprop.lua
 
 	Synapsea, simple yet powerful machine learning platform for Lua.
 	Copyright (C) 2023 mochji

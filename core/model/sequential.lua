@@ -25,7 +25,7 @@ local synapseaVersion    = require("core.utils.version")
 local layersModule       = require("core.layers.layers")
 local buildModule        = require("core.layers.build")
 local initializersModule = require("core.initializers")
-local backPropModule     = require("core.model.backprop")
+local backPropModule     = require("core.backprop")
 
 local sequentialModule = {
 	add,

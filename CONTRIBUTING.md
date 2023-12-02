@@ -101,7 +101,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/mochji
 
 #### Indentation
 
- - Use tabs for each indentation level.
+ - Use tabs for each indentation level. (tip: use 4 spaces for tabs so the tabs aren't absurdly big and you can see when you're nesting too much :3)
 
 #### Naming
 
@@ -131,6 +131,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/mochji
  - Do not have trailing whitespace at the end of lines.
  - **Do not** use DOS/Windows newlines (LF `\n` instead of CRLF `\r\n`).
  - Blank lines should separate logical sections of the code.
+ - Minimize nesting as much as possible.
 
 ### Logic
 

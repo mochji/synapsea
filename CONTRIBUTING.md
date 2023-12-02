@@ -108,6 +108,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/mochji
  - Use descriptive and meaningful names for variables and functions.
  - Use `camelCase` for names.
  - Constants should be in `CAPITALS_WITH_UNDERSCORES`.
+ - Number loop variables should start at `a` and decrement on each nested loop.
 
 #### Errors
 

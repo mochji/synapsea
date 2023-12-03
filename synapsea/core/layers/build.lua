@@ -64,125 +64,169 @@ local buildModule = {
 	dropOut
 }
 
-function buildModule.dense(args)
+function buildModule.dense(layerConfig)
+	local defaults = {
+		activation       = "linear",
+		useBias          = false,
+
+		weightsInit      = "constant",
+		weightsInitArgs  = {value = 0},
+		biasInit         = "constant",
+		biasInitArgs     = {value = 0},
+
+		weightsTrainable = false,
+		biasTrainable    = false
+	}
+
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
+
 	local layer, parameterBuild = {
 		config = {
-			activation = args.activation or "linear",
-			outputSize = args.outputSize
+			activation = layerConfig.activation,
+			outputSize = layerConfig.outputSize
 		},
 		parameters = {
-			alpha = args.alpha
+			alpha = layerConfig.alpha
 		},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape,
-		outputShape = {args.outputSize}
+		inputShape = layerConfig.inputShape,
+		outputShape = {layerConfig.outputSize}
 	}, {}
 
 	-- Initializers
 
 	layer.initializer.weights = {
-		initializer = args.weightsInit or "constant",
-		parameters = args.weightsInitParameters or {value = 0}
+		initializer = layerConfig.weightsInit,
+		parameters = layerConfig.weightsInitParameters
 	}
 
-	if args.useBias then
+	if layerConfig.useBias then
 		layer.initializer.bias = {
-			initializer = args.biasInit or "constant",
-			parameters = args.biasInitParameters or {value = 0}
+			initializer = layerConfig.biasInit,
+			parameters = layerConfig.biasInitParameters
 		}
 	end
 
 	-- Trainable
 
-	if args.weightsTrainable then
-		layer.trainable.weights = true
-	end
+	layer.trainable.weights =
+		layerConfig.weightsTrainable and true or false
 
-	if args.biasTrainable and args.useBias then
-		layer.trainable.bias = true
-	end
+	layer.trainable.bias =
+		layerConfig.biasTrainable and layerConfig.useBias or false
 
 	-- Parameters
 
 	parameterBuild.weights = {
-		shape = {args.inputShape[1], args.outputSize}
+		layerConfig.inputShape[1],
+		layerConfig.outputSize
 	}
 
-	if args.useBias then
+	if layerConfig.useBias then
 		layer.parameters.bias = 0
 	end
 
 	return layer, parameterBuild
 end
 
-function buildModule.averagePooling1D(args)
-	-- Default values
+function buildModule.averagePooling1D(layerConfig)
+	local defaults = {
+		kernel   = {1},
+		stride   = {1},
+		dilation = {1}
+	}
 
-	args.stride = args.stride or {1}
-	args.dilation = args.dilation or {1}
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer = {
 		config = {
-			kernel = args.kernel,
-			stride = args.stride,
-			dilation = args.dilation
+			kernel = layerConfig.kernel,
+			stride = layerConfig.stride,
+			dilation = layerConfig.dilation
 		},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}
 
-	if args.inputShape[2] then
-		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1}
+	if layerConfig.inputShape[2] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
+		}
 	else
-		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
+		layer.outputShape = {
+			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
+		}
 	end
 
 	return layer
 end
 
-function buildModule.averagePooling2D(args)
-	-- Default values
+function buildModule.averagePooling2D(layerConfig)
+	local defaults = {
+		kernel   = {1, 1},
+		stride   = {1, 1},
+		dilation = {1, 1}
+	}
 
-	args.stride = args.stride or {1, 1}
-	args.dilation = args.dilation or {1, 1}
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer = {
 		config = {
-			kernel = args.kernel,
-			stride = args.stride,
-			dilation = args.dilation
+			kernel = layerConfig.kernel,
+			stride = layerConfig.stride,
+			dilation = layerConfig.dilation
 		},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}
 
-	if args.inputShape[3] then
-		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[3] - args.kernel[2]) / args.stride[2]) + 1}
+	if layerConfig.inputShape[3] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
+		}
 	else
-		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1}
+		layer.outputShape = {
+			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
+		}
 	end
 
 	return layer
 end
 
-function buildModule.averagePooling3D(args)
-	-- Default values
+function buildModule.averagePooling3D(layerConfig)
+	local defaults = {
+		kernel   = {1, 1, 1},
+		stride   = {1, 1, 1},
+		dilation = {1, 1, 1}
+	}
 
-	args.stride = args.stride or {1, 1, 1}
-	args.dilation = args.dilation or {1, 1, 1}
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer = {
 		config = {
-			kernel = args.kernel,
-			stride = args.stride,
-			dilation = args.dilation
+			kernel = layerConfig.kernel,
+			stride = layerConfig.stride,
+			dilation = layerConfig.dilation
 		},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}
 
-	if args.inputShape[4] then
-		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[3] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[4] - args.kernel[3]) / args.stride[3]) + 1}
+	if layerConfig.inputShape[4] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
+			math.floor((layerConfig.inputShape[4] - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
+		}
 	else
-		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1}
+		layer.outputShape = {
+			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
+			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
+		}
 	end
 
 	return layer
@@ -200,616 +244,825 @@ buildModule.sumPooling2D = buildModule.averagePooling2D
 
 buildModule.sumPooling3D = buildModule.averagePooling3D
 
-function buildModule.upSample1D(args)
-	local layer = {
-		config = {
-			kernel = args.kernel
-		},
-		inputShape = args.inputShape
+function buildModule.upSample1D(layerConfig)
+	local defaults = {
+		kernel = {2}
 	}
 
-	if args.inputShape[2] then
-		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1}
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
+
+	local layer = {
+		config = {
+			kernel = layerConfig.kernel
+		},
+		inputShape = layerConfig.inputShape
+	}
+
+	if layerConfig.inputShape[2] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
+		}
 	else
-		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
+		layer.outputShape = {
+			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
+		}
 	end
 
 	return layer
 end
 
-function buildModule.upSample2D(args)
-	local layer = {
-		config = {
-			kernel = args.kernel
-		},
-		inputShape = args.inputShape
+function buildModule.upSample2D(layerConfig)
+	local defaults = {
+		kernel = {2, 2}
 	}
 
-	if args.inputShape[3] then
-		layer.outputShape = {args.inputShape[1], args.inputShape[2] * args.kernel[1], args.inputShape[3] * args.kernel[2]}
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
+
+	local layer = {
+		config = {
+			kernel = layerConfig.kernel
+		},
+		inputShape = layerConfig.inputShape
+	}
+
+	if layerConfig.inputShape[3] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			layerConfig.inputShape[2] * layerConfig.kernel[1], layerConfig.inputShape[3] * layerConfig.kernel[2]
+		}
 	else
-		layer.outputShape = {args.inputShape[1] * args.kernel[1], args.inputShape[2] * args.kernel[2]}
+		layer.outputShape = {
+			layerConfig.inputShape[1] * layerConfig.kernel[1], layerConfig.inputShape[2] * layerConfig.kernel[2]
+		}
 	end
 
 	return layer
 end
 
-function buildModule.upSample3D(args)
-	local layer = {
-		config = {
-			kernel = args.kernel
-		},
-		inputShape = args.inputShape
+function buildModule.upSample3D(layerConfig)
+	local defaults = {
+		kernel = {2, 2}
 	}
 
-	if args.inputShape[4] then
-		layer.outputShape = {args.inputShape[1], args.inputShape[2] * args.kernel[1], args.inputShape[3] * args.kernel[2], args.inputShape[4] * args.kernel[3]}
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
+
+	local layer = {
+		config = {
+			kernel = layerConfig.kernel
+		},
+		inputShape = layerConfig.inputShape
+	}
+
+	if layerConfig.inputShape[4] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			layerConfig.inputShape[2] * layerConfig.kernel[1],
+			layerConfig.inputShape[3] * layerConfig.kernel[2],
+			layerConfig.inputShape[4] * layerConfig.kernel[3]
+		}
 	else
-		layer.outputShape = {args.inputShape[1] * args.kernel[1], args.inputShape[2] * args.kernel[2], args.inputShape[3] * args.kernel[3]}
+		layer.outputShape = {
+			layerConfig.inputShape[1] * layerConfig.kernel[1],
+			layerConfig.inputShape[2] * layerConfig.kernel[2],
+			layerConfig.inputShape[3] * layerConfig.kernel[3]
+		}
 	end
 
 	return layer
 end
 
-function buildModule.zeroPad1D(args)
-	local layer = {
-		config = {
-			paddingAmount = args.paddingAmount
-		},
-		inputShape = args.inputShape
+function buildModule.zeroPad1D(layerConfig)
+	local defaults = {
+		paddingAmount = {1}
 	}
 
-	if args.inputShape[2] then
-		layer.outputShape = {args.inputShape[1], args.inputShape[2] + args.paddingAmount[1] * 2}
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
+
+	local layer = {
+		config = {
+			paddingAmount = layerConfig.paddingAmount
+		},
+		inputShape = layerConfig.inputShape
+	}
+
+	if layerConfig.inputShape[2] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			layerConfig.inputShape[2] + layerConfig.paddingAmount[1] * 2
+		}
 	else
-		layer.outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2}
+		layer.outputShape = {
+			layerConfig.inputShape[1] + layerConfig.paddingAmount[1] * 2
+		}
 	end
 
 	return layer
 end
 
-function buildModule.zeroPad2D(args)
-	local layer = {
-		config = {
-			paddingAmount = args.paddingAmount
-		},
-		inputShape = args.inputShape
+function buildModule.zeroPad2D(layerConfig)
+	local defaults = {
+		paddingAmount = {1, 1}
 	}
 
-	if args.inputShape[3] then
-		layer.outputShape = {args.inputShape[1], args.inputShape[2] + args.paddingAmount[1] * 2, args.inputShape[3] + args.paddingAmount[2] * 2}
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
+
+	local layer = {
+		config = {
+			paddingAmount = layerConfig.paddingAmount
+		},
+		inputShape = layerConfig.inputShape
+	}
+
+	if layerConfig.inputShape[3] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			layerConfig.inputShape[2] + layerConfig.paddingAmount[1] * 2,
+			layerConfig.inputShape[3] + layerConfig.paddingAmount[2] * 2
+		}
 	else
-		layer.outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2}
+		layer.outputShape = {
+			layerConfig.inputShape[1] + layerConfig.paddingAmount[1] * 2,
+			layerConfig.inputShape[2] + layerConfig.paddingAmount[2] * 2
+		}
 	end
 
 	return layer
 end
 
-function buildModule.zeroPad3D(args)
-	local layer = {
-		config = {
-			paddingAmount = args.paddingAmount
-		},
-		inputShape = args.inputShape
+function buildModule.zeroPad3D(layerConfig)
+	local defaults = {
+		paddingAmount = {1, 1, 1}
 	}
 
-	if args.inputShape[4] then
-		layer.outputShape = {args.inputShape[1], args.inputShape[2] + args.paddingAmount[1] * 2, args.inputShape[3] + args.paddingAmount[2]* 2, args.inputShape[4] + args.paddingAmount[3] * 2}
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
+
+	local layer = {
+		config = {
+			paddingAmount = layerConfig.paddingAmount
+		},
+		inputShape = layerConfig.inputShape
+	}
+
+	if layerConfig.inputShape[4] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			layerConfig.inputShape[2] + layerConfig.paddingAmount[1] * 2,
+			layerConfig.inputShape[3] + layerConfig.paddingAmount[2] * 2,
+			layerConfig.inputShape[4] + layerConfig.paddingAmount[3] * 2
+		}
 	else
-		layer.outputShape = {args.inputShape[1] + args.paddingAmount[1] * 2, args.inputShape[2] + args.paddingAmount[2] * 2, args.inputShape[3] + args.paddingAmount[3] * 2}
+		layer.outputShape = {
+			layerConfig.inputShape[1] + layerConfig.paddingAmount[1] * 2,
+			layerConfig.inputShape[2] + layerConfig.paddingAmount[2] * 2,
+			layerConfig.inputShape[3] + layerConfig.paddingAmount[3] * 2
+		}
 	end
 
 	return layer
 end
 
-function buildModule.crop1D(args)
+function buildModule.crop1D(layerConfig)
 	local layer = {
 		config = {
-			start = args.start,
-			outputShape = args.outputShape
+			start = layerConfig.start,
+			outputShape = layerConfig.outputShape
 		},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}
 
-	if args.inputShape[2] then
-		layer.outputShape = {args.inputShape[1], args.outputShape[1]}
+	if layerConfig.inputShape[2] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			layerConfig.outputShape[1]
+		}
 	else
-		layer.outputShape = args.outputShape
+		layer.outputShape = layerConfig.outputShape
 	end
 
 	return layer
 end
 
-function buildModule.crop2D(args)
+function buildModule.crop2D(layerConfig)
 	local layer = {
 		config = {
-			start = args.start,
-			outputShape = args.outputShape
+			start = layerConfig.start,
+			outputShape = layerConfig.outputShape
 		},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}
 
-	if args.inputShape[2] then
-		layer.outputShape = {args.inputShape[1], args.outputShape[1], args.outputShape[2]}
+	if layerConfig.inputShape[2] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			layerConfig.outputShape[1],
+			layerConfig.outputShape[2]
+		}
 	else
-		layer.outputShape = args.outputShape
+		layer.outputShape = layerConfig.outputShape
 	end
 
 	return layer
 end
 
-function buildModule.crop3D(args)
+function buildModule.crop3D(layerConfig)
 	local layer = {
 		config = {
-			start = args.start,
-			outputShape = args.outputShape
+			start = layerConfig.start,
+			outputShape = layerConfig.outputShape
 		},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}
 
-	if args.inputShape[2] then
-		layer.outputShape = {args.inputShape[1], args.outputShape[1], args.outputShape[2], args.outputShape[3]}
+	if layerConfig.inputShape[2] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			layerConfig.outputShape[1],
+			layerConfig.outputShape[2],
+			layerConfig.outputShape[3]
+		}
 	else
-		layer.outputShape = args.outputShape
+		layer.outputShape = layerConfig.outputShape
 	end
 
 	return layer
 end
 
-function buildModule.convolutional1D(args)
-	-- Default values
+function buildModule.convolutional1D(layerConfig)
+	local defaults = {
+		activation      = "linear",
+		useBias         = false,
 
-	args.stride = args.stride or {1}
-	args.dilation = args.dilation or {1}
-	args.filters = args.filters or 1
+		kernel          = {2},
+		stride          = {1},
+		dilation        = {1},
+		filters         = 1,
+
+		filterInit      = "constant",
+		filterInitArgs  = {value = 0.1},
+		biasInit        = "constant",
+		biasInitArgs    = {value = 0.1},
+
+		filterTrainable = false,
+		biasTrainable   = false
+	}
+
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer, parameterBuild = {
 		config = {
-			activation = args.activation or "linear",
-			stride = args.stride,
-			dilation = args.dilation,
-			filters = args.filters
+			activation = layerConfig.activation,
+			stride = layerConfig.stride,
+			dilation = layerConfig.dilation,
+			filters = layerConfig.filters
 		},
 		parameters = {
-			alpha = args.alpha
+			alpha = layerConfig.alpha
 		},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
 
-	if args.inputShape[2] then
-		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1}
+	if layerConfig.inputShape[2] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
+		}
 	else
-		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1}
+		layer.outputShape = {
+			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
+		}
 	end
 
 	-- Initializers
 
 	layer.initializer.filter = {
-		initializer = args.filterInit or "constant",
-		parameters = args.filterInitParameters or {value = 0}
+		initializer = layerConfig.filterInit,
+		parameters = layerConfig.filterInitParameters
 	}
 
-	if args.useBias then
+	if layerConfig.useBias then
 		layer.initializer.biases = {
-			initializer = args.biasesInit or "constant",
-			parameters = args.biasesInitParameters or {value = 0}
+			initializer = layerConfig.biasesInit,
+			parameters = layerConfig.biasesInitParameters
 		}
 	end
 
 	-- Trainable
 
-	if args.filterTrainable then
-		layer.trainable.filter = true
-	end
+	layer.trainable.filter =
+		layerConfig.filterTrainable and true or false
 
-	if args.biasesTrainable and args.useBias then
-		layer.trainable.biases = true
-	end
+	layer.trainable.bias =
+		layerConfig.filterTrainable and layerConfig.useBias or false
 
 	-- Parameters
 
 	parameterBuild.filter = {
-		shape = {args.filters, args.kernel[1]}
+		layerConfig.filters,
+		layerConfig.kernel[1]
 	}
 
-	if args.useBias then
-		parameterBuild.biases = {
-			shape = layer.outputShape
-		}
+	if layerConfig.useBias then
+		parameterBuild.biases = {layer.outputShape}
 	end
 
 	return layer, parameterBuild
 end
 
-function buildModule.convolutional2D(args)
-	-- Default values
+function buildModule.convolutional2D(layerConfig)
+	local defaults = {
+		activation      = "linear",
+		useBias         = false,
 
-	args.stride = args.stride or {1, 1}
-	args.dilation = args.dilation or {1, 1}
-	args.filters = args.filters or 1
+		kernel          = {2, 2},
+		stride          = {1, 1},
+		dilation        = {1, 1},
+		filters         = 1,
+
+		filterInit      = "constant",
+		filterInitArgs  = {value = 0.1},
+		biasInit        = "constant",
+		biasInitArgs    = {value = 0.1},
+
+		filterTrainable = false,
+		biasTrainable   = false
+	}
+
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer, parameterBuild = {
 		config = {
-			activation = args.activation or "linear",
-			stride = args.stride,
-			dilation = args.dilation,
-			filters = args.filters
+			activation = layerConfig.activation,
+			stride = layerConfig.stride,
+			dilation = layerConfig.dilation,
+			filters = layerConfig.filters
 		},
 		parameters = {
-			alpha = args.alpha
+			alpha = layerConfig.alpha
 		},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
 
-	if args.inputShape[3] then
-		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[3] - args.kernel[2]) / args.stride[2]) + 1}
+	if layerConfig.inputShape[3] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
+		}
 	else
-		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1}
+		layer.outputShape = {
+			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
+		}
 	end
 
 	-- Initializers
 
 	layer.initializer.filter = {
-		initializer = args.filterInit or "constant",
-		parameters = args.filterInitParameters or {value = 0}
+		initializer = layerConfig.filterInit,
+		parameters = layerConfig.filterInitParameters
 	}
 
-	if args.useBias then
+	if layerConfig.useBias then
 		layer.initializer.biases = {
-			initializer = args.biasesInit or "constant",
-			parameters = args.biasesInitParameters or {value = 0}
+			initializer = layerConfig.biasesInit,
+			parameters = layerConfig.biasesInitParameters
 		}
 	end
 
 	-- Trainable
 
-	if args.filterTrainable then
-		layer.trainable.filter = true
-	end
+	layer.trainable.filter =
+		layerConfig.filterTrainable and true or false
 
-	if args.biasesTrainable and args.useBias then
-		layer.trainable.biases = true
-	end
+	layer.trainable.biases =
+		layerConfig.biasesTrainable and layerConfig.useBias or false
 
 	-- Parameters
 
 	parameterBuild.filter = {
-		shape = {args.filters, args.kernel[1], args.kernel[2]}
+		layerConfig.filters,
+		layerConfig.kernel[1],
+		layerConfig.kernel[2]
 	}
 
-	if args.useBias then
-		parameterBuild.biases = {
-			shape = layer.outputShape
-		}
+	if layerConfig.useBias then
+		parameterBuild.biases = {layer.outputShape}
 	end
 
 	return layer, parameterBuild
 end
 
-function buildModule.convolutional3D(args)
-	-- Default values
+function buildModule.convolutional3D(layerConfig)
+	local defaults = {
+		activation      = "linear",
+		useBias         = false,
 
-	args.stride = args.stride or {1, 1, 1}
-	args.dilation = args.dilation or {1, 1, 1}
-	args.filters = args.filters or 1
+		kernel          = {2, 2, 2},
+		stride          = {1, 1, 1},
+		dilation        = {1, 1, 1},
+		filters         = 1,
+
+		filterInit      = "constant",
+		filterInitArgs  = {value = 0.1},
+		biasInit        = "constant",
+		biasInitArgs    = {value = 0.1},
+
+		filterTrainable = false,
+		biasTrainable   = false
+	}
+
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer, parameterBuild = {
 		config = {
-			activation = args.activation or "linear",
-			stride = args.stride,
-			dilation = args.dilation,
-			filters = args.filters
+			activation = layerConfig.activation,
+			stride = layerConfig.stride,
+			dilation = layerConfig.dilation,
+			filters = layerConfig.filters
 		},
 		parameters = {
-			alpha = args.alpha
+			alpha = layerConfig.alpha
 		},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
 
-	if args.inputShape[4] then
-		layer.outputShape = {args.inputShape[1], math.floor((args.inputShape[2] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[3] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[4] - args.kernel[3]) / args.stride[3]) + 1}
+	if layerConfig.inputShape[4] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
+			math.floor((layerConfig.inputShape[4] - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
+		}
 	else
-		layer.outputShape = {math.floor((args.inputShape[1] - args.kernel[1]) / args.stride[1]) + 1, math.floor((args.inputShape[2] - args.kernel[2]) / args.stride[2]) + 1, math.floor((args.inputShape[3] - args.kernel[3]) / args.stride[3]) + 1}
+		layer.outputShape = {
+			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
+			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
+		}
 	end
 
 	-- Initializers
 
 	layer.initializer.filter = {
-		initializer = args.filterInit or "constant",
-		parameters = args.filterInitParameters or {value = 0}
+		initializer = layerConfig.filterInit,
+		parameters = layerConfig.filterInitParameters
 	}
 
-	if args.useBias then
+	if layerConfig.useBias then
 		layer.initializer.biases = {
-			initializer = args.biasesInit or "constant",
-			parameters = args.biasesInitParameters or {value = 0}
+			initializer = layerConfig.biasesInit,
+			parameters = layerConfig.biasesInitParameters
 		}
 	end
 
 	-- Trainable
 
-	if args.filterTrainable then
-		layer.trainable.filter = true
-	end
+	layer.trainable.filter =
+		layerConfig.filterTrainable and true or false
 
-	if args.biasesTrainable and args.useBias then
-		layer.trainable.biases = true
-	end
+	layer.trainable.biases =
+		layerConfig.biasesTrainable and layerConfig.useBias or false
 
 	-- Parameters
 
 	parameterBuild.filter = {
-		shape = {args.filters, args.kernel[1], args.kernel[2], args.kernel[3]}
+		layerConfig.filters,
+		layerConfig.kernel[1],
+		layerConfig.kernel[2],
+		layerConfig.kernel[3]
 	}
 
-	if args.useBias then
-		parameterBuild.biases = {
-			shape = layer.outputShape
-		}
+	if layerConfig.useBias then
+		parameterBuild.biases = {layer.outputShape}
 	end
 
 	return layer, parameterBuild
 end
 
-function buildModule.convolutionalTranspose1D(args)
-	-- Default values
+function buildModule.convolutionalTranspose1D(layerConfig)
+	local defaults = {
+		activation      = "linear",
+		useBias         = false,
 
-	args.stride = args.stride or {1}
-	args.dilation = args.dilation or {1}
-	args.filters = args.filters or 1
+		kernel          = {2},
+		stride          = {1},
+		dilation        = {1},
+		paddingAmount   = {1},
+		filters         = 1,
+
+		filterInit      = "constant",
+		filterInitArgs  = {value = 0.1},
+		biasInit        = "constant",
+		biasInitArgs    = {value = 0.1},
+
+		filterTrainable = false,
+		biasTrainable   = false
+	}
+
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer, parameterBuild = {
 		config = {
-			activation = args.activation or "linear",
-			stride = args.stride,
-			dilation = args.dilation,
-			filters = args.filters
+			activation = layerConfig.activation,
+			stride = layerConfig.stride,
+			dilation = layerConfig.dilation,
+			filters = layerConfig.filters
 		},
 		parameters = {
-			alpha = args.alpha
+			alpha = layerConfig.alpha
 		},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
 
-	if args.inputShape[2] then
-		layer.outputShape = {args.inputShape[1], math.floor(((args.inputShape[2] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1}
+	if layerConfig.inputShape[2] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
+		}
 	else
-		layer.outputShape = {math.floor(((args.inputShape[1] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1}
+		layer.outputShape = {
+			math.floor(((layerConfig.inputShape[1] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
+		}
 	end
 
 	-- Initializers
 
 	layer.initializer.filter = {
-		initializer = args.filterInit or "constant",
-		parameters = args.filterInitParameters or {value = 0}
+		initializer = layerConfig.filterInit,
+		parameters = layerConfig.filterInitParameters
 	}
 
-	if args.useBias then
+	if layerConfig.useBias then
 		layer.initializer.biases = {
-			initializer = args.biasesInit or "constant",
-			parameters = args.biasesInitParameters or {value = 0}
+			initializer = layerConfig.biasesInit,
+			parameters = layerConfig.biasesInitParameters
 		}
 	end
 
 	-- Trainable
 
-	if args.filterTrainable then
-		layer.trainable.filter = true
-	end
+	layer.trainable.filter =
+		layerConfig.filterTrainable and true or false
 
-	if args.biasesTrainable and args.useBias then
-		layer.trainable.biases = true
-	end
+	layer.trainable.bias =
+		layerConfig.filterTrainable and layerConfig.useBias or false
 
 	-- Parameters
 
 	parameterBuild.filter = {
-		shape = {args.filters, args.kernel[1]}
+		layerConfig.filters,
+		layerConfig.kernel[1]
 	}
 
-	if args.useBias then
-		parameterBuild.biases = {
-			shape = layer.outputShape
-		}
+	if layerConfig.useBias then
+		parameterBuild.biases = {layer.outputShape}
 	end
 
 	return layer, parameterBuild
 end
 
-function buildModule.convolutionalTranspose2D(args)
-	-- Default values
+function buildModule.convolutionalTranspose2D(layerConfig)
+	local defaults = {
+		activation      = "linear",
+		useBias         = false,
 
-	args.stride = args.stride or {1, 1}
-	args.dilation = args.dilation or {1, 1}
-	args.filters = args.filters or 1
+		kernel          = {2, 2},
+		stride          = {1, 1},
+		dilation        = {1, 1},
+		paddingAmount   = {1, 1},
+		filters         = 1,
+
+		filterInit      = "constant",
+		filterInitArgs  = {value = 0.1},
+		biasInit        = "constant",
+		biasInitArgs    = {value = 0.1},
+
+		filterTrainable = false,
+		biasTrainable   = false
+	}
+
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer, parameterBuild = {
 		config = {
-			activation = args.activation or "linear",
-			stride = args.stride,
-			dilation = args.dilation,
-			filters = args.filters
+			activation = layerConfig.activation,
+			stride = layerConfig.stride,
+			dilation = layerConfig.dilation,
+			filters = layerConfig.filters
 		},
 		parameters = {
-			alpha = args.alpha
+			alpha = layerConfig.alpha
 		},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
 
-	if args.inputShape[3] then
-		layer.outputShape = {args.inputShape[1], math.floor(((args.inputShape[2] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1, math.floor(((args.inputShape[3] + args.paddingAmount[2]) - args.kernel[2]) / args.stride[2]) + 1}
+	if layerConfig.inputShape[2] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor(((layerConfig.inputShape[3] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
+		}
 	else
-		layer.outputShape = {math.floor(((args.inputShape[1] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1, math.floor(((args.inputShape[2] + args.paddingAmount[2]) - args.kernel[2]) / args.stride[2]) + 1}
+		layer.outputShape = {
+			math.floor(((layerConfig.inputShape[1] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
+		}
 	end
 
 	-- Initializers
 
 	layer.initializer.filter = {
-		initializer = args.filterInit or "constant",
-		parameters = args.filterInitParameters or {value = 0}
+		initializer = layerConfig.filterInit,
+		parameters = layerConfig.filterInitParameters
 	}
 
-	if args.useBias then
+	if layerConfig.useBias then
 		layer.initializer.biases = {
-			initializer = args.biasesInit or "constant",
-			parameters = args.biasesInitParameters or {value = 0}
+			initializer = layerConfig.biasesInit,
+			parameters = layerConfig.biasesInitParameters
 		}
 	end
 
 	-- Trainable
 
-	if args.filterTrainable then
-		layer.trainable.filter = true
-	end
+	layer.trainable.filter =
+		layerConfig.filterTrainable and true or false
 
-	if args.biasesTrainable and args.useBias then
-		layer.trainable.biases = true
-	end
+	layer.trainable.bias =
+		layerConfig.filterTrainable and layerConfig.useBias or false
 
 	-- Parameters
 
 	parameterBuild.filter = {
-		shape = {args.filters, args.kernel[1], args.kernel[2]}
+		layerConfig.filters,
+		layerConfig.kernel[1],
+		layerConfig.kernel[2]
 	}
 
-	if args.useBias then
-		parameterBuild.biases = {
-			shape = layer.outputShape
-		}
+	if layerConfig.useBias then
+		parameterBuild.biases = {layer.outputShape}
 	end
 
 	return layer, parameterBuild
 end
 
-function buildModule.convolutionalTranspose3D(args)
-	-- Default values
+function buildModule.convolutionalTranspose3D(layerConfig)
+	local defaults = {
+		activation      = "linear",
+		useBias         = false,
 
-	args.stride = args.stride or {1, 1, 1}
-	args.dilation = args.dilation or {1, 1, 1}
-	args.filters = args.filters or 1
+		kernel          = {2, 2, 2},
+		stride          = {1, 1, 1},
+		dilation        = {1, 1, 1},
+		paddingAmount   = {1, 1, 1},
+		filters         = 1,
+
+		filterInit      = "constant",
+		filterInitArgs  = {value = 0.1},
+		biasInit        = "constant",
+		biasInitArgs    = {value = 0.1},
+
+		filterTrainable = false,
+		biasTrainable   = false
+	}
+
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer, parameterBuild = {
 		config = {
-			activation = args.activation or "linear",
-			stride = args.stride,
-			dilation = args.dilation,
-			filters = args.filters
+			activation = layerConfig.activation,
+			stride = layerConfig.stride,
+			dilation = layerConfig.dilation,
+			filters = layerConfig.filters
 		},
 		parameters = {
-			alpha = args.alpha
+			alpha = layerConfig.alpha
 		},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape
+		inputShape = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
 
-	if args.inputShape[4] then
-		layer.outputShape = {args.inputShape[1], math.floor(((args.inputShape[2] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1, math.floor(((args.inputShape[3] + args.paddingAmount[2]) - args.kernel[2]) / args.stride[2]) + 1, math.floor(((args.inputShape[4] + args.paddingAmount[3]) - args.kernel[3]) / args.stride[3]) + 1}
+	if layerConfig.inputShape[2] then
+		layer.outputShape = {
+			layerConfig.inputShape[1],
+			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor(((layerConfig.inputShape[3] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
+			math.floor(((layerConfig.inputShape[4] + layerConfig.paddingAmount[3]) - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
+		}
 	else
-		layer.outputShape = {math.floor(((args.inputShape[1] + args.paddingAmount[1]) - args.kernel[1]) / args.stride[1]) + 1, math.floor(((args.inputShape[2] + args.paddingAmount[2]) - args.kernel[2]) / args.stride[2]) + 1, math.floor(((args.inputShape[3] + args.paddingAmount[3]) - args.kernel[3]) / args.stride[3]) + 1}
+		layer.outputShape = {
+			math.floor(((layerConfig.inputShape[1] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
+			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
+			math.floor(((layerConfig.inputShape[3] + layerConfig.paddingAmount[3]) - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
+		}
 	end
 
 	-- Initializers
 
 	layer.initializer.filter = {
-		initializer = args.filterInit or "constant",
-		parameters = args.filterInitParameters or {value = 0}
+		initializer = layerConfig.filterInit,
+		parameters = layerConfig.filterInitParameters
 	}
 
-	if args.useBias then
+	if layerConfig.useBias then
 		layer.initializer.biases = {
-			initializer = args.biasesInit or "constant",
-			parameters = args.biasesInitParameters or {value = 0}
+			initializer = layerConfig.biasesInit,
+			parameters = layerConfig.biasesInitParameters
 		}
 	end
 
 	-- Trainable
 
-	if args.filterTrainable then
-		layer.trainable.filter = true
-	end
+	layer.trainable.filter =
+		layerConfig.filterTrainable and true or false
 
-	if args.biasesTrainable and args.useBias then
-		layer.trainable.biases = true
-	end
+	layer.trainable.bias =
+		layerConfig.filterTrainable and layerConfig.useBias or false
 
 	-- Parameters
 
 	parameterBuild.filter = {
-		shape = {args.filters, args.kernel[1], args.kernel[2], args.kernel[3]}
+		layerConfig.filters,
+		layerConfig.kernel[1],
+		layerConfig.kernel[2],
+		layerConfig.kernel[3]
 	}
 
-	if args.useBias then
-		parameterBuild.biases = {
-			shape = layer.outputShape
-		}
+	if layerConfig.useBias then
+		parameterBuild.biases = {layer.outputShape}
 	end
 
 	return layer, parameterBuild
 end
 
-function buildModule.flatten(args)
+function buildModule.flatten(layerConfig)
 	local outputShape = 1
 
-	for a = 1, #args.inputShape do
-		outputShape = outputShape * args.inputShape[a]
+	for a = 1, #layerConfig.inputShape do
+		outputShape = outputShape * layerConfig.inputShape[a]
 	end
 
 	return {
-		inputShape = args.inputShape,
+		inputShape = layerConfig.inputShape,
 		outputShape = {outputShape}
 	}
 end
 
-function buildModule.add1D(args)
+function buildModule.add1D(layerConfig)
+	local defaults = {
+		biasesInit     = "constant",
+		biasesInitArgs = {value = 0}
+	}
+
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
+
 	local layer, parameterBuild = {
 		parameters = {},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape,
-		outputShape = args.inputShape
+		inputShape = layerConfig.inputShape,
+		outputShape = layerConfig.inputShape
 	}, {}
 
 	-- Initializers
 
 	layer.initializer.biases = {
-		initializer = args.biasesInit or "constant",
-		parameters = args.biasesInitParameters or {value = 0}
+		initializer = layerConfig.biasesInit,
+		parameters = layerConfig.biasesInitParameters
 	}
 
 	-- Trainable
 
-	if args.biasTrainable then
-		layer.trainable.bias = true
-	end
+	layer.trainable.bias =
+		layerConfig.biasTrainable and true or false
 
 	-- Parameters
 
-	parameterBuild.biases = {
-		shape = args.inputShape
-	}
+	parameterBuild.biases = {layerConfig.inputShape}
 
 	return layer, parameterBuild
 end
@@ -824,33 +1077,37 @@ buildModule.subtract2D = buildModule.add1D
 
 buildModule.subtract3D = buildModule.add1D
 
-function buildModule.multiply1D(args)
+function buildModule.multiply1D(layerConfig)
+	local defaults = {
+		weightsInit     = "constant",
+		weightsInitArgs = {value = 0}
+	}
+
+	layerConfig = setmetatable(layerConfig, {__index = defaults})
+
 	local layer, parameterBuild = {
 		parameters = {},
 		trainable = {},
 		initializer = {},
-		inputShape = args.inputShape,
-		outputShape = args.inputShape
+		inputShape = layerConfig.inputShape,
+		outputShape = layerConfig.inputShape
 	}, {}
 
 	-- Initializers
 
 	layer.initializer.weights = {
-		initializer = args.weightsInit or "constant",
-		parameters = args.weightsInitParameters or {value = 0}
+		initializer = layerConfig.weightsInit,
+		parameters = layerConfig.weightsInitParameters
 	}
 
 	-- Trainable
 
-	if args.biasTrainable then
-		layer.trainable.bias = true
-	end
+	layer.trainable.weights =
+		layerConfig.weightsTrainable and true or false
 
 	-- Parameters
 
-	parameterBuild.weights = {
-		shape = args.inputShape
-	}
+	parameterBuild.weights = {layerConfig.inputShape}
 
 	return layer, parameterBuild
 end
@@ -865,35 +1122,35 @@ buildModule.divide2D = buildModule.multiply1D
 
 buildModule.divide3D = buildModule.multiply1D
 
-function buildModule.softmax(args)
+function buildModule.softmax(layerConfig)
 	return {
-		inputShape = args.inputShape,
-		outputShape = args.inputShape
+		inputShape = layerConfig.inputShape,
+		outputShape = layerConfig.inputShape
 	}
 end
 
-function buildModule.activate(args)
+function buildModule.activate(layerConfig)
 	return {
 		config = {
-			activation = args.activation,
-			derivative = args.derivative
+			activation = layerConfig.activation,
+			derivative = layerConfig.derivative
 		},
 		parameters = {
-			alpha = args.alpha
+			alpha = layerConfig.alpha
 		},
-		inputShape = args.inputShape,
-		outputShape = args.inputShape
+		inputShape = layerConfig.inputShape,
+		outputShape = layerConfig.inputShape
 	}
 end
 
 
-function buildModule.dropOut(args)
+function buildModule.dropOut(layerConfig)
 	return {
 		config = {
-			rate = args.rate
+			rate = layerConfig.rate
 		},
-		inputShape = args.inputShape,
-		outputShape = args.inputShape
+		inputShape = layerConfig.inputShape,
+		outputShape = layerConfig.inputShape
 	}
 end
 

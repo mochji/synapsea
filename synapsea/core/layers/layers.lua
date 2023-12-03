@@ -131,7 +131,10 @@ end
 function layersModule.averagePooling2D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
 		local kernelProduct = kernel[1] * kernel[2]
-		local outputShape = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1}
+		local outputShape = {
+			math.floor((#input - kernel[1]) / stride[1]) + 1,
+			math.floor((#input[1] - kernel[2]) / stride[2]) + 1
+		}
 		local startIndexA = 0
 
 		local output = {}
@@ -182,7 +185,11 @@ end
 function layersModule.averagePooling3D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
 		local kernelProduct = kernel[1] * kernel[2] * kernel[3]
-		local outputShape = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1, math.floor((#input[1][1] - kernel[3]) / stride[3]) + 1}
+		local outputShape = {
+			math.floor((#input - kernel[1]) / stride[1]) + 1,
+			math.floor((#input[1] - kernel[2]) / stride[2]) + 1,
+			math.floor((#input[1][1] - kernel[3]) / stride[3]) + 1
+		}
 		local startIndexA = 0
 
 		local output = {}
@@ -282,7 +289,10 @@ end
 
 function layersModule.maxPooling2D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
-		local outputShape = {math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1}
+		local outputShape = {
+			math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1,
+			math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1
+		}
 		local startIndexA = 0
 
 		local output = {}
@@ -332,7 +342,11 @@ end
 
 function layersModule.maxPooling3D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
-		local outputShape = {math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1, math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1, math.floor((#args.input[1][1] - args.kernel[3]) / args.stride[3]) + 1}
+		local outputShape = {
+			math.floor((#args.input - args.kernel[1]) / args.stride[1]) + 1,
+			math.floor((#args.input[1] - args.kernel[2]) / args.stride[2]) + 1,
+			math.floor((#args.input[1][1] - args.kernel[3]) / args.stride[3]) + 1
+		}
 		local startIndexA = 0
 
 		local output = {}
@@ -432,7 +446,10 @@ end
 
 function layersModule.sumPooling2D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
-		local outputShape = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1}
+		local outputShape = {
+			math.floor((#input - kernel[1]) / stride[1]) + 1,
+			math.floor((#input[1] - kernel[2]) / stride[2]) + 1
+		}
 		local startIndexA = 0
 
 		local output = {}
@@ -482,7 +499,11 @@ end
 
 function layersModule.sumPooling3D(args)
 	local function poolingFunc(input, kernel, stride, dilation)
-		local outputShape = {math.floor((#input - kernel[1]) / stride[1]) + 1, math.floor((#input[1] - kernel[2]) / stride[2]) + 1, math.floor((#input[1][1] - kernel[3]) / stride[3]) + 1}
+		local outputShape = {
+			math.floor((#input - kernel[1]) / stride[1]) + 1,
+			math.floor((#input[1] - kernel[2]) / stride[2]) + 1,
+			math.floor((#input[1][1] - kernel[3]) / stride[3]) + 1
+		}
 		local startIndexA = 0
 
 		local output = {}
@@ -896,10 +917,16 @@ function layersModule.convolutional1D(args)
 
 				startIndex = startIndex + stride[1]
 
-				if biases then
-					output[a][b] = activation(sum + biases[b], false, alpha)
-				else
-					output[a][b] = activation(sum, false, alpha)
+				output[a][b] = sum
+			end
+
+			if biases then
+				for b = 1, outputSize do
+					output[a][b] = activation(output[a][b] + biases[b], false, alpha)
+				end
+			else
+				for b = 1, outputSize do
+					output[a][b] = activation(output[a][b], false, alpha)
 				end
 			end
 		end
@@ -931,7 +958,10 @@ end
 
 function layersModule.convolutional2D(args)
 	local function convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
-		local outputShape = {math.floor((#input - #filter[1]) / stride[1]) + 1, math.floor((#input[1] - #filter[1][1]) / stride[2]) + 1}
+		local outputShape = {
+			math.floor((#input - #filter[1]) / stride[1]) + 1,
+			math.floor((#input[1] - #filter[1][1]) / stride[2]) + 1
+		}
 
 		local output = {}
 
@@ -956,14 +986,24 @@ function layersModule.convolutional2D(args)
 
 					startIndexB = startIndexB + stride[2]
 
-					if biases then
-						output[a][b][c] = activation(sum + biases[b][c], false, alpha)
-					else
-						output[a][b][c] = activation(sum, false, alpha)
-					end
+					output[a][b][c] = sum
 				end
 
 				startIndexA = startIndexA + 1
+			end
+
+			if biases then
+				for b = 1, outputShape[1] do
+					for c = 1, outputShape[2] do
+						output[a][b][c] = activation(output[a][b][c] + biases[b][c], false, alpha)
+					end
+				end
+			else
+				for b = 1, outputShape[1] do
+					for c = 1, outputShape[2] do
+						output[a][b][c] = activation(output[a][b][c], false, alpha)
+					end
+				end
 			end
 		end
 
@@ -994,7 +1034,11 @@ end
 
 function layersModule.convolutional3D(args)
 	local function convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
-		local outputShape = {math.floor((#input - #filter[1]) / stride[1]) + 1, math.floor((#input[1] - #filter[1][1]) / stride[2]) + 1, math.floor((#input - #filter[1][1][1]) / stride[3]) + 1}
+		local outputShape = {
+			math.floor((#input - #filter[1]) / stride[1]) + 1,
+			math.floor((#input[1] - #filter[1][1]) / stride[2]) + 1,
+			math.floor((#input - #filter[1][1][1]) / stride[3]) + 1
+		}
 
 		local output = {}
 
@@ -1025,17 +1069,31 @@ function layersModule.convolutional3D(args)
 
 						startIndexC = startIndexC + stride[3]
 
-						if biases then
-							output[a][b][c][d] = activation(sum + biases[b][c][d], false, alpha)
-						else
-							output[a][b][c][d] = activation(sum, false, alpha)
-						end
+						output[a][b][c][d] = sum
 					end
 
 					startIndexB = startIndexB + 1
 				end
 
 				startIndexA = startIndexA + 1
+			end
+
+			if biases then
+				for b = 1, outputShape[1] do
+					for c = 1, outputShape[2] do
+						for d = 1, outputShape[3] do
+							output[a][b][c][d] = activation(output[a][b][c][d] + biases[b][c][d], false, alpha)
+						end
+					end
+				end
+			else
+				for b = 1, outputShape[1] do
+					for c = 1, outputShape[2] do
+						for d = 1, outputShape[3] do
+							output[a][b][c][d] = activation(output[a][b][c][d], false, alpha)
+						end
+					end
+				end
 			end
 		end
 

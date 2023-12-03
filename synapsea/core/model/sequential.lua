@@ -112,8 +112,10 @@ function Sequential.initialize(model, args)
 		}
 	end
 
-	-- This is done this way to avoid overwriting training data when initializing after first initialization
-	-- to re-initialize parameters (to make a specific edge case easier)
+	--[[
+		This is done this way to avoid overwriting training data when initializing after first initialization
+		to re-initialize parameters (to make a specific edge case easier)
+	]]--
 
 	if args.learningRate then
 		model.trainingConfig.learningRate = args.learningRate

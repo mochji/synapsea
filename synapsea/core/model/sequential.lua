@@ -258,7 +258,7 @@ return setmetatable(
 				trainingConfig = {}
 			}
 
-			assert(inputShape, "bad argument #1 to 'Sequential' (value expected)")
+			assert(inputShape, "bad argument #1 to 'Sequential' (input shape expected)")
 
 			model.metaData.synapseaVersion = "v2.0.00-unstable"
 

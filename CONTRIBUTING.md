@@ -99,9 +99,15 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/mochji
 
 ### Style
 
-#### Indentation
+#### Whitespace
 
  - Use tabs for each indentation level. (tip: use 4 spaces for tabs so the tabs aren't absurdly big and you can see when you're nesting too much :3)
+ - Include a whitespace before and after mathematical tokens.
+ - Do not have whitespace before commas `,`.
+ - Do not have trailing whitespace at the end of lines.
+ - **Do not** use DOS/Windows newlines (LF `\n` instead of CRLF `\r\n`).
+ - Blank lines should separate logical sections of the code.
+ - Minimize nesting as much as possible.
 
 #### Naming
 
@@ -124,15 +130,6 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/mochji
 
  - Include parenthesis when calling functions.
  - Use double quotes `"`.
-
-#### Whitespace
-
- - Include a whitespace after mathematical tokens.
- - Do not have whitespace before commas `,`.
- - Do not have trailing whitespace at the end of lines.
- - **Do not** use DOS/Windows newlines (LF `\n` instead of CRLF `\r\n`).
- - Blank lines should separate logical sections of the code.
- - Minimize nesting as much as possible.
 
 ### Logic
 
@@ -168,4 +165,5 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/mochji
  - Periodically review and refactor code for readability and maintainability to avoid software rot.
 
 ## Attribution
+
 This guide is based on the [**contributing-gen**](https://github.com/bttger/contributing-gen).

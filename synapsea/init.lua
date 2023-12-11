@@ -59,8 +59,6 @@ for layerName, layerFunc in pairs(synapsea.layers) do
 			gradient = gradientModule[layerName]
 		},
 		{
-			-- For some reason, it makes the first argument self automatically so this is a """"fix""""
-
 			__call = function(_, args)
 				return layerFunc(args)
 			end

@@ -20,6 +20,7 @@ Synapsea is built from the ground up to be simple, easy to understand and portab
  - [Documentation](#documentation)
  - [Contributing](#contributing)
  - [License](#license)
+ - [Also](#also)
 
 ## Installatation
 
@@ -31,7 +32,7 @@ git clone https://github.com/mochji/synapsea.git
 
 Or download the zip file from GitHub and unzip it.
 
-Once you have cloned the Synapsea repository just move or copy it to a directory where you can `require` it.
+Once you have cloned the Synapsea repository just move or copy `synapsea/synapsea` to a directory where you can `require` it.
 
 ## Usage
 
@@ -81,3 +82,12 @@ Contributions are welcome! If you find any issues or have suggestions, please op
 ## License
 
 This library is licensed under the GNU GPL v3, see [License](https://www.gnu.org/licenses/gpl-3.0.en.html) for details.
+
+## Also
+
+ok, 2 more things!
+
+tldr: ai is stupid, synapsea started as a hyperfixation
+
+ - i gotta be honest synapsea started out as a hyperfixation and now i cant stop working on it because im in too deep
+ - i hate ai, i think machine learning for data analysis and processing is cool but i hate quote unquote ""ai"". its stupid, most of the time its just half-baked gpt 6b models and its so stupid and pointless. i don't want synapsea to be seen as one of those or just to hop on the bandwagon. i actually started working on synapsea before ""ai"" blew up.

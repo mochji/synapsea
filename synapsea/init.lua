@@ -23,7 +23,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local synapseaPath    =
+local synapseaPath =
 	debug.getinfo(1, "S").source
 		:sub(2)
 		:match("(.*" .. package.config:sub(1, 1) .. ")")
@@ -38,13 +38,12 @@ local synapsea = {
 
 	activations  = require("core.activations"),
 	losses       = require("core.losses"),
-	math         = require("core.math"),
 	initializers = require("core.initializers"),
 	optimizers   = require("core.optimizers"),
 	regularizers = require("core.regularizers"),
 	layers       = require("core.layers.layers"),
 	model        = {
-		Sequential = require("core.model.sequential")
+		Sequential = require("core.model.Sequential")
 	}
 }
 

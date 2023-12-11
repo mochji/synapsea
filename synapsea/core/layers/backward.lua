@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/layers/error.lua
+	core/layers/backward.lua
 
 	Synapsea, a simple yet powerful machine learning framework for Lua.
 	Copyright (C) 2023 mochji
@@ -25,7 +25,7 @@
 
 local activationsModule = require("core.activations")
 
-local errorModule = {
+local backwardModule = {
 	dense,
 	averagePooling1D,
 	averagePooling2D,
@@ -70,23 +70,12 @@ local errorModule = {
 	dropOut
 }
 
-function errorModule.dense(args)
-	local layerOutput, weights, alpha, outputSize, forwardError = args.output, args.weights, args.alpha, args.outputSize, args.forwardError
+function backwardModule.dense(args)
 	local activation = activationsModule[args.activation]
+	local input, weights, bias, alpha, outputSize = args.input, args.weights, args.bias or 0, args.alpha, args.outputSize
 
-	local inputSize = #weights
-
-	local output = {}
-
-	for a = 1, outputSize do
-		output[a] = 0
-
-		for b = 1, inputSize do
-			output[a][b] = output[a][b] + weights[b][a] * forwardError[a] * activation(layerOutput[a], true, alpha)
-		end
-	end
-
-	return output
+	local gradInput   = {}
+	local gradWeights = {}
 end
 
-return errorModule
+return backwardModule

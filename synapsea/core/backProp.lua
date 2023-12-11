@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/math.lua
+	core/backProp.lua
 
 	Synapsea, a simple yet powerful machine learning framework for Lua.
 	Copyright (C) 2023 mochji
@@ -19,42 +19,34 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local mathModule = {
-	random = {
-		uniform,
-		normal
-	},
-	round,
-	sign,
-	root
+local errorModule    = require("core.layers.error")
+local gradientModule = require("core.layers.gradient")
+
+local backPropModule = {
+	stochastic,
+	batch
 }
 
-function mathModule.random.uniform(lowerLimit, upperLimit)
-	return lowerLimit + math.random() * (upperLimit - lowerLimit)
-end
+local function outputError(output, expectedOutput, activation, alpha)
+	local outputError = {}
 
-function mathModule.random.normal(mean, sd)
-	return mean + math.sqrt(-2 * math.log(math.random())) * math.cos(2 * math.pi * math.random()) * sd -- https://forum.cheatengine.org/viewtopic.php?p=5724230 omg cheatengine
-end
+	local activation = activationsModule[activation]
 
-function mathModule.round(x)
-	return math.floor(x + 0.5)
-end
-
-function mathModule.sign(x)
-	if x > 0 then
-		return 1
+	for a = 1, #output do
+		if canindex(output[a]) then
+			outputError[a] = backPropModule.outputError(output[a], expectedOutput[a], activation)
+		else
+			outputError[a] = (output[a] - expectedOutput[a]) * activation(output[a], true, alpha)
+		end
 	end
 
-	if x < 0 then
-		return -1
-	end
-
-	return 0
+	return outputError
 end
 
-function mathModule.root(x, root)
-	return x^(1 / root)
+function backPropModule.stochastic(model, dataset, args)
 end
 
-return mathModule
+function backPropModule.batch(model, dataset, args)
+end
+
+return backPropModule

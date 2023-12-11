@@ -20,14 +20,86 @@
 ]]--
 
 local initializersModule = {
+	zeros,
+	ones,
+	constant,
 	uniformRandom,
 	normalRandom,
 	uniformXavier,
 	normalXavier,
 	uniformHe,
-	normalHe,
-	constant
+	normalHe
 }
+
+function initializersModule.zeros(shape)
+	local function initializerFunc(shape, index)
+		local output = {}
+
+		if index == #shape then
+			for a = 1, shape[index] do
+				output[a] = 0
+			end
+		else
+			for a = 1, shape[index] do
+				output[a] = initializerFunc(
+					shape,
+					index + 1
+				)
+			end
+		end
+
+		return output
+	end
+
+	return initializerFunc(shape, 1)
+end
+
+function initializersModule.ones(shape, args)
+	local function initializerFunc(shape, index)
+		local output = {}
+
+		if index == #shape then
+			for a = 1, shape[index] do
+				output[a] = 1
+			end
+		else
+			for a = 1, shape[index] do
+				output[a] = initializerFunc(
+					shape,
+					index + 1
+				)
+			end
+		end
+
+		return output
+	end
+
+	return initializerFunc(shape, 1)
+end
+
+function initializersModule.constant(shape, args)
+	local function initializerFunc(shape, value, index)
+		local output = {}
+
+		if index == #shape then
+			for a = 1, shape[index] do
+				output[a] = value
+			end
+		else
+			for a = 1, shape[index] do
+				output[a] = initializerFunc(
+					shape,
+					value,
+					index + 1
+				)
+			end
+		end
+
+		return output
+	end
+
+	return initializerFunc(shape, args.value, 1)
+end
 
 function initializersModule.uniformRandom(shape, args)
 	local function initializerFunc(shape, lowerLimit, upperLimit, index)
@@ -173,30 +245,6 @@ function initializersModule.normalHe(shape, args)
 	end
 
 	return initializerFunc(shape, math.sqrt(2 / args.inputs), 1)
-end
-
-function initializersModule.constant(shape, args, index)
-	local function initializerFunc(shape, value, index)
-		local output = {}
-
-		if index == #shape then
-			for a = 1, shape[index] do
-				output[a] = value
-			end
-		else
-			for a = 1, shape[index] do
-				output[a] = initializerFunc(
-					shape,
-					value,
-					index + 1
-				)
-			end
-		end
-
-		return output
-	end
-
-	return initializerFunc(shape, args.value, 1)
 end
 
 return initializersModule

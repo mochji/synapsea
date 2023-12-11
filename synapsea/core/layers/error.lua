@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/backProp.lua
+	core/layers/error.lua
 
 	Synapsea, a simple yet powerful machine learning framework for Lua.
 	Copyright (C) 2023 mochji
@@ -19,34 +19,49 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local errorModule    = require("core.layers.error")
-local gradientModule = require("core.layers.gradient")
-
-local backPropModule = {
-	stochastic,
-	batch
+local errorModule = {
+	dense,
+	averagePooling1D,
+	averagePooling2D,
+	averagePooling3D,
+	maxPooling1D,
+	maxPooling2D,
+	maxPooling3D,
+	sumPooling1D,
+	sumPooling2D,
+	sumPooling3D,
+	upSample1D,
+	upSample2D,
+	upSample3D,
+	zeroPad1D,
+	zeroPad2D,
+	zeroPad3D,
+	crop1D,
+	crop2D,
+	crop3D,
+	convolutional1D,
+	convolutional2D,
+	convolutional3D,
+	convolutionalTranspose1D,
+	convolutionalTranspose2D,
+	convolutionalTranspose3D,
+	flatten,
+	reshape,
+	add1D,
+	add2D,
+	add3D,
+	subtract1D,
+	subtract2D,
+	subtract3D,
+	multiply1D,
+	multiply2D,
+	multiply3D,
+	divide1D,
+	divide2D,
+	divide3D,
+	softmax,
+	activate,
+	dropOut
 }
 
-local function outputError(output, expectedOutput, activation, alpha)
-	local outputError = {}
-
-	local activation = activationsModule[activation]
-
-	for a = 1, #output do
-		if canindex(output[a]) then
-			outputError[a] = backPropModule.outputError(output[a], expectedOutput[a], activation)
-		else
-			outputError[a] = (output[a] - expectedOutput[a]) * activation(output[a], true, alpha)
-		end
-	end
-
-	return outputError
-end
-
-function backPropModule.stochastic(model, dataset, args)
-end
-
-function backPropModule.batch(model, dataset, args)
-end
-
-return backPropModule
+return errorModule

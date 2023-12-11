@@ -26,7 +26,7 @@ local regularizersModule = {
 	l2
 }
 
-function regularizersModule.l1(args)
+function regularizersModule.l1(parameters, args)
 	local function absoluteSum(tbl)
 		local sum = 0
 
@@ -55,7 +55,7 @@ function regularizersModule.l1(args)
 
 	local lambda = args.lambda
 
-	for _, parameter in pairs(args.trainableParameters) do
+	for _, parameter in pairs(parameters) do
 		if type(parameter) == "number" then
 			parameter = parameter + lambda * math.abs(parameter)
 		else
@@ -63,10 +63,10 @@ function regularizersModule.l1(args)
 		end
 	end
 
-	return args.trainableParameters
+	return parameters
 end
 
-function regularizersModule.l2(args)
+function regularizersModule.l2(parameters, args)
 	local function squaredSum(tbl)
 		local sum = 0
 
@@ -95,7 +95,7 @@ function regularizersModule.l2(args)
 
 	local lambda = args.lambda
 
-	for _, parameter in pairs(args.trainableParameters) do
+	for _, parameter in pairs(parameters) do
 		if type(parameter) == "number" then
 			parameter = parameter + lambda * parameter^2
 		else
@@ -103,7 +103,7 @@ function regularizersModule.l2(args)
 		end
 	end
 
-	return args.trainableParameters
+	return parameters
 end
 
 return regularizersModule

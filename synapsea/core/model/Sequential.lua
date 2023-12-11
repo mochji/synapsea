@@ -24,7 +24,6 @@ local canindex           = require("core.utils.canindex")
 local layersModule       = require("core.layers.layers")
 local buildModule        = require("core.layers.build")
 local initializersModule = require("core.initializers")
-local backPropModule     = require("core.backprop")
 
 local Sequential = {
 	add,
@@ -216,8 +215,7 @@ function Sequential.import(fileName)
 	return model
 end
 
-function Sequential.fit(model, algorithm, dataset, args)
-	return backPropModule.gradientDescent[algorithm](model, dataset, args)
+function Sequential.fit(model)
 end
 
 function Sequential.forwardPass(model, input)

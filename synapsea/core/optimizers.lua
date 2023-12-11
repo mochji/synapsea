@@ -25,7 +25,7 @@ local optimizersModule = {
 	momentum
 }
 
-function optimizersModule.momentum(args)
+function optimizersModule.momentum(parameters, args)
 	local function optimizerFunc(gradient, momentum, stepSize, change)
 		for a, _ in pairs(gradient) do
 			if canindex(gradient[a]) then
@@ -43,7 +43,7 @@ function optimizersModule.momentum(args)
 
 	local change = 0
 
-	for _, parameter in pairs(args.parameters) do
+	for _, parameter in pairs(parameters) do
 		if type(parameter) == "number" then
 			change = args.stepSize * gradient[a] + momentum * change
 			parameter = parameter - change
@@ -52,7 +52,7 @@ function optimizersModule.momentum(args)
 		end
 	end
 
-	return args.parameters
+	return parameters
 end
 
 return optimizersModule

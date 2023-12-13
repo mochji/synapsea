@@ -520,10 +520,10 @@ function buildModule.convolutional1D(layerConfig)
 		filters         = 1,
 
 		filterInit      = "zeros",
-		biasesInit        = "zeros",
+		biasesInit      = "zeros",
 
 		filterTrainable = false,
-		biasesTrainable   = false
+		biasesTrainable = false
 	}
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
@@ -586,7 +586,7 @@ function buildModule.convolutional1D(layerConfig)
 	}
 
 	if layerConfig.useBias then
-		parameterBuild.biases = {layer.outputShape}
+		parameterBuild.biases = layer.outputShape
 	end
 
 	return layer, parameterBuild
@@ -761,7 +761,7 @@ function buildModule.convolutional3D(layerConfig)
 	}
 
 	if layerConfig.useBias then
-		parameterBuild.biases = {layer.outputShape}
+		parameterBuild.biases = layer.outputShape
 	end
 
 	return layer, parameterBuild
@@ -845,7 +845,7 @@ function buildModule.convolutionalTranspose1D(layerConfig)
 	}
 
 	if layerConfig.useBias then
-		parameterBuild.biases = {layer.outputShape}
+		parameterBuild.biases = layer.outputShape
 	end
 
 	return layer, parameterBuild
@@ -932,7 +932,7 @@ function buildModule.convolutionalTranspose2D(layerConfig)
 	}
 
 	if layerConfig.useBias then
-		parameterBuild.biases = {layer.outputShape}
+		parameterBuild.biases = layer.outputShape
 	end
 
 	return layer, parameterBuild
@@ -1022,7 +1022,7 @@ function buildModule.convolutionalTranspose3D(layerConfig)
 	}
 
 	if layerConfig.useBias then
-		parameterBuild.biases = {layer.outputShape}
+		parameterBuild.biases = layer.outputShape
 	end
 
 	return layer, parameterBuild

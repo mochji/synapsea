@@ -243,7 +243,7 @@ buildModule.maxPooling1D = buildModule.averagePooling1D
 buildModule.maxPooling2D = buildModule.averagePooling2D
 buildModule.maxPooling3D = buildModule.averagePooling3D
 
-buildModule.maxPooling1D = buildModule.averagePooling1D
+buildModule.sumPooling1D = buildModule.averagePooling1D
 buildModule.sumPooling2D = buildModule.averagePooling2D
 buildModule.sumPooling3D = buildModule.averagePooling3D
 
@@ -1038,6 +1038,37 @@ function buildModule.flatten(layerConfig)
 	return {
 		inputShape = layerConfig.inputShape,
 		outputShape = {outputShape}
+	}
+end
+
+function buildModule.reshape(layerConfig)
+	checkargs(
+		{layerConfig.shape},
+		{"shape"},
+		"reshape"
+	)
+
+	local totalIn, totalOut = 1, 1
+
+	for a = 1, #layerConfig.inputShape do
+		totalIn = totalIn * layerConfig.inputShape[a]
+	end
+
+	for a = 1, #layerConfig.shape do
+		totalOut = totalOut * layerConfig.shape[a]
+	end
+
+	assert(
+		totalIn == totalOut,
+		"input cannot be reshaped to specified shape"
+	)
+
+	return {
+		config = {
+			shape = layerConfig.shape
+		},
+		inputShape = layerConfig.inputShape,
+		outputShape = layerConfig.shape
 	}
 end
 

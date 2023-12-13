@@ -1245,6 +1245,40 @@ function layersModule.flatten(args)
 end
 
 function layersModule.reshape(args)
+	local flattenFunc, reshapeFunc
+
+	flattenFunc = function(input)
+		local output = {}
+
+		for a = 1, #output do
+			if canindex(output[a]) then
+				for _, b in pairs(flattenFunc(input[a])) do
+					output[a] = b
+				end
+			else
+				output[a] = input[a]
+			end
+		end
+	end
+
+	reshapeFunc = function(input, shape, index)
+		local output = {}
+
+		local inputIndex = 0
+
+		if shape[index + 1] then
+			for b = 1, #shape[index] do
+				output[a] = reshapeFunc(input, shape, index + 1)
+			end
+		else
+			for a = 1, shape[index] do
+				output[a]  = input[inputIndex]
+				inputIndex = inputIndex + 1
+			end
+		end
+	end
+
+	return reshapeFunc(flattenFunc(args.input), args.shape, 1)
 end
 
 function layersModule.add1D(args)
@@ -1584,7 +1618,7 @@ function layersModule.divide3D(args)
 end
 
 function layersModule.softmax(args)
-	return activation.softmax(args.input)
+	return activationsModule.softmax(args.input)
 end
 
 function layersModule.activate(args)

@@ -37,6 +37,11 @@ local Sequential = {
 }
 
 function Sequential.add(model, layerType, buildParameters)
+	assert(
+		layerType,
+		"bad argument #1 to 'add' (layer type expected)"
+	)
+
 	buildParameters = buildParameters or {}
 
 	local layerNumber = #model.layerConfig + 1

@@ -68,6 +68,12 @@ local buildModule = {
 }
 
 function buildModule.dense(layerConfig)
+	checkargs(
+		{layerConfig.outputSize},
+		{"outputSize"},
+		"dense"
+	)
+
 	local defaults = {
 		activation       = "linear",
 		useBias          = false,
@@ -80,12 +86,6 @@ function buildModule.dense(layerConfig)
 		weightsTrainable = false,
 		biasTrainable    = false
 	}
-
-	checkargs(
-		{layerConfig.inputShape, layerConfig.outputSize},
-		{"inputShape",           "outputSize"},
-		"dense"
-	)
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
@@ -146,12 +146,6 @@ function buildModule.averagePooling1D(layerConfig)
 		dilation = {1}
 	}
 
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"averagePooling1D"
-	)
-
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer = {
@@ -183,12 +177,6 @@ function buildModule.averagePooling2D(layerConfig)
 		stride   = {1, 1},
 		dilation = {1, 1}
 	}
-
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"averagePooling2D"
-	)
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
@@ -224,12 +212,6 @@ function buildModule.averagePooling3D(layerConfig)
 		dilation = {1, 1, 1}
 	}
 
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"averagePooling3D"
-	)
-
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer = {
@@ -259,256 +241,18 @@ function buildModule.averagePooling3D(layerConfig)
 	return layer
 end
 
-function buildModule.maxPooling1D(layerConfig)
-	local defaults = {
-		kernel   = {1},
-		stride   = {1},
-		dilation = {1}
-	}
+buildModule.maxPooling1D = buildModule.averagePooling1D
+buildModule.maxPooling2D = buildModule.averagePooling2D
+buildModule.maxPooling3D = buildModule.averagePooling3D
 
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"maxPooling1D"
-	)
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer = {
-		config = {
-			kernel = layerConfig.kernel,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation
-		},
-		inputShape = layerConfig.inputShape
-	}
-
-	if layerConfig.inputShape[2] then
-		layer.outputShape = {
-			layerConfig.inputShape[1],
-			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
-		}
-	else
-		layer.outputShape = {
-			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
-		}
-	end
-
-	return layer
-end
-
-function buildModule.maxPooling2D(layerConfig)
-	local defaults = {
-		kernel   = {1, 1},
-		stride   = {1, 1},
-		dilation = {1, 1}
-	}
-
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"maxPooling2D"
-	)
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer = {
-		config = {
-			kernel = layerConfig.kernel,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation
-		},
-		inputShape = layerConfig.inputShape
-	}
-
-	if layerConfig.inputShape[3] then
-		layer.outputShape = {
-			layerConfig.inputShape[1],
-			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
-		}
-	else
-		layer.outputShape = {
-			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
-		}
-	end
-
-	return layer
-end
-
-function buildModule.maxPooling3D(layerConfig)
-	local defaults = {
-		kernel   = {1, 1, 1},
-		stride   = {1, 1, 1},
-		dilation = {1, 1, 1}
-	}
-
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"maxPooling3D"
-	)
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer = {
-		config = {
-			kernel = layerConfig.kernel,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation
-		},
-		inputShape = layerConfig.inputShape
-	}
-
-	if layerConfig.inputShape[4] then
-		layer.outputShape = {
-			layerConfig.inputShape[1],
-			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
-			math.floor((layerConfig.inputShape[4] - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
-		}
-	else
-		layer.outputShape = {
-			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
-			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
-		}
-	end
-
-	return layer
-end
-
-function buildModule.sumPooling1D(layerConfig)
-	local defaults = {
-		kernel   = {1},
-		stride   = {1},
-		dilation = {1}
-	}
-
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"sumPooling1D"
-	)
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer = {
-		config = {
-			kernel = layerConfig.kernel,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation
-		},
-		inputShape = layerConfig.inputShape
-	}
-
-	if layerConfig.inputShape[2] then
-		layer.outputShape = {
-			layerConfig.inputShape[1],
-			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
-		}
-	else
-		layer.outputShape = {
-			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
-		}
-	end
-
-	return layer
-end
-
-function buildModule.sumPooling2D(layerConfig)
-	local defaults = {
-		kernel   = {1, 1},
-		stride   = {1, 1},
-		dilation = {1, 1}
-	}
-
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"sumPooling2D"
-	)
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer = {
-		config = {
-			kernel = layerConfig.kernel,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation
-		},
-		inputShape = layerConfig.inputShape
-	}
-
-	if layerConfig.inputShape[3] then
-		layer.outputShape = {
-			layerConfig.inputShape[1],
-			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
-		}
-	else
-		layer.outputShape = {
-			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
-		}
-	end
-
-	return layer
-end
-
-function buildModule.sumPooling3D(layerConfig)
-	local defaults = {
-		kernel   = {1, 1, 1},
-		stride   = {1, 1, 1},
-		dilation = {1, 1, 1}
-	}
-
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"sumPooling3D"
-	)
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer = {
-		config = {
-			kernel = layerConfig.kernel,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation
-		},
-		inputShape = layerConfig.inputShape
-	}
-
-	if layerConfig.inputShape[4] then
-		layer.outputShape = {
-			layerConfig.inputShape[1],
-			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
-			math.floor((layerConfig.inputShape[4] - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
-		}
-	else
-		layer.outputShape = {
-			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
-			math.floor((layerConfig.inputShape[3] - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
-		}
-	end
-
-	return layer
-end
+buildModule.maxPooling1D = buildModule.averagePooling1D
+buildModule.sumPooling2D = buildModule.averagePooling2D
+buildModule.sumPooling3D = buildModule.averagePooling3D
 
 function buildModule.upSample1D(layerConfig)
 	local defaults = {
 		kernel = {2}
 	}
-
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"upSample1D"
-	)
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
@@ -538,12 +282,6 @@ function buildModule.upSample2D(layerConfig)
 		kernel = {2, 2}
 	}
 
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"upSample2D"
-	)
-
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer = {
@@ -571,12 +309,6 @@ function buildModule.upSample3D(layerConfig)
 	local defaults = {
 		kernel = {2, 2}
 	}
-
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"upSample3D"
-	)
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
@@ -610,12 +342,6 @@ function buildModule.zeroPad1D(layerConfig)
 		paddingAmount = {1}
 	}
 
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"zeroPad1D"
-	)
-
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer = {
@@ -643,12 +369,6 @@ function buildModule.zeroPad2D(layerConfig)
 	local defaults = {
 		paddingAmount = {1, 1}
 	}
-
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"zeroPad2D"
-	)
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
@@ -680,12 +400,6 @@ function buildModule.zeroPad3D(layerConfig)
 		paddingAmount = {1, 1, 1}
 	}
 
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"zeroPad3D"
-	)
-
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer = {
@@ -715,8 +429,8 @@ end
 
 function buildModule.crop1D(layerConfig)
 	checkargs(
-		{layerConfig.inputShape, layerConfig.outputShape, layerConfig.start},
-		{"inputShape",           "outputShape",           "start"},
+		{layerConfig.outputShape, layerConfig.start},
+		{"outputShape",           "start"},
 		"crop1D"
 	)
 
@@ -742,8 +456,8 @@ end
 
 function buildModule.crop2D(layerConfig)
 	checkargs(
-		{layerConfig.inputShape, layerConfig.outputShape, layerConfig.start},
-		{"inputShape",           "outputShape",           "start"},
+		{layerConfig.outputShape, layerConfig.start},
+		{"outputShape",           "start"},
 		"crop2D"
 	)
 
@@ -770,8 +484,8 @@ end
 
 function buildModule.crop3D(layerConfig)
 	checkargs(
-		{layerConfig.inputShape, layerConfig.outputShape, layerConfig.start},
-		{"inputShape",           "outputShape",           "start"},
+		{layerConfig.outputShape, layerConfig.start},
+		{"outputShape",           "start"},
 		"crop3D"
 	)
 
@@ -815,12 +529,6 @@ function buildModule.convolutional1D(layerConfig)
 		filterTrainable = false,
 		biasTrainable   = false
 	}
-
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"convolutional1D"
-	)
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
@@ -889,12 +597,6 @@ function buildModule.convolutional1D(layerConfig)
 end
 
 function buildModule.convolutional2D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"convolutional2D"
-	)
-
 	local defaults = {
 		activation      = "linear",
 		useBias         = false,
@@ -983,12 +685,6 @@ function buildModule.convolutional2D(layerConfig)
 end
 
 function buildModule.convolutional3D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"convolutional3D"
-	)
-
 	local defaults = {
 		activation      = "linear",
 		useBias         = false,
@@ -1080,12 +776,6 @@ function buildModule.convolutional3D(layerConfig)
 end
 
 function buildModule.convolutionalTranspose1D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"convolutionalTranspose1D"
-	)
-
 	local defaults = {
 		activation      = "linear",
 		useBias         = false,
@@ -1172,12 +862,6 @@ function buildModule.convolutionalTranspose1D(layerConfig)
 end
 
 function buildModule.convolutionalTranspose2D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"convolutionalTranspose2D"
-	)
-
 	local defaults = {
 		activation      = "linear",
 		useBias         = false,
@@ -1267,12 +951,6 @@ function buildModule.convolutionalTranspose2D(layerConfig)
 end
 
 function buildModule.convolutionalTranspose3D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"convolutionalTranspose3D"
-	)
-
 	local defaults = {
 		activation      = "linear",
 		useBias         = false,
@@ -1365,12 +1043,6 @@ function buildModule.convolutionalTranspose3D(layerConfig)
 end
 
 function buildModule.flatten(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"flatten"
-	)
-
 	local outputShape = 1
 
 	for a = 1, #layerConfig.inputShape do
@@ -1384,12 +1056,6 @@ function buildModule.flatten(layerConfig)
 end
 
 function buildModule.add1D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"add1D"
-	)
-
 	local defaults = {
 		biasesInit     = "constant",
 		biasesInitArgs = {value = 0}
@@ -1424,218 +1090,14 @@ function buildModule.add1D(layerConfig)
 	return layer, parameterBuild
 end
 
-function buildModule.add2D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"add2D"
-	)
+buildModule.add2D = buildModule.add1D
+buildModule.add3D = buildModule.add1D
 
-	local defaults = {
-		biasesInit     = "constant",
-		biasesInitArgs = {value = 0}
-	}
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
-		initializer = {},
-		inputShape = layerConfig.inputShape,
-		outputShape = layerConfig.inputShape
-	}, {}
-
-	-- Initializers
-
-	layer.initializer.biases = {
-		initializer = layerConfig.biasesInit,
-		parameters = layerConfig.biasesInitParameters
-	}
-
-	-- Trainable
-
-	layer.trainable.bias =
-		layerConfig.biasTrainable and true or false
-
-	-- Parameters
-
-	parameterBuild.biases = {layerConfig.inputShape}
-
-	return layer, parameterBuild
-end
-
-function buildModule.add3D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"add3D"
-	)
-
-	local defaults = {
-		biasesInit     = "constant",
-		biasesInitArgs = {value = 0}
-	}
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
-		initializer = {},
-		inputShape = layerConfig.inputShape,
-		outputShape = layerConfig.inputShape
-	}, {}
-
-	-- Initializers
-
-	layer.initializer.biases = {
-		initializer = layerConfig.biasesInit,
-		parameters = layerConfig.biasesInitParameters
-	}
-
-	-- Trainable
-
-	layer.trainable.bias =
-		layerConfig.biasTrainable and true or false
-
-	-- Parameters
-
-	parameterBuild.biases = {layerConfig.inputShape}
-
-	return layer, parameterBuild
-end
-
-function buildModule.subtract1D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"subtract1D"
-	)
-
-	local defaults = {
-		biasesInit     = "constant",
-		biasesInitArgs = {value = 0}
-	}
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
-		initializer = {},
-		inputShape = layerConfig.inputShape,
-		outputShape = layerConfig.inputShape
-	}, {}
-
-	-- Initializers
-
-	layer.initializer.biases = {
-		initializer = layerConfig.biasesInit,
-		parameters = layerConfig.biasesInitParameters
-	}
-
-	-- Trainable
-
-	layer.trainable.bias =
-		layerConfig.biasTrainable and true or false
-
-	-- Parameters
-
-	parameterBuild.biases = {layerConfig.inputShape}
-
-	return layer, parameterBuild
-end
-
-function buildModule.subtract2D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"subtract2D"
-	)
-
-	local defaults = {
-		biasesInit     = "constant",
-		biasesInitArgs = {value = 0}
-	}
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
-		initializer = {},
-		inputShape = layerConfig.inputShape,
-		outputShape = layerConfig.inputShape
-	}, {}
-
-	-- Initializers
-
-	layer.initializer.biases = {
-		initializer = layerConfig.biasesInit,
-		parameters = layerConfig.biasesInitParameters
-	}
-
-	-- Trainable
-
-	layer.trainable.bias =
-		layerConfig.biasTrainable and true or false
-
-	-- Parameters
-
-	parameterBuild.biases = {layerConfig.inputShape}
-
-	return layer, parameterBuild
-end
-
-function buildModule.subtract3D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"subtract3D"
-	)
-
-	local defaults = {
-		biasesInit     = "constant",
-		biasesInitArgs = {value = 0}
-	}
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
-		initializer = {},
-		inputShape = layerConfig.inputShape,
-		outputShape = layerConfig.inputShape
-	}, {}
-
-	-- Initializers
-
-	layer.initializer.biases = {
-		initializer = layerConfig.biasesInit,
-		parameters = layerConfig.biasesInitParameters
-	}
-
-	-- Trainable
-
-	layer.trainable.bias =
-		layerConfig.biasTrainable and true or false
-
-	-- Parameters
-
-	parameterBuild.biases = {layerConfig.inputShape}
-
-	return layer, parameterBuild
-end
+buildModule.subtract1D = buildModule.add1D
+buildModule.subtract2D = buildModule.add1D
+buildModule.subtract3D = buildModule.add1D
 
 function buildModule.multiply1D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"multiply1D"
-	)
-
 	local defaults = {
 		weightsInit     = "constant",
 		weightsInitArgs = {value = 0}
@@ -1670,218 +1132,14 @@ function buildModule.multiply1D(layerConfig)
 	return layer, parameterBuild
 end
 
-function buildModule.multiply2D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"multiply2D"
-	)
+buildModule.multiply2D = buildModule.multiply1D
+buildModule.multiply3D = buildModule.multiply1D
 
-	local defaults = {
-		weightsInit     = "constant",
-		weightsInitArgs = {value = 0}
-	}
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
-		initializer = {},
-		inputShape = layerConfig.inputShape,
-		outputShape = layerConfig.inputShape
-	}, {}
-
-	-- Initializers
-
-	layer.initializer.weights = {
-		initializer = layerConfig.weightsInit,
-		parameters = layerConfig.weightsInitParameters
-	}
-
-	-- Trainable
-
-	layer.trainable.weights =
-		layerConfig.weightsTrainable and true or false
-
-	-- Parameters
-
-	parameterBuild.weights = {layerConfig.inputShape}
-
-	return layer, parameterBuild
-end
-
-function buildModule.multiply3D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"multiply3D"
-	)
-
-	local defaults = {
-		weightsInit     = "constant",
-		weightsInitArgs = {value = 0}
-	}
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
-		initializer = {},
-		inputShape = layerConfig.inputShape,
-		outputShape = layerConfig.inputShape
-	}, {}
-
-	-- Initializers
-
-	layer.initializer.weights = {
-		initializer = layerConfig.weightsInit,
-		parameters = layerConfig.weightsInitParameters
-	}
-
-	-- Trainable
-
-	layer.trainable.weights =
-		layerConfig.weightsTrainable and true or false
-
-	-- Parameters
-
-	parameterBuild.weights = {layerConfig.inputShape}
-
-	return layer, parameterBuild
-end
-
-function buildModule.divide1D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"divide1D"
-	)
-
-	local defaults = {
-		weightsInit     = "constant",
-		weightsInitArgs = {value = 0}
-	}
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
-		initializer = {},
-		inputShape = layerConfig.inputShape,
-		outputShape = layerConfig.inputShape
-	}, {}
-
-	-- Initializers
-
-	layer.initializer.weights = {
-		initializer = layerConfig.weightsInit,
-		parameters = layerConfig.weightsInitParameters
-	}
-
-	-- Trainable
-
-	layer.trainable.weights =
-		layerConfig.weightsTrainable and true or false
-
-	-- Parameters
-
-	parameterBuild.weights = {layerConfig.inputShape}
-
-	return layer, parameterBuild
-end
-
-function buildModule.divide2D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"divide2D"
-	)
-
-	local defaults = {
-		weightsInit     = "constant",
-		weightsInitArgs = {value = 0}
-	}
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
-		initializer = {},
-		inputShape = layerConfig.inputShape,
-		outputShape = layerConfig.inputShape
-	}, {}
-
-	-- Initializers
-
-	layer.initializer.weights = {
-		initializer = layerConfig.weightsInit,
-		parameters = layerConfig.weightsInitParameters
-	}
-
-	-- Trainable
-
-	layer.trainable.weights =
-		layerConfig.weightsTrainable and true or false
-
-	-- Parameters
-
-	parameterBuild.weights = {layerConfig.inputShape}
-
-	return layer, parameterBuild
-end
-
-function buildModule.divide3D(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"divide3D"
-	)
-
-	local defaults = {
-		weightsInit     = "constant",
-		weightsInitArgs = {value = 0}
-	}
-
-	layerConfig = setmetatable(layerConfig, {__index = defaults})
-
-	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
-		initializer = {},
-		inputShape = layerConfig.inputShape,
-		outputShape = layerConfig.inputShape
-	}, {}
-
-	-- Initializers
-
-	layer.initializer.weights = {
-		initializer = layerConfig.weightsInit,
-		parameters = layerConfig.weightsInitParameters
-	}
-
-	-- Trainable
-
-	layer.trainable.weights =
-		layerConfig.weightsTrainable and true or false
-
-	-- Parameters
-
-	parameterBuild.weights = {layerConfig.inputShape}
-
-	return layer, parameterBuild
-end
+buildModule.divide1D = buildModule.multiply1D
+buildModule.divide2D = buildModule.multiply1D
+buildModule.divide3D = buildModule.multiply1D
 
 function buildModule.softmax(layerConfig)
-	checkargs(
-		{layerConfig.inputShape},
-		{"inputShape"},
-		"softmax"
-	)
-
 	return {
 		inputShape = layerConfig.inputShape,
 		outputShape = layerConfig.inputShape
@@ -1890,8 +1148,8 @@ end
 
 function buildModule.activate(layerConfig)
 	checkargs(
-		{layerConfig.inputShape, layerConfig.activation},
-		{"inputShape",           "activation"},
+		{layerConfig.activation},
+		{"activation"},
 		"activate"
 	)
 
@@ -1912,8 +1170,8 @@ end
 
 function buildModule.dropout(layerConfig)
 	checkargs(
-		{layerConfig.inputShape, layerConfig.rate},
-		{"inputShape",           "rate"},
+		{layerConfig.rate},
+		{"rate"},
 		"dropout"
 	)
 

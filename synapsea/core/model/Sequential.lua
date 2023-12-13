@@ -205,9 +205,9 @@ function Sequential.import(fileName)
 		model.forwardPass = Sequential.forwardPass
 	end
 
-	model.pop        = Sequential.pop
-	model.initialize = Sequential.initialize
-	model.summary    = Sequential.summary
+	model.pop     = Sequential.pop
+	model.build   = Sequential.build
+	model.summary = Sequential.summary
 
 	return model
 end
@@ -257,11 +257,12 @@ return setmetatable(
 
 			model.metaData.synapseaVersion = "v2.0.00-unstable"
 
-			model.add        = Sequential.add
-			model.pop        = Sequential.pop
-			model.initialize = Sequential.initialize
-			model.summary    = Sequential.summary
-			model.export     = Sequential.export
+			model.add               = Sequential.add
+			model.pop               = Sequential.pop
+			model.build             = Sequential.build
+			model.addTrainingConfig = Sequential.addTrainingConfig
+			model.summary           = Sequential.summary
+			model.export            = Sequential.export
 
 			return model
 		end

@@ -78,10 +78,8 @@ function buildModule.dense(layerConfig)
 		activation       = "linear",
 		useBias          = false,
 
-		weightsInit      = "constant",
-		weightsInitArgs  = {value = 0},
-		biasInit         = "constant",
-		biasInitArgs     = {value = 0},
+		weightsInit      = "zeros",
+		biasInit         = "zeros",
 
 		weightsTrainable = false,
 		biasTrainable    = false
@@ -521,10 +519,8 @@ function buildModule.convolutional1D(layerConfig)
 		dilation        = {1},
 		filters         = 1,
 
-		filterInit      = "constant",
-		filterInitArgs  = {value = 0.1},
-		biasInit        = "constant",
-		biasInitArgs    = {value = 0.1},
+		filterInit      = "zeros",
+		biasInit        = "zeros",
 
 		filterTrainable = false,
 		biasTrainable   = false
@@ -606,10 +602,8 @@ function buildModule.convolutional2D(layerConfig)
 		dilation        = {1, 1},
 		filters         = 1,
 
-		filterInit      = "constant",
-		filterInitArgs  = {value = 0.1},
-		biasInit        = "constant",
-		biasInitArgs    = {value = 0.1},
+		filterInit      = "zeros",
+		biasInit        = "zeros",
 
 		filterTrainable = false,
 		biasTrainable   = false
@@ -694,10 +688,8 @@ function buildModule.convolutional3D(layerConfig)
 		dilation        = {1, 1, 1},
 		filters         = 1,
 
-		filterInit      = "constant",
-		filterInitArgs  = {value = 0.1},
-		biasInit        = "constant",
-		biasInitArgs    = {value = 0.1},
+		filterInit      = "zeros",
+		biasInit        = "zeros",
 
 		filterTrainable = false,
 		biasTrainable   = false
@@ -786,10 +778,8 @@ function buildModule.convolutionalTranspose1D(layerConfig)
 		paddingAmount   = {1},
 		filters         = 1,
 
-		filterInit      = "constant",
-		filterInitArgs  = {value = 0.1},
-		biasInit        = "constant",
-		biasInitArgs    = {value = 0.1},
+		filterInit      = "zeros",
+		biasInit        = "zeros",
 
 		filterTrainable = false,
 		biasTrainable   = false
@@ -872,10 +862,8 @@ function buildModule.convolutionalTranspose2D(layerConfig)
 		paddingAmount   = {1, 1},
 		filters         = 1,
 
-		filterInit      = "constant",
-		filterInitArgs  = {value = 0.1},
-		biasInit        = "constant",
-		biasInitArgs    = {value = 0.1},
+		filterInit      = "zeros",
+		biasInit        = "zeros",
 
 		filterTrainable = false,
 		biasTrainable   = false
@@ -961,10 +949,8 @@ function buildModule.convolutionalTranspose3D(layerConfig)
 		paddingAmount   = {1, 1, 1},
 		filters         = 1,
 
-		filterInit      = "constant",
-		filterInitArgs  = {value = 0.1},
-		biasInit        = "constant",
-		biasInitArgs    = {value = 0.1},
+		filterInit      = "zeros",
+		biasInit        = "zeros",
 
 		filterTrainable = false,
 		biasTrainable   = false
@@ -1057,8 +1043,7 @@ end
 
 function buildModule.add1D(layerConfig)
 	local defaults = {
-		biasesInit     = "constant",
-		biasesInitArgs = {value = 0}
+		biasesInit = "zeros"
 	}
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
@@ -1099,8 +1084,7 @@ buildModule.subtract3D = buildModule.add1D
 
 function buildModule.multiply1D(layerConfig)
 	local defaults = {
-		weightsInit     = "constant",
-		weightsInitArgs = {value = 0}
+		weightsInit = "zeros"
 	}
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})

@@ -28,7 +28,7 @@ local initializersModule = require("core.initializers")
 local Sequential = {
 	add,
 	pop,
-	initialize,
+	build,
 	summary,
 	export,
 	import,
@@ -78,7 +78,36 @@ function Sequential.pop(model)
 	return model
 end
 
-function Sequential.initialize(model, args)
+function Sequential.addTrainingConfig(model, args)
+	args = args or {}
+
+	if args.optimizer then
+		model.trainingConfig.optimizer = {
+			optimizer = args.optimizer,
+			parameters = args.optimizerParameters
+		}
+	end
+
+	if args.regularizer then
+		model.trainingConfig.regularizer = {
+			regularizer = args.regularizer,
+			parameters = args.regularizerParameters
+		}
+	end
+
+	model.trainingConfig.learningRate =
+		args.learningRate or model.trainingConfig.learningRate
+
+	model.trainingConfig.epochs =
+		args.epochs or model.trainingConfig.epochs
+
+	model.trainingConfig.loss =
+		args.loss or model.trainingConfig.loss
+
+	return model
+end
+
+function Sequential.build(model)
 	assert(
 		#model.layerConfig > 0,
 		"attempt to initialize model with no layers"
@@ -95,43 +124,6 @@ function Sequential.initialize(model, args)
 				)
 			end
 		end
-	end
-
-	if args.optimizer then
-		model.trainingConfig.optimizer = {
-			optimizer = args.optimizer,
-			parameters = args.optimizerParameters
-		}
-	end
-
-	if args.regularizer then
-		model.trainingConfig.regularizer = {
-			regularizer = args.regularizer,
-			parameters = args.regularizerParameters
-		}
-	end
-
-	--[[
-		This is done this way to avoid overwriting training data when initializing after first initialization
-		to re-initialize parameters (to make a specific edge case easier)
-	]]--
-
-	if args.learningRate then
-		model.trainingConfig.learningRate = args.learningRate
-	end
-
-	if args.epochs then
-		model.trainingConfig.epochs = args.epochs
-	end
-
-	if args.loss then
-		model.trainingConfig.loss = args.loss
-	end
-
-	if not model.layerConfig[#model.layerConfig] then
-		model.outputShape = model.inputShape
-	else
-		model.outputShape = model.layerConfig[#model.layerConfig].outputShape
 	end
 
 	model.parameterBuild = nil

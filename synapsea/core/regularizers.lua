@@ -59,7 +59,7 @@ function regularizersModule.l1(parameters, args)
 		if type(parameter) == "number" then
 			parameter = parameter + lambda * math.abs(parameter)
 		else
-			parmaeter = regularizerFunc(parameter, lambda)
+			parameter = regularizerFunc(parameter, lambda)
 		end
 	end
 
@@ -99,7 +99,7 @@ function regularizersModule.l2(parameters, args)
 		if type(parameter) == "number" then
 			parameter = parameter + lambda * parameter^2
 		else
-			parmaeter = regularizerFunc(parameter)
+			parameter = regularizerFunc(parameter)
 		end
 	end
 

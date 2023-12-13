@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/mochji/synapsea/assets/117334318/abec23f1-06ee-47cc-8685-70589b3ba7d1">
+    <img src="https://github.com/mochji/synapsea/assets/117334318/1c07a93b-5e83-4a1e-891e-632e7b460f87">
 </p>
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)

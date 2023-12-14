@@ -64,4 +64,23 @@ local errorModule = {
 	dropOut
 }
 
+function errorModule.dense(args)
+	local layerOutput, weights, alpha, outputSize, forwardError = args.output, args.weights, args.alpha, args.outputSIze, args.forwardError
+	local activation = activationsModule[args.activation]
+
+	local inputSize = #weights
+
+	local output = {}
+
+	for a = 1, outputSize do
+		output[a] = {}
+
+		for b = 1, inputSize do
+			output[a][b] = output[a][b] + weights[b][a] * forwardError[a] * activation(layerOutput[a], true, alpha)
+		end
+	end
+
+	return output
+end
+
 return errorModule

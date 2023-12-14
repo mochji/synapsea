@@ -95,9 +95,9 @@ function buildModule.dense(layerConfig)
 		parameters = {
 			alpha = layerConfig.alpha
 		},
-		trainable = {},
+		trainable   = {},
 		initializer = {},
-		inputShape = layerConfig.inputShape,
+		inputShape  = layerConfig.inputShape,
 		outputShape = {layerConfig.outputSize}
 	}, {}
 
@@ -105,13 +105,13 @@ function buildModule.dense(layerConfig)
 
 	layer.initializer.weights = {
 		initializer = layerConfig.weightsInit,
-		parameters = layerConfig.weightsInitArgs
+		parameters  = layerConfig.weightsInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.bias = {
 			initializer = layerConfig.biasInit,
-			parameters = layerConfig.biasInitArgs
+			parameters  = layerConfig.biasInitArgs
 		}
 	end
 
@@ -148,8 +148,8 @@ function buildModule.averagePooling1D(layerConfig)
 
 	local layer = {
 		config = {
-			kernel = layerConfig.kernel,
-			stride = layerConfig.stride,
+			kernel   = layerConfig.kernel,
+			stride   = layerConfig.stride,
 			dilation = layerConfig.dilation
 		},
 		inputShape = layerConfig.inputShape
@@ -180,8 +180,8 @@ function buildModule.averagePooling2D(layerConfig)
 
 	local layer = {
 		config = {
-			kernel = layerConfig.kernel,
-			stride = layerConfig.stride,
+			kernel   = layerConfig.kernel,
+			stride   = layerConfig.stride,
 			dilation = layerConfig.dilation
 		},
 		inputShape = layerConfig.inputShape
@@ -214,8 +214,8 @@ function buildModule.averagePooling3D(layerConfig)
 
 	local layer = {
 		config = {
-			kernel = layerConfig.kernel,
-			stride = layerConfig.stride,
+			kernel   = layerConfig.kernel,
+			stride   = layerConfig.stride,
 			dilation = layerConfig.dilation
 		},
 		inputShape = layerConfig.inputShape
@@ -434,7 +434,7 @@ function buildModule.crop1D(layerConfig)
 
 	local layer = {
 		config = {
-			start = layerConfig.start,
+			start       = layerConfig.start,
 			outputShape = layerConfig.outputShape
 		},
 		inputShape = layerConfig.inputShape
@@ -461,7 +461,7 @@ function buildModule.crop2D(layerConfig)
 
 	local layer = {
 		config = {
-			start = layerConfig.start,
+			start       = layerConfig.start,
 			outputShape = layerConfig.outputShape
 		},
 		inputShape = layerConfig.inputShape
@@ -489,7 +489,7 @@ function buildModule.crop3D(layerConfig)
 
 	local layer = {
 		config = {
-			start = layerConfig.start,
+			start       = layerConfig.start,
 			outputShape = layerConfig.outputShape
 		},
 		inputShape = layerConfig.inputShape
@@ -520,10 +520,10 @@ function buildModule.convolutional1D(layerConfig)
 		filters         = 1,
 
 		filterInit      = "zeros",
-		biasInit        = "zeros",
+		biasesInit        = "zeros",
 
 		filterTrainable = false,
-		biasTrainable   = false
+		biasesTrainable   = false
 	}
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
@@ -531,16 +531,16 @@ function buildModule.convolutional1D(layerConfig)
 	local layer, parameterBuild = {
 		config = {
 			activation = layerConfig.activation,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation,
-			filters = layerConfig.filters
+			stride     = layerConfig.stride,
+			dilation   = layerConfig.dilation,
+			filters    = layerConfig.filters
 		},
 		parameters = {
 			alpha = layerConfig.alpha
 		},
-		trainable = {},
+		trainable   = {},
 		initializer = {},
-		inputShape = layerConfig.inputShape
+		inputShape  = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
@@ -560,13 +560,13 @@ function buildModule.convolutional1D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters = layerConfig.filterInitArgs
+		parameters  = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters = layerConfig.biasesInitArgs
+			parameters  = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -575,7 +575,7 @@ function buildModule.convolutional1D(layerConfig)
 	layer.trainable.filter =
 		layerConfig.filterTrainable and true or false
 
-	layer.trainable.bias =
+	layer.trainable.biases =
 		layerConfig.filterTrainable and layerConfig.useBias or false
 
 	-- Parameters
@@ -603,10 +603,10 @@ function buildModule.convolutional2D(layerConfig)
 		filters         = 1,
 
 		filterInit      = "zeros",
-		biasInit        = "zeros",
+		biasesInit      = "zeros",
 
 		filterTrainable = false,
-		biasTrainable   = false
+		biasesTrainable = false
 	}
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
@@ -614,16 +614,16 @@ function buildModule.convolutional2D(layerConfig)
 	local layer, parameterBuild = {
 		config = {
 			activation = layerConfig.activation,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation,
-			filters = layerConfig.filters
+			stride     = layerConfig.stride,
+			dilation   = layerConfig.dilation,
+			filters    = layerConfig.filters
 		},
 		parameters = {
 			alpha = layerConfig.alpha
 		},
-		trainable = {},
+		trainable   = {},
 		initializer = {},
-		inputShape = layerConfig.inputShape
+		inputShape  = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
@@ -645,13 +645,13 @@ function buildModule.convolutional2D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters = layerConfig.filterInitArgs
+		parameters  = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters = layerConfig.biasesInitArgs
+			parameters  = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -672,7 +672,7 @@ function buildModule.convolutional2D(layerConfig)
 	}
 
 	if layerConfig.useBias then
-		parameterBuild.biases = {layer.outputShape}
+		parameterBuild.biases = layer.outputShape
 	end
 
 	return layer, parameterBuild
@@ -689,10 +689,10 @@ function buildModule.convolutional3D(layerConfig)
 		filters         = 1,
 
 		filterInit      = "zeros",
-		biasInit        = "zeros",
+		biasesInit      = "zeros",
 
 		filterTrainable = false,
-		biasTrainable   = false
+		biasesTrainable = false
 	}
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
@@ -700,16 +700,16 @@ function buildModule.convolutional3D(layerConfig)
 	local layer, parameterBuild = {
 		config = {
 			activation = layerConfig.activation,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation,
-			filters = layerConfig.filters
+			stride     = layerConfig.stride,
+			dilation   = layerConfig.dilation,
+			filters    = layerConfig.filters
 		},
 		parameters = {
 			alpha = layerConfig.alpha
 		},
-		trainable = {},
+		trainable   = {},
 		initializer = {},
-		inputShape = layerConfig.inputShape
+		inputShape  = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
@@ -733,13 +733,13 @@ function buildModule.convolutional3D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters = layerConfig.filterInitArgs
+		parameters  = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters = layerConfig.biasesInitArgs
+			parameters  = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -779,10 +779,10 @@ function buildModule.convolutionalTranspose1D(layerConfig)
 		filters         = 1,
 
 		filterInit      = "zeros",
-		biasInit        = "zeros",
+		biasesInit      = "zeros",
 
 		filterTrainable = false,
-		biasTrainable   = false
+		biasesTrainable = false
 	}
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
@@ -790,16 +790,16 @@ function buildModule.convolutionalTranspose1D(layerConfig)
 	local layer, parameterBuild = {
 		config = {
 			activation = layerConfig.activation,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation,
-			filters = layerConfig.filters
+			stride     = layerConfig.stride,
+			dilation   = layerConfig.dilation,
+			filters    = layerConfig.filters
 		},
 		parameters = {
 			alpha = layerConfig.alpha
 		},
-		trainable = {},
+		trainable   = {},
 		initializer = {},
-		inputShape = layerConfig.inputShape
+		inputShape  = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
@@ -819,13 +819,13 @@ function buildModule.convolutionalTranspose1D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters = layerConfig.filterInitArgs
+		parameters  = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters = layerConfig.biasesInitArgs
+			parameters  = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -834,7 +834,7 @@ function buildModule.convolutionalTranspose1D(layerConfig)
 	layer.trainable.filter =
 		layerConfig.filterTrainable and true or false
 
-	layer.trainable.bias =
+	layer.trainable.biases =
 		layerConfig.filterTrainable and layerConfig.useBias or false
 
 	-- Parameters
@@ -863,10 +863,10 @@ function buildModule.convolutionalTranspose2D(layerConfig)
 		filters         = 1,
 
 		filterInit      = "zeros",
-		biasInit        = "zeros",
+		biasesInit      = "zeros",
 
 		filterTrainable = false,
-		biasTrainable   = false
+		biasesTrainable = false
 	}
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
@@ -874,16 +874,16 @@ function buildModule.convolutionalTranspose2D(layerConfig)
 	local layer, parameterBuild = {
 		config = {
 			activation = layerConfig.activation,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation,
-			filters = layerConfig.filters
+			stride     = layerConfig.stride,
+			dilation   = layerConfig.dilation,
+			filters    = layerConfig.filters
 		},
 		parameters = {
 			alpha = layerConfig.alpha
 		},
-		trainable = {},
+		trainable   = {},
 		initializer = {},
-		inputShape = layerConfig.inputShape
+		inputShape  = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
@@ -905,13 +905,13 @@ function buildModule.convolutionalTranspose2D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters = layerConfig.filterInitArgs
+		parameters  = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters = layerConfig.biasesInitArgs
+			parameters  = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -920,7 +920,7 @@ function buildModule.convolutionalTranspose2D(layerConfig)
 	layer.trainable.filter =
 		layerConfig.filterTrainable and true or false
 
-	layer.trainable.bias =
+	layer.trainable.biases =
 		layerConfig.filterTrainable and layerConfig.useBias or false
 
 	-- Parameters
@@ -950,10 +950,10 @@ function buildModule.convolutionalTranspose3D(layerConfig)
 		filters         = 1,
 
 		filterInit      = "zeros",
-		biasInit        = "zeros",
+		biasesInit      = "zeros",
 
 		filterTrainable = false,
-		biasTrainable   = false
+		biasesTrainable = false
 	}
 
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
@@ -961,16 +961,16 @@ function buildModule.convolutionalTranspose3D(layerConfig)
 	local layer, parameterBuild = {
 		config = {
 			activation = layerConfig.activation,
-			stride = layerConfig.stride,
-			dilation = layerConfig.dilation,
-			filters = layerConfig.filters
+			stride     = layerConfig.stride,
+			dilation   = layerConfig.dilation,
+			filters    = layerConfig.filters
 		},
 		parameters = {
 			alpha = layerConfig.alpha
 		},
-		trainable = {},
+		trainable   = {},
 		initializer = {},
-		inputShape = layerConfig.inputShape
+		inputShape  = layerConfig.inputShape
 	}, {}
 
 	-- Output shape
@@ -994,13 +994,13 @@ function buildModule.convolutionalTranspose3D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters = layerConfig.filterInitArgs
+		parameters  = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters = layerConfig.biasesInitArgs
+			parameters  = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -1009,7 +1009,7 @@ function buildModule.convolutionalTranspose3D(layerConfig)
 	layer.trainable.filter =
 		layerConfig.filterTrainable and true or false
 
-	layer.trainable.bias =
+	layer.trainable.biases =
 		layerConfig.filterTrainable and layerConfig.useBias or false
 
 	-- Parameters
@@ -1067,7 +1067,7 @@ function buildModule.reshape(layerConfig)
 		config = {
 			shape = layerConfig.shape
 		},
-		inputShape = layerConfig.inputShape,
+		inputShape  = layerConfig.inputShape,
 		outputShape = layerConfig.shape
 	}
 end
@@ -1080,10 +1080,10 @@ function buildModule.add1D(layerConfig)
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
+		parameters  = {},
+		trainable   = {},
 		initializer = {},
-		inputShape = layerConfig.inputShape,
+		inputShape  = layerConfig.inputShape,
 		outputShape = layerConfig.inputShape
 	}, {}
 
@@ -1091,13 +1091,13 @@ function buildModule.add1D(layerConfig)
 
 	layer.initializer.biases = {
 		initializer = layerConfig.biasesInit,
-		parameters = layerConfig.biasesInitArgs
+		parameters  = layerConfig.biasesInitArgs
 	}
 
 	-- Trainable
 
-	layer.trainable.bias =
-		layerConfig.biasTrainable and true or false
+	layer.trainable.biases =
+		layerConfig.biasesTrainable and true or false
 
 	-- Parameters
 
@@ -1121,10 +1121,10 @@ function buildModule.multiply1D(layerConfig)
 	layerConfig = setmetatable(layerConfig, {__index = defaults})
 
 	local layer, parameterBuild = {
-		parameters = {},
-		trainable = {},
+		parameters  = {},
+		trainable   = {},
 		initializer = {},
-		inputShape = layerConfig.inputShape,
+		inputShape  = layerConfig.inputShape,
 		outputShape = layerConfig.inputShape
 	}, {}
 
@@ -1132,7 +1132,7 @@ function buildModule.multiply1D(layerConfig)
 
 	layer.initializer.weights = {
 		initializer = layerConfig.weightsInit,
-		parameters = layerConfig.weightsInitArgs
+		parameters  = layerConfig.weightsInitArgs
 	}
 
 	-- Trainable
@@ -1156,7 +1156,7 @@ buildModule.divide3D = buildModule.multiply1D
 
 function buildModule.softmax(layerConfig)
 	return {
-		inputShape = layerConfig.inputShape,
+		inputShape  = layerConfig.inputShape,
 		outputShape = layerConfig.inputShape
 	}
 end
@@ -1177,7 +1177,7 @@ function buildModule.activate(layerConfig)
 		parameters = {
 			alpha = layerConfig.alpha
 		},
-		inputShape = layerConfig.inputShape,
+		inputShape  = layerConfig.inputShape,
 		outputShape = layerConfig.inputShape
 	}
 end
@@ -1194,7 +1194,7 @@ function buildModule.dropout(layerConfig)
 		config = {
 			rate = layerConfig.rate
 		},
-		inputShape = layerConfig.inputShape,
+		inputShape  = layerConfig.inputShape,
 		outputShape = layerConfig.inputShape
 	}
 end

@@ -556,6 +556,10 @@ function buildModule.convolutional1D(layerConfig)
 		}
 	end
 
+	if layerConfig.filters > 1 then
+		table.insert(layer.outputShape, 1, layerConfig.filters)
+	end
+
 	-- Initializers
 
 	layer.initializer.filter = {
@@ -639,6 +643,10 @@ function buildModule.convolutional2D(layerConfig)
 			math.floor((layerConfig.inputShape[1] - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
 			math.floor((layerConfig.inputShape[2] - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
 		}
+	end
+
+	if layerConfig.filters > 1 then
+		table.insert(layer.outputShape, 1, layerConfig.filters)
 	end
 
 	-- Initializers
@@ -729,6 +737,10 @@ function buildModule.convolutional3D(layerConfig)
 		}
 	end
 
+	if layerConfig.filters > 1 then
+		table.insert(layer.outputShape, 1, layerConfig.filters)
+	end
+
 	-- Initializers
 
 	layer.initializer.filter = {
@@ -815,6 +827,10 @@ function buildModule.convolutionalTranspose1D(layerConfig)
 		}
 	end
 
+	if layerConfig.filters > 1 then
+		table.insert(layer.outputShape, 1, layerConfig.filters)
+	end
+
 	-- Initializers
 
 	layer.initializer.filter = {
@@ -899,6 +915,10 @@ function buildModule.convolutionalTranspose2D(layerConfig)
 			math.floor(((layerConfig.inputShape[1] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
 			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
 		}
+	end
+
+	if layerConfig.filters > 1 then
+		table.insert(layer.outputShape, 1, layerConfig.filters)
 	end
 
 	-- Initializers
@@ -988,6 +1008,10 @@ function buildModule.convolutionalTranspose3D(layerConfig)
 			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
 			math.floor(((layerConfig.inputShape[3] + layerConfig.paddingAmount[3]) - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
 		}
+	end
+
+	if layerConfig.filters > 1 then
+		table.insert(layer.outputShape, 1, layerConfig.filters)
 	end
 
 	-- Initializers

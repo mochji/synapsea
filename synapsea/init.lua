@@ -68,7 +68,9 @@ end
 
 package.path = oldPackagePath
 
-io.write("\27[1m\27[33mWARNING:\27[0m You are using a development release of Synapsea!\n")
-io.flush()
+if synapsea.version:match("-(.*)") then
+	io.write("\27[1m\27[33mWARNING:\27[0m You are using a development release of Synapsea!\n")
+	io.flush()
+end
 
 return synapsea

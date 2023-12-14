@@ -1,5 +1,5 @@
 --[[
-	Synapsea v2.0.00-unstable
+	Synapsea v2.0.00-development
 
 	Read the README.md file for documentation and information, 
 
@@ -34,7 +34,7 @@ package.path = synapseaPath .. "?.lua"
 
 local synapsea = {
 	path         = synapseaPath,
-	version      = "v2.0.00-unstable",
+	version      = "v2.0.00-development",
 
 	activations  = require("core.activations"),
 	losses       = require("core.losses"),
@@ -67,5 +67,8 @@ for layerName, layerFunc in pairs(synapsea.layers) do
 end
 
 package.path = oldPackagePath
+
+io.write("\27[1m\27[33mWARNING:\27[0m You are using a development release of Synapsea!\n")
+io.flush()
 
 return synapsea

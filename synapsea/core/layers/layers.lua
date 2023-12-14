@@ -1230,15 +1230,19 @@ function layersModule.flatten(args)
 	flattenFunc = function(input)
 		local output = {}
 
-		for a = 1, #output do
-			if canindex(output[a]) then
-				for _, b in pairs(flattenFunc(input[a])) do
-					output[a] = b
+		for a = 1, #input do
+			if canindex(input[a]) then
+				local flattened = flattenFunc(input[a])
+
+				for b = 1, #flattened do
+					output[#output + 1] = flattened[b]
 				end
 			else
-				output[a] = input[a]
+				output[#output + 1] = input[a]
 			end
 		end
+
+		return output
 	end
 
 	return flattenFunc(args.input)
@@ -1250,15 +1254,19 @@ function layersModule.reshape(args)
 	flattenFunc = function(input)
 		local output = {}
 
-		for a = 1, #output do
-			if canindex(output[a]) then
-				for _, b in pairs(flattenFunc(input[a])) do
-					output[a] = b
+		for a = 1, #input do
+			if canindex(input[a]) then
+				local flattened = flattenFunc(input[a])
+
+				for b = 1, #flattened do
+					output[#output + 1] = flattened[b]
 				end
 			else
-				output[a] = input[a]
+				output[#output + 1] = input[a]
 			end
 		end
+
+		return output
 	end
 
 	reshapeFunc = function(input, shape, index)

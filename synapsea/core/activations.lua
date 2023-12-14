@@ -145,7 +145,7 @@ function activationsModule.softmax(x, derivative)
 
 		for a = 1, #x do
 			if canindex(x[a]) then
-				output[a] = softMax(x[a])
+				output[a] = softmax(x[a], expSum)
 			else
 				output[a] = math.exp(x[a]) / expSum
 			end
@@ -159,7 +159,7 @@ function activationsModule.softmax(x, derivative)
 
 		for a = 1, #x do
 			if canindex(x[a]) then
-				output[a] = softMaxDerivative(x[a])
+				output[a] = softmaxDerivative(x[a], expSum)
 			else
 				output[a] = (math.exp(x[a]) / expSum) * (1 - (math.exp(x[a]) / expSum))
 			end

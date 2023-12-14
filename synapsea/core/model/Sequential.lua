@@ -219,6 +219,8 @@ function Sequential.forwardPass(model, input)
 	local output = input
 
 	for a = 1, #model.layerConfig do
+		local layer = model.layerConfig[a]
+
 		local args = {}
 
 		if layer.parameters then

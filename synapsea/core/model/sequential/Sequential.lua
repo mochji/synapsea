@@ -89,14 +89,14 @@ function Sequential.addTrainingConfig(model, args)
 	if args.optimizer then
 		model.trainingConfig.optimizer = {
 			optimizer = args.optimizer,
-			parameters = args.optimizerParameters
+			args      = args.optimizerArgs
 		}
 	end
 
 	if args.regularizer then
 		model.trainingConfig.regularizer = {
 			regularizer = args.regularizer,
-			parameters = args.regularizerParameters
+			args        = args.regularizerArgs
 		}
 	end
 
@@ -125,7 +125,7 @@ function Sequential.build(model)
 			for parameterName, parameter in pairs(model.parameterBuild[a]) do
 				layer.parameters[parameterName] = initializersModule[layer.initializer[parameterName].initializer](
 					model.parameterBuild[a][parameterName],
-					layer.initializer[parameterName].parameters
+					layer.initializer[parameterName].args
 				)
 			end
 		end

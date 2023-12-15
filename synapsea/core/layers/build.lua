@@ -105,13 +105,13 @@ function buildModule.dense(layerConfig)
 
 	layer.initializer.weights = {
 		initializer = layerConfig.weightsInit,
-		parameters  = layerConfig.weightsInitArgs
+		args        = layerConfig.weightsInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.bias = {
 			initializer = layerConfig.biasInit,
-			parameters  = layerConfig.biasInitArgs
+			args        = layerConfig.biasInitArgs
 		}
 	end
 
@@ -564,13 +564,13 @@ function buildModule.convolutional1D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters  = layerConfig.filterInitArgs
+		args        = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters  = layerConfig.biasesInitArgs
+			args        = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -653,13 +653,13 @@ function buildModule.convolutional2D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters  = layerConfig.filterInitArgs
+		args        = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters  = layerConfig.biasesInitArgs
+			args        = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -745,13 +745,13 @@ function buildModule.convolutional3D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters  = layerConfig.filterInitArgs
+		args        = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters  = layerConfig.biasesInitArgs
+			args  = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -835,13 +835,13 @@ function buildModule.convolutionalTranspose1D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters  = layerConfig.filterInitArgs
+		args        = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters  = layerConfig.biasesInitArgs
+			args        = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -925,13 +925,13 @@ function buildModule.convolutionalTranspose2D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters  = layerConfig.filterInitArgs
+		args        = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters  = layerConfig.biasesInitArgs
+			args        = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -1018,13 +1018,13 @@ function buildModule.convolutionalTranspose3D(layerConfig)
 
 	layer.initializer.filter = {
 		initializer = layerConfig.filterInit,
-		parameters  = layerConfig.filterInitArgs
+		args        = layerConfig.filterInitArgs
 	}
 
 	if layerConfig.useBias then
 		layer.initializer.biases = {
 			initializer = layerConfig.biasesInit,
-			parameters  = layerConfig.biasesInitArgs
+			args        = layerConfig.biasesInitArgs
 		}
 	end
 
@@ -1115,7 +1115,7 @@ function buildModule.add1D(layerConfig)
 
 	layer.initializer.biases = {
 		initializer = layerConfig.biasesInit,
-		parameters  = layerConfig.biasesInitArgs
+		args        = layerConfig.biasesInitArgs
 	}
 
 	-- Trainable
@@ -1156,7 +1156,7 @@ function buildModule.multiply1D(layerConfig)
 
 	layer.initializer.weights = {
 		initializer = layerConfig.weightsInit,
-		parameters  = layerConfig.weightsInitArgs
+		args        = layerConfig.weightsInitArgs
 	}
 
 	-- Trainable

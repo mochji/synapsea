@@ -43,7 +43,7 @@ local synapsea = {
 	regularizers = require("core.regularizers"),
 	layers       = require("core.layers.layers"),
 	model        = {
-		Sequential = require("core.model.Sequential")
+		Sequential = require("core.model.sequential.Sequential")
 	}
 }
 

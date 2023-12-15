@@ -77,7 +77,7 @@ For detailed documentation, including API documentation and usage, please see [D
 
 ## Contributing
 
-Contributions are welcome! If you find any issues or have suggestions, please open an issue or create a pull request. Please also make sure to follow the [Contribution Guidelines](https://sites.google.com/view/synapsea/contributing).
+Contributions are welcome! If you find any issues or have suggestions, please open an issue or create a pull request. Please also make sure to follow the [Contribution Guidelines](CONTRIBUTING.md).
 
 ## License
 

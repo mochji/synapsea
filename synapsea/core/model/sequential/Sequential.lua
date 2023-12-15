@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/model/Sequential.lua
+	core/model/sequential/Sequential.lua
 
 	Synapsea, a simple yet powerful machine learning framework for Lua.
 	Copyright (C) 2023 mochji

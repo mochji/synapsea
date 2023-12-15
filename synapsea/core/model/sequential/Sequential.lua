@@ -209,7 +209,7 @@ function Sequential.import(fileName)
 	model.build   = Sequential.build
 	model.summary = Sequential.summary
 
-	if model.metaData.synapseaVersion:match("-(.*)") then
+	if model.metaData.synapseaVersion:match("development") then
 		io.write("\27[1m\27[33mWARNING:\27[0m This model was created in a development release of Synapsea!\n")
 		io.flush()
 	end

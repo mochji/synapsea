@@ -917,13 +917,25 @@ function buildModule.convolutionalTranspose2D(layerConfig)
 	if layerConfig.inputShape[2] then
 		layer.outputShape = {
 			layerConfig.inputShape[1],
-			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor(((layerConfig.inputShape[3] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
+			math.floor(
+				((layerConfig.inputShape[2] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1])
+				/ layerConfig.stride[1]
+			) + 1,
+			math.floor(
+				((layerConfig.inputShape[3] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2])
+				/ layerConfig.stride[2]
+			) + 1
 		}
 	else
 		layer.outputShape = {
-			math.floor(((layerConfig.inputShape[1] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1
+			math.floor(
+				((layerConfig.inputShape[1] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1])
+				/ layerConfig.stride[1]
+			) + 1,
+			math.floor(
+				((layerConfig.inputShape[2] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2])
+				/ layerConfig.stride[2]
+			) + 1
 		}
 	end
 
@@ -1008,15 +1020,33 @@ function buildModule.convolutionalTranspose3D(layerConfig)
 	if layerConfig.inputShape[2] then
 		layer.outputShape = {
 			layerConfig.inputShape[1],
-			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor(((layerConfig.inputShape[3] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
-			math.floor(((layerConfig.inputShape[4] + layerConfig.paddingAmount[3]) - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
+			math.floor(
+				((layerConfig.inputShape[2] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1])
+				/ layerConfig.stride[1]
+			) + 1,
+			math.floor(
+				((layerConfig.inputShape[3] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2])
+				/ layerConfig.stride[2]
+			) + 1,
+			math.floor(
+				((layerConfig.inputShape[4] + layerConfig.paddingAmount[3]) - layerConfig.kernel[3])
+				/ layerConfig.stride[3]
+			) + 1
 		}
 	else
 		layer.outputShape = {
-			math.floor(((layerConfig.inputShape[1] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1,
-			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2]) / layerConfig.stride[2]) + 1,
-			math.floor(((layerConfig.inputShape[3] + layerConfig.paddingAmount[3]) - layerConfig.kernel[3]) / layerConfig.stride[3]) + 1
+			math.floor(
+				((layerConfig.inputShape[1] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1])
+				/ layerConfig.stride[1]
+			) + 1,
+			math.floor(
+				((layerConfig.inputShape[2] + layerConfig.paddingAmount[2]) - layerConfig.kernel[2])
+				/ layerConfig.stride[2]
+			) + 1,
+			math.floor(
+				((layerConfig.inputShape[3] + layerConfig.paddingAmount[3]) - layerConfig.kernel[3])
+				/ layerConfig.stride[3]
+			) + 1
 		}
 	end
 

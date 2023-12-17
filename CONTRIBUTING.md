@@ -184,6 +184,10 @@ local function softplusActivation(x, derivative, alpha)
 end
 ```
 
+##### 1.0.9
+
+ - Limit lines to 120, unless they are layer forward, error or gradient functions in which case those are f\*\*\*ed.
+
 #### Naming
 
 ##### 1.1.0

@@ -19,7 +19,6 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
-local checkargs = require("core.utils.checkargs")
 local canindex  = require("core.utils.canindex")
 
 local buildModule = {
@@ -68,10 +67,9 @@ local buildModule = {
 }
 
 function buildModule.dense(layerConfig)
-	checkargs(
-		{layerConfig.outputSize},
-		{"outputSize"},
-		"dense"
+	assert(
+		layerConfig.outputSize,
+		"expected argument 'outputSize' to 'dense'"
 	)
 
 	local defaults = {
@@ -426,10 +424,14 @@ function buildModule.zeroPad3D(layerConfig)
 end
 
 function buildModule.crop1D(layerConfig)
-	checkargs(
-		{layerConfig.outputShape, layerConfig.start},
-		{"outputShape",           "start"},
-		"crop1D"
+	assert(
+		layerConfig.outputShape,
+		"expected argument 'outputShape' to 'crop1D'"
+	)
+
+	assert(
+		layerConfig.start,
+		"expected argument 'start' to 'crop1D'"
 	)
 
 	local layer = {
@@ -453,10 +455,14 @@ function buildModule.crop1D(layerConfig)
 end
 
 function buildModule.crop2D(layerConfig)
-	checkargs(
-		{layerConfig.outputShape, layerConfig.start},
-		{"outputShape",           "start"},
-		"crop2D"
+	assert(
+		layerConfig.outputShape,
+		"expected argument 'outputShape' to 'crop2D'"
+	)
+
+	assert(
+		layerConfig.start,
+		"expected argument 'start' to 'crop2D'"
 	)
 
 	local layer = {
@@ -481,10 +487,14 @@ function buildModule.crop2D(layerConfig)
 end
 
 function buildModule.crop3D(layerConfig)
-	checkargs(
-		{layerConfig.outputShape, layerConfig.start},
-		{"outputShape",           "start"},
-		"crop3D"
+	assert(
+		layerConfig.outputShape,
+		"expected argument 'outputShape' to 'crop3D'"
+	)
+
+	assert(
+		layerConfig.start,
+		"expected argument 'start' to 'crop3D'"
 	)
 
 	local layer = {
@@ -1066,10 +1076,9 @@ function buildModule.flatten(layerConfig)
 end
 
 function buildModule.reshape(layerConfig)
-	checkargs(
-		{layerConfig.shape},
-		{"shape"},
-		"reshape"
+	assert(
+		layerConfig.shape,
+		"expected argument 'shape' to 'reshape'"
 	)
 
 	local totalIn, totalOut = 1, 1
@@ -1186,10 +1195,9 @@ function buildModule.softmax(layerConfig)
 end
 
 function buildModule.activate(layerConfig)
-	checkargs(
-		{layerConfig.activation},
-		{"activation"},
-		"activate"
+	assert(
+		layerConfig.activation,
+		"expected argument 'activation' to 'activate'"
 	)
 
 	return {
@@ -1208,10 +1216,9 @@ end
 
 
 function buildModule.dropout(layerConfig)
-	checkargs(
-		{layerConfig.rate},
-		{"rate"},
-		"dropout"
+	assert(
+		layerConfig.rate,
+		"expected argument 'rate' to 'dropout'"
 	)
 
 	return {

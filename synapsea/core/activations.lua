@@ -186,7 +186,7 @@ end
 function activationsModule.softsign(x, derivative)
 	if derivative then
 		if x == 0 then
-			return 1   -- Undefined at x = 0 so return 1
+			return 1
 		end
 
 		return x / (x * (1 + math.abs(x)^2))

@@ -22,11 +22,11 @@
 return function(args, argNames, functionName)
 	for a = 1, #args do
 		assert(
-			args[a],
+			args[a] ~= nil,
 			string.format(
 				"expected argument '%s' to '%s'",
-				argNames[a],
-				functionName
+				tostring(argNames[a]),
+				tostring(functionName)
 			)
 		)
 	end

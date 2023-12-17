@@ -1,6 +1,6 @@
 --[[
 	https://github.com/mochji/synapsea
-	core/model/sequential/Sequential.lua
+	core/model/Sequential.lua
 
 	Synapsea, a simple yet powerful machine learning framework for Lua.
 	Copyright (C) 2023 mochji
@@ -79,35 +79,6 @@ function Sequential.pop(model)
 	if model.parameterBuild then
 		model.parameterBuild[#model.parameterBuild] = nil
 	end
-
-	return model
-end
-
-function Sequential.addTrainingConfig(model, args)
-	args = args or {}
-
-	if args.optimizer then
-		model.trainingConfig.optimizer = {
-			optimizer = args.optimizer,
-			args      = args.optimizerArgs
-		}
-	end
-
-	if args.regularizer then
-		model.trainingConfig.regularizer = {
-			regularizer = args.regularizer,
-			args        = args.regularizerArgs
-		}
-	end
-
-	model.trainingConfig.learningRate =
-		args.learningRate or model.trainingConfig.learningRate
-
-	model.trainingConfig.epochs =
-		args.epochs or model.trainingConfig.epochs
-
-	model.trainingConfig.loss =
-		args.loss or model.trainingConfig.loss
 
 	return model
 end

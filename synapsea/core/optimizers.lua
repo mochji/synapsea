@@ -22,16 +22,17 @@
 local canindex = require("core.utils.canindex")
 
 local optimizersModule = {
-	momentum
+	stochastic,
+	batch
 }
 
-function optimizersModule.momentum(parameters, args)
-	local function optimizerFunc(gradient, momentum, stepSize, change)
+local function applyMomentum(parameters, momentum, learningRate)
+	local function optimizerFunc(gradient, momentum, learningRate, change)
 		for a, _ in pairs(gradient) do
 			if canindex(gradient[a]) then
-				gradient[a], lastGradient = optimizerFunc(gradient[a], momentum, stepSize)
+				gradient[a], lastGradient = optimizerFunc(gradient[a], momentum, learningRate)
 			else
-				change = stepSize * gradient[a] + momentum * change
+				change = learningRate * gradient[a] + momentum * change
 				gradient[a] = gradient[a] - change
 			end
 		end
@@ -39,20 +40,26 @@ function optimizersModule.momentum(parameters, args)
 		return gradient, change
 	end
 
-	local momentum, stepSize = args.momentum, args.stepSize
+	local momentum, learningRate = args.momentum, args.learningRate
 
 	local change = 0
 
 	for _, parameter in pairs(parameters) do
 		if type(parameter) == "number" then
-			change = args.stepSize * gradient[a] + momentum * change
+			change = args.learningRate * gradient[a] + momentum * change
 			parameter = parameter - change
 		else
-			parameter, change = optimizerFunc(parameter, momentum, stepSize)
+			parameter, change = optimizerFunc(parameter, momentum, learningRate)
 		end
 	end
 
 	return parameters
+end
+
+function optimizersModule.stochastic(parameters, args)
+end
+
+function optimizersModule.batch(parameters, args)
 end
 
 return optimizersModule

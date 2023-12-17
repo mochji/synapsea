@@ -42,7 +42,7 @@ local synapsea = {
 	optimizers   = require("core.optimizers"),
 	regularizers = require("core.regularizers"),
 	layers       = require("core.layers.layers"),
-	Sequential   = require("core.model.sequential.Sequential")
+	Sequential   = require("core.model.Sequential")
 }
 
 for layerName, layerFunc in pairs(synapsea.layers) do

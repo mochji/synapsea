@@ -829,11 +829,17 @@ function buildModule.convolutionalTranspose1D(layerConfig)
 	if layerConfig.inputShape[2] then
 		layer.outputShape = {
 			layerConfig.inputShape[1],
-			math.floor(((layerConfig.inputShape[2] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
+			math.floor(
+				((layerConfig.inputShape[2] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1])
+				/ layerConfig.stride[1]
+			) + 1
 		}
 	else
 		layer.outputShape = {
-			math.floor(((layerConfig.inputShape[1] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1]) / layerConfig.stride[1]) + 1
+			math.floor(
+				((layerConfig.inputShape[1] + layerConfig.paddingAmount[1]) - layerConfig.kernel[1])
+				/ layerConfig.stride[1]
+			) + 1
 		}
 	end
 

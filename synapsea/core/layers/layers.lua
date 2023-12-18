@@ -1649,7 +1649,7 @@ function layersModule.activate(args)
 		return input
 	end
 
-	return activationFunc(args.input, activationsModule[args.activation], args.derivative, args.alpha)
+	return activateFunc(args.input, activationsModule[args.activation], args.derivative, args.alpha)
 end
 
 function layersModule.dropout(args)

@@ -238,7 +238,6 @@ return setmetatable(
 			model.add               = Sequential.add
 			model.pop               = Sequential.pop
 			model.build             = Sequential.build
-			model.addTrainingConfig = Sequential.addTrainingConfig
 			model.summary           = Sequential.summary
 			model.export            = Sequential.export
 

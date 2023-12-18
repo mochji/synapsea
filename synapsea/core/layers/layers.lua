@@ -909,7 +909,7 @@ function layersModule.convolutional1D(args)
 			for b = 1, outputSize do
 				local sum = 0
 
-				for c = 1, #filter[a] do
+				for c = 1, #filter do
 					if (startIndex + c) % dilation[1] == 0 then
 						sum = sum + input[startIndex + c] * filter[a][c]
 					end
@@ -919,34 +919,42 @@ function layersModule.convolutional1D(args)
 
 				output[a][b] = sum
 			end
+		end
 
-			if biases then
-				for b = 1, outputSize do
-					output[a][b] = activation(output[a][b] + biases[b], false, alpha)
-				end
-			else
-				for b = 1, outputSize do
-					output[a][b] = activation(output[a][b], false, alpha)
-				end
+		if biases then
+			for b = 1, outputSize do
+				output[a][b] = activation(output[a][b] + biases[a][b], false, alpha)
+			end
+		else
+			for b = 1, outputSize do
+				output[a][b] = activation(output[a][b], false, alpha)
 			end
 		end
 
-		if #output == 1 then
+		if #output[a] == 1 then
 			return output[1]
 		end
 
 		return output
 	end
 
-	if canindex(args.input[1]) then
+	if canindex(input[1]) then
 		local activation = activationsModule[args.activation]
 		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 
-		local output = {}
+		local channels = {}
 
 		for a = 1, #input do
-			for _, b in pairs(convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)) do
-				output[a] = b
+			channels[a] = convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+		end
+
+		local output = {}
+
+		for a = 1, #channels[1] do
+			output[a] = 0
+
+			for b = 1, #channels do
+				output[a] = output[a] + channels[b][a]
 			end
 		end
 
@@ -1018,11 +1026,23 @@ function layersModule.convolutional2D(args)
 		local activation = activationsModule[args.activation]
 		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 
-		local output = {}
+		local channels = {}
 
 		for a = 1, #input do
-			for _, b in pairs(convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)) do
-				output[a] = b
+			channels[a] = convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+		end
+
+		local output = {}
+
+		for a = 1, #channels[1] do
+			output[a] = {}
+
+			for b = 1, #channels[1][1] do
+				output[a][b] = {}
+
+				for c = 1, #channels do
+					output[a][b] = output[a][b] + channels[c][a][b]
+				end
 			end
 		end
 
@@ -1108,11 +1128,27 @@ function layersModule.convolutional3D(args)
 		local activation = activationsModule[args.activation]
 		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
 
-		local output = {}
-	
+		local channels = {}
+
 		for a = 1, #input do
-			for _, b in pairs(convolutionalFunc(input[a], filter, stride, dilation, biases, alpha, activation)) do
-				output[a] = b
+			channels[a] = convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+		end
+
+		local output = {}
+
+		for a = 1, #channels[1] do
+			output[a] = {}
+
+			for b = 1, #channels[1][1] do
+				output[a][b] = {}
+
+				for c = 1, #channels[1][1][1] do
+					output[a][b][c] = {}
+
+					for d = 1, #channels do
+						output[a][b][c] = output[a][b][c] + channels[d][a][b][c]
+					end
+				end
 			end
 		end
 
@@ -1139,14 +1175,22 @@ function layersModule.convolutionalTranspose1D(args)
 	end
 
 	if canindex(args.input[1]) then
-		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
 		local activation = activationsModule[args.activation]
+		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
+
+		local channels = {}
+
+		for a = 1, #input do
+			channels[a] = convolutionalTransposeFunc(input, filter, stride, dilation, biases, alpha, activation)
+		end
 
 		local output = {}
 
-		for a = 1, #input do
-			for _, b in pairs(convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)) do
-				output[a] = b
+		for a = 1, #channels[1] do
+			output[a] = 0
+
+			for b = 1, #channels do
+				output[a] = output[a] + channels[b][a]
 			end
 		end
 
@@ -1173,14 +1217,26 @@ function layersModule.convolutionalTranspose2D(args)
 	end
 
 	if canindex(args.input[1][1]) then
-		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
 		local activation = activationsModule[args.activation]
+		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
+
+		local channels = {}
+
+		for a = 1, #input do
+			channels[a] = convolutionalTransposeFunc(input, filter, stride, dilation, biases, alpha, activation)
+		end
 
 		local output = {}
 
-		for a = 1, #input do
-			for _, b in pairs(convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)) do
-				output[a] = b
+		for a = 1, #channels[1] do
+			output[a] = {}
+
+			for b = 1, #channels[1][1] do
+				output[a][b] = {}
+
+				for c = 1, #channels do
+					output[a][b] = output[a][b] + channels[c][a][b]
+				end
 			end
 		end
 
@@ -1207,14 +1263,30 @@ function layersModule.convolutionalTranspose3D(args)
 	end
 
 	if canindex(args.input[1][1][1]) then
-		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
 		local activation = activationsModule[args.activation]
+		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
+
+		local channels = {}
+
+		for a = 1, #input do
+			channels[a] = convolutionalTransposeFunc(input, filter, stride, dilation, biases, alpha, activation)
+		end
 
 		local output = {}
 
-		for a = 1, #input do
-			for _, b in pairs(convolutionalTransposeFunc(input[a], filter, stride, dilation, biases, alpha, activation, paddingAmount)) do
-				output[a] = b
+		for a = 1, #channels[1] do
+			output[a] = {}
+
+			for b = 1, #channels[1][1] do
+				output[a][b] = {}
+
+				for c = 1, #channels[1][1][1] do
+					output[a][b][c] = {}
+
+					for d = 1, #channels do
+						output[a][b][c] = output[a][b][c] + channels[d][a][b][c]
+					end
+				end
 			end
 		end
 

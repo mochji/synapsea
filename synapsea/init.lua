@@ -7,7 +7,7 @@
 	init.lua
 
 	Synapsea, simple yet powerful machine learning framework for Lua.
-	Copyright (C) 2023 mochji
+	Copyright (C) 2024 mochji
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by

@@ -909,7 +909,7 @@ function layersModule.convolutional1D(args)
 			for b = 1, outputSize do
 				local sum = 0
 
-				for c = 1, #filter do
+				for c = 1, #filter[a] do
 					if (startIndex + c) % dilation[1] == 0 then
 						sum = sum + input[startIndex + c] * filter[a][c]
 					end
@@ -945,7 +945,7 @@ function layersModule.convolutional1D(args)
 		local channels = {}
 
 		for a = 1, #input do
-			channels[a] = convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+			channels[a] = convolutionalFunc(input[a], filter, stride, dilation, biases[a], alpha, activation)
 		end
 
 		local output = {}
@@ -1029,7 +1029,7 @@ function layersModule.convolutional2D(args)
 		local channels = {}
 
 		for a = 1, #input do
-			channels[a] = convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+			channels[a] = convolutionalFunc(input[a], filter, stride, dilation, biases[a], alpha, activation)
 		end
 
 		local output = {}
@@ -1131,7 +1131,7 @@ function layersModule.convolutional3D(args)
 		local channels = {}
 
 		for a = 1, #input do
-			channels[a] = convolutionalFunc(input, filter, stride, dilation, biases, alpha, activation)
+			channels[a] = convolutionalFunc(input[a], filter, stride, dilation, biases[a], alpha, activation)
 		end
 
 		local output = {}
@@ -1181,7 +1181,7 @@ function layersModule.convolutionalTranspose1D(args)
 		local channels = {}
 
 		for a = 1, #input do
-			channels[a] = convolutionalTransposeFunc(input, filter, stride, dilation, biases, alpha, activation)
+			channels[a] = convolutionalTransposeFunc(input[a], filter, stride, dilation, biases[a], alpha, activation)
 		end
 
 		local output = {}
@@ -1223,7 +1223,7 @@ function layersModule.convolutionalTranspose2D(args)
 		local channels = {}
 
 		for a = 1, #input do
-			channels[a] = convolutionalTransposeFunc(input, filter, stride, dilation, biases, alpha, activation)
+			channels[a] = convolutionalTransposeFunc(input[a], filter, stride, dilation, biases[a], alpha, activation)
 		end
 
 		local output = {}
@@ -1269,7 +1269,7 @@ function layersModule.convolutionalTranspose3D(args)
 		local channels = {}
 
 		for a = 1, #input do
-			channels[a] = convolutionalTransposeFunc(input, filter, stride, dilation, biases, alpha, activation)
+			channels[a] = convolutionalTransposeFunc(input[a], filter, stride, dilation, biases[a], alpha, activation)
 		end
 
 		local output = {}

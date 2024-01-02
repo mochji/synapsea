@@ -82,7 +82,7 @@ Contributions are welcome! If you find any issues or have suggestions, please op
 
 ## Version Numbering
 
-Synapsea follows the semantic versioning (Symver) convention for version numbering.
+Synapsea follows the semantic versioning convention for version numbering.
 
 - **Major Version (X):** Increments for changes that are or may be backward-incompatible or major feature additions.
 - **Minor Version (Y):** Increments for features and enhancements that are backward compatible.

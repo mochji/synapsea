@@ -93,7 +93,7 @@ For example:
 
 - **v2.0.0-development**
 - **v2.1.11**
-- **v3.5.0-rc1**
+- **v3.5.0-rc.1**
 
 ## License
 

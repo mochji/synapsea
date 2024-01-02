@@ -19,6 +19,7 @@ Synapsea is built from the ground up to be simple, easy to understand and portab
  - [Examples](#examples)
  - [Documentation](#documentation)
  - [Contributing](#contributing)
+ - [Version Numbering](#version-numbering)
  - [License](#license)
  - [Also](#also)
 
@@ -49,7 +50,7 @@ Try the Synapsea API:
 ```lua
 > synapsea = require("synapsea")
 > synapsea.version
-v2.0.00-unstable
+v2.0.0-development
 > synapsea.path
 /usr/share/lua/5.4/synapsea/
 > synapsea.activations.sigmoid(tonumber(io.read()))
@@ -78,6 +79,21 @@ For detailed documentation, including API documentation and usage, please see [D
 ## Contributing
 
 Contributions are welcome! If you find any issues or have suggestions, please open an issue or create a pull request. Please also make sure to follow the [Contribution Guidelines](CONTRIBUTING.md).
+
+## Version Numbering
+
+Synapsea follows the semantic versioning (Symver) convention for version numbering.
+
+- **Major Version (X):** Increments for changes that are or may be backward-incompatible or major feature additions.
+- **Minor Version (Y):** Increments for features and enhancements that are backward compatible.
+- **Patch Version (Z):** Increments for bug fixes, minor changes or minor improvements.
+- **Branch Name:** If the branch is not `stable`, then append `-${branchName}` where `branchName` is the name of the branch.
+
+For example:
+
+- **v2.0.0-development**
+- **v2.1.11**
+- **v3.5.0-rc1**
 
 ## License
 

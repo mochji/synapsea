@@ -1,5 +1,5 @@
 --[[
-	Synapsea v2.0.00-development
+	Synapsea v2.0.0-development
 
 	Read the README.md file for documentation and information, 
 
@@ -34,7 +34,7 @@ package.path = synapseaPath .. "?.lua"
 
 local synapsea = {
 	path         = synapseaPath,
-	version      = "v2.0.00-development",
+	version      = "v2.0.0-development",
 
 	activations  = require("core.activations"),
 	losses       = require("core.losses"),

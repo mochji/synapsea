@@ -2,7 +2,7 @@
     <img src="https://github.com/mochji/synapsea/assets/117334318/1c07a93b-5e83-4a1e-891e-632e7b460f87">
 </p>
 
-## **Note: This is a development release!**
+### **Note: This is a development release!**
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Lua](https://img.shields.io/badge/Lua-5.4%2B-blueviolet)](https://www.lua.org/)

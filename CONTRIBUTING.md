@@ -24,7 +24,6 @@ If you then still feel the need to ask a question and need clarification, we rec
 
  - Open an [Issue](https://github.com/mochji/synapsea/issues/new).
  - Provide as much context as you can about what you're running into.
- -
 
 We will then take care of the issue as soon as possible.
 
@@ -93,7 +92,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/mochji
 
 ##### 1.0.0
 
- - Limit lines to 120 characters long.
+ - Limit lines to 140, although try to keep lines under 80 - 120 columns.
 
 ##### 1.0.1
 
@@ -186,7 +185,17 @@ end
 
 ##### 1.0.9
 
- - Limit lines to 120, unless they are layer forward, error or gradient functions in which case those are f\*\*\*ed.
+ - FIXME: rename this
+
+```lua
+local output = synapsea.layers.dense{
+    activation = "leakyRelu",
+    input      = input,
+    weights    = weights,
+    alpha      = 0.1,
+    outputSize = 10
+}
+```
 
 #### Naming
 
@@ -211,11 +220,9 @@ end
  - Number loop variables should start at `a` and decrement on each nested loop.
 
 ```lua
-if #you.parents > 1 and you.parents.get(life.parent.type.MOTHER) then
-    for a = 1, you.parents.get(life.parent.type.MOTHER).size do
-        for b = 1, 10 do
-            print(a, b) -- ?????????????????
-        end
+for a = 1, 20 do
+    for b = 21, 40 do
+        print(a, b)
     end
 end
 ```

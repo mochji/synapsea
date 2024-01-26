@@ -19,6 +19,8 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ]]--
 
+local activationsModule = require("core.activations")
+
 local errorModule = {
 	dense,
 	averagePooling1D,

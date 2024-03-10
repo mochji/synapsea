@@ -940,7 +940,7 @@ function layersModule.convolutional1D(args)
 
 	if canindex(input[1]) then
 		local activation = activationsModule[args.activation]
-		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
+		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases or {}, args.alpha
 
 		local channels = {}
 
@@ -1024,7 +1024,7 @@ function layersModule.convolutional2D(args)
 
 	if canindex(args.input[1][1]) then
 		local activation = activationsModule[args.activation]
-		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
+		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases or {}, args.alpha
 
 		local channels = {}
 
@@ -1126,7 +1126,7 @@ function layersModule.convolutional3D(args)
 
 	if canindex(args.input[1][1][1]) then
 		local activation = activationsModule[args.activation]
-		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha
+		local input, filter, stride, dilation, biases, alpha = args.input, args.filter, args.stride, args.dilation, args.biases or {}, args.alpha
 
 		local channels = {}
 
@@ -1176,7 +1176,7 @@ function layersModule.convolutionalTranspose1D(args)
 
 	if canindex(args.input[1]) then
 		local activation = activationsModule[args.activation]
-		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
+		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases or {}, args.alpha, args.activation, args.paddingAmount
 
 		local channels = {}
 
@@ -1218,7 +1218,7 @@ function layersModule.convolutionalTranspose2D(args)
 
 	if canindex(args.input[1][1]) then
 		local activation = activationsModule[args.activation]
-		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
+		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases or {}, args.alpha, args.activation, args.paddingAmount
 
 		local channels = {}
 
@@ -1264,7 +1264,7 @@ function layersModule.convolutionalTranspose3D(args)
 
 	if canindex(args.input[1][1][1]) then
 		local activation = activationsModule[args.activation]
-		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases, args.alpha, args.activation, args.paddingAmount
+		local input, filter, stride, dilation, biases, alpha, activation, paddingAmount = args.input, args.filter, args.stride, args.dilation, args.biases or {}, args.alpha, args.activation, args.paddingAmount
 
 		local channels = {}
 

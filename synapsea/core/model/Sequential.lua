@@ -179,6 +179,7 @@ function Sequential.import(fileName)
 	model.pop     = Sequential.pop
 	model.build   = Sequential.build
 	model.summary = Sequential.summary
+	model.export  = Sequential.export
 
 	if model.metaData.synapseaVersion:match("development") then
 		io.write("\27[1m\27[33mWARNING:\27[0m This model was created in a development release of Synapsea!\n")
@@ -234,6 +235,7 @@ return setmetatable(
 			assert(inputShape, "bad argument #1 to 'Sequential' (input shape expected)")
 
 			model.metaData.synapseaVersion = "v2.0.0-development"
+			model.metaData.class           = "Sequential"
 
 			model.add               = Sequential.add
 			model.pop               = Sequential.pop
